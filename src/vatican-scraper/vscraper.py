@@ -10,7 +10,7 @@ def get_all_speech_links(
         include_substrings = ["/en/", "/documents/"], 
         exclude_substrings = ["/biography/"], 
         timeout: int = 10
-):
+) -> list[str]:
     """
     Fetch a page and return all links containing ANY of the given substrings.
     
@@ -48,14 +48,14 @@ def fetch_and_parse_web_content(
         timeout: int = 10
 ):
     """
-    Fetches and returns the content of a website as text.
+    Fetches and returns the content of a website as soup.
     
     Parameters:
         url (str): The URL of the website to fetch.
         timeout (int): Timeout for the request (default 10s).
 
     Returns:
-        str: The content of the website as text.
+        soup: The content of the website as a BeautifulSoup object.
     
     Raises:
         requests.exceptions.RequestException: If there's an issue fetching the URL.
@@ -171,7 +171,7 @@ def extract_speech_text(soup) -> str:
 def get_speech_text(
     url: str, 
     timeout: int = 10       
-):
+) -> dict:
     """
     Fetches and returns the content a pope speech in dict format.
     
