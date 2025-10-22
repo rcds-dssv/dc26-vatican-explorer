@@ -14,7 +14,7 @@ def get_all_speech_links(
     """
     Fetch a page and return all links containing ANY of the given substrings.
     
-    Parameters:
+    Args:
         url (str): The base URL of the page.
         include_substrings (str | list[str]): All substrings must match.
         exclude_substrings (str | list[str]): All substrings must not match.
@@ -50,7 +50,7 @@ def fetch_and_parse_web_content(
     """
     Fetches and returns the content of a website as soup.
     
-    Parameters:
+    Args:
         url (str): The URL of the website to fetch.
         timeout (int): Timeout for the request (default 10s).
 
@@ -82,7 +82,7 @@ def parse_speech_metadata(soup) -> dict:
     """
     Parse a Vatican speech HTML page to extract metadata.
 
-    Parameters:
+    Args:
         soup: Output from BeautifulSoup
     
     Returns:
@@ -143,7 +143,7 @@ def extract_speech_text(soup) -> str:
     Extracts all <p> text inside the Vatican speech <div class="text parbase vaticanrichtext">.
     Removes any nested HTML tags like <sup>, <i>, etc.
 
-    Parameters:
+    Args:
         soup: Output from BeautifulSoup
     
     Returns:
@@ -175,7 +175,7 @@ def get_speech_text(
     """
     Fetches and returns the content a pope speech in dict format.
     
-    Parameters:
+    Args:
         url (str): The URL of the website to fetch.
         timeout (int): Timeout for the request (default 10s).
 

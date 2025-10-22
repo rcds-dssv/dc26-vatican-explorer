@@ -23,7 +23,7 @@ def ensure_db_and_table(db_path: str, table_schema: str = DEFAULT_TABLE_SCHEMA) 
     """
     Create the sqlite file and the speeches table if they don't exist.
     
-    Parameters:
+    Args:
         db_path: path to sqlite file (creates file if doesn't exist)
         table_schema: SQL schema
 
@@ -41,7 +41,7 @@ def add_speech_to_db(db_path: str, record: Dict[str, Optional[str]], replace: bo
     """
     Add a speech record (dict) to the SQLite DB. Creates DB/table if needed.
 
-    Parameters:
+    Args:
         db_path: path to sqlite file (creates file if doesn't exist)
         record: dictionary with keys like 'pope','name','date','special','text','source_url'
         replace: if True, will REPLACE an existing row with the same (pope,name,date).
