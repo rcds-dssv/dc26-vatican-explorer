@@ -4,8 +4,7 @@ import pandas as pd
 from pathlib import Path
 import sqlite3
 
-_PKG_DIR = Path(__file__).resolve().parent  # .../src/vatican_scraper
-_DB_PATH = _PKG_DIR / ".." / "data" / "vatican_speeches.db"
+_DB_PATH = Path(__file__).resolve().parent / "vatican_speeches.db"
 
 
 def connect_to_database():
@@ -56,6 +55,7 @@ def get_first_n_entries_in_column(cursor, table_name: str, column_name: str, n: 
 
 if __name__ == "__main__":
 
+    print("Database path:", _DB_PATH)
     conn, cursor = connect_to_database()
 
     # print a list of the available tables
