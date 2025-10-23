@@ -209,14 +209,18 @@ __marimo__/
 
 # Mac specific
 **/.DS_Store
+
 # IDE/OS
 .idea/
 .vscode/
 .DS_Store
+
 # Python
-__pycache__/
 *.pyc
 .venv/
 
 # Generated data
 src/vatican_scraper/scrape_result/
+
+# data
+src/data/*.db

@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import sys
 from urllib.parse import urljoin
+import re
+import time
+import random
 
 import requests
 from bs4 import BeautifulSoup
