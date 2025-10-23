@@ -1,8 +1,7 @@
 # src/vatican_scraper/step02_list_pope_year_links.py
 from __future__ import annotations
 
-import sys, argparse, json, random, re, time
-from typing import List, Dict, Set, Optional, Pattern
+import sys
 from urllib.parse import urljoin
 
 import requests
