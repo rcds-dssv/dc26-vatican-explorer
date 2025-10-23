@@ -1,4 +1,4 @@
-# vatican_helpers.py
+# step01_list_popes.py
 from __future__ import annotations
 
 import random
@@ -151,4 +151,3 @@ if __name__ == "__main__":
     print(f"Found {len(popes)} entries")
     for d in popes:
         print(" -", d)
-
