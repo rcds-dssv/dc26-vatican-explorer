@@ -30,8 +30,7 @@ def search_biblical_citations(text, context=100, pattern=None):
     
     # Default regex pattern for biblical citations if none provided
     if pattern is None:
-        # TODO: check regex to make sure it's not overkill
-        pattern = r'\b(?:[1-3]\s)?[A-Za-z]{2,4}\s\d{1,3}:\d{1,3}(?:[-.]\d{1,3})?(?:[.,;]?\d{1,3})*\b'
+        pattern = r'\b(?:[1-3]\s+)?[A-Za-z]{2,4}\s+\d{1,3}:\d{1,3}(?:[-.]\d{1,3})?\b'
     
     # Search for citations using regex
     matches = re.finditer(pattern, text)
@@ -102,6 +101,22 @@ if __name__ == "__main__":
     print(f"Test 5 Result: {test_result_5}")
     assert test_result_5[0][0] == '1 Cor 13:8-13', "Test 5 Failed"
 
-    # TODO: add tests with none citations and with more than one citation
+    # Test 6
+    print(f"Running test 6...")
+    test_string_6 = """Charity in truth, to which Jesus Christ bore witness by his earthly life and especially by his death and resurrection, is the principal driving force behind the authentic development of every person and of all humanity. Love — caritas — is an extraordinary force which leads people to opt for courageous and generous engagement in the field of justice and peace. It is a force that has its origin in God, Eternal Love and Absolute Truth. Each person finds his good by adherence to God's plan for him, in order to realize it fully: in this plan, he finds his truth, and through adherence to this truth he becomes free (cf. Jn 8:32). To defend the truth, to articulate it with humility and conviction, and to bear witness to it in life are therefore exacting and indispensable forms of charity. Charity, in fact, “rejoices in the truth” (1 Cor 13:6). All people feel the interior impulse to love authentically: love and truth never abandon them completely, because these are the vocation planted by God in the heart and mind of every human person. The search for love and truth is purified and liberated by Jesus Christ from the impoverishment that our humanity brings to it, and he reveals to us in all its fullness the initiative of love and the plan for true life that God has prepared for us. In Christ, charity in truth becomes the Face of his Person, a vocation for us to love our brothers and sisters in the truth of his plan. Indeed, he himself is the Truth (cf. Jn 14:6)."""
+    test_result_6 = search_biblical_citations(test_string_6)
+    print(f"Test 6 Result: {test_result_6}")
+    assert test_result_6[0][0] == 'Jn 8:32', "Test 6 a Failed"
+    assert test_result_6[1][0] == '1 Cor 13:6', "Test 6 b Failed"
+    assert test_result_6[2][0] == 'Jn 14:6', "Test 6 c Failed"
+
+    # Test 7
+    print(f"Running test 7...")
+    test_string_7 = "No citations here."
+    test_result_7 = search_biblical_citations(test_string_7)
+    print(f"Test 7 Result: {test_result_7}")
+    assert test_result_7 == [], "Test 7 Failed"
+
+    # TODO: go through the Vatican's website to find more complex examples to test
 
     print("All tests passed successfully!")
