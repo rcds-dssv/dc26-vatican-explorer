@@ -138,7 +138,7 @@ def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: b
 def main() -> None:
     """
     Example of how to add a single speech to the database.  This is not intended to be run on its own.
-    Insead, the code above should be run as part of the overall scraping pipeline, as in step06_run_scraping_pipeline.py.
+    Instead, the code above should be run as part of the overall scraping pipeline, as in step06_run_scraping_pipeline.py.
     """
 
     p = scraper_parser()
