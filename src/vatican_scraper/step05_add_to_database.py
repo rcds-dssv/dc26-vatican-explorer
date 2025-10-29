@@ -5,17 +5,17 @@
 # $ python -m vatican_scraper.step05_add_to_database
 
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
-from vatican_scraper.argparser import scraper_parser
+from vatican_scraper.argparser import get_scraper_args
 
 import sqlite3
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from pathlib import Path
 
 DEFAULT_TABLE_SCHEMA = """
 
 CREATE TABLE IF NOT EXISTS popes (
-    _speech_id INTEGER PRIMARY KEY,
+    _pope_id INTEGER PRIMARY KEY,
     pope_name TEXT,
     pope_slug TEXT,
     pope_number TEXT,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS popes (
 );
 
 CREATE TABLE IF NOT EXISTS speeches (
-    _pope_id INTEGER PRIMARY KEY,
+    _speech_id INTEGER PRIMARY KEY,
     pope_name TEXT,
     section TEXT,
     year TEXT,
@@ -64,7 +64,7 @@ def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA)
     finally:
         conn.close()
 
-def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: bool = False) -> (int, int):
+def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: bool = False) -> Tuple[int, int]:
     """
     Add a speech record (dict) to the SQLite DB. Creates DB if needed.
     Update the popes database if needed.
@@ -141,11 +141,10 @@ def main() -> None:
     Instead, the code above should be run as part of the overall scraping pipeline, as in step06_run_scraping_pipeline.py.
     """
 
-    p = scraper_parser()
-    args = p.parse_args()
-
+    p, args = get_scraper_args()
+        
     _, rows = fetch_speeches_to_feather(
-        pope=args.pope[0],
+        pope=args.pope,
         years_spec=args.years,
         lang=args.lang,
         section=args.section,

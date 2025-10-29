@@ -9,13 +9,13 @@ import sys
 import time
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
 
-from vatican_scraper.argparser import scraper_parser
+from vatican_scraper.argparser import get_scraper_args
 
 try:
     import pandas as pd
@@ -224,7 +224,7 @@ def fetch_speeches_to_feather(
     debug_loc: bool = False,
     max_n_speeches: int = None,
     save_to_file: bool = False,
-) -> (Path, dict):
+) -> Tuple[Optional[Path], List[Dict[str, Optional[str]]]]:
     want_lang = lang.strip().upper()
     if not (len(want_lang) == 2 and want_lang.isalpha()):
         raise SystemExit(f"Bad --lang value: {lang}")
@@ -338,9 +338,9 @@ def fetch_speeches_to_feather(
 
 
 def main() -> None:
-    p = scraper_parser()
-    args = p.parse_args()
+    p, args = get_scraper_args()
 
+    # note that this will only take the first pope, since pope is now a list
     fetch_speeches_to_feather(
         pope=args.pope,
         years_spec=args.years,
