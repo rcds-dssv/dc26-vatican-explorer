@@ -215,6 +215,8 @@ def make_speech_id(pope_slug: str, section: str, date_text: Optional[str], title
     short = hashlib.sha1(url.encode("utf-8")).hexdigest()[:8]
     return f"{pope_slug}-{section}-{ymd}-{title_slug}-{short}"
 
+
+
 def fetch_speeches_to_feather(
     pope: str,
     years_spec: str,
@@ -225,6 +227,10 @@ def fetch_speeches_to_feather(
     max_n_speeches: int = None,
     save_to_file: bool = False,
 ) -> Tuple[Optional[Path], List[Dict[str, Optional[str]]]]:
+    
+    # Import here to avoid circular import
+    from vatican_scraper.step05_add_to_database import speech_url_exists_in_db, _DB_PATH
+
     want_lang = lang.strip().upper()
     if not (len(want_lang) == 2 and want_lang.isalpha()):
         raise SystemExit(f"Bad --lang value: {lang}")
@@ -267,8 +273,13 @@ def fetch_speeches_to_feather(
             if (si >= max_n_speeches):
                 break
     
-            print(f"Fetching speech from : {s['url']}")
             base_url = s["url"]
+            if speech_url_exists_in_db(_DB_PATH, base_url):
+                print(f"[skip] Speech already in database (by url): {base_url}")
+                continue
+
+            print(f"Fetching speech from : {base_url}")
+
             base_html = fetch_html(base_url)
             final_url = base_url
             final_html = base_html
