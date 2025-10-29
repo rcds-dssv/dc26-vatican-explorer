@@ -1,6 +1,6 @@
 # contain the arguments that are expected for the scraping step
 import argparse
-from typing import List
+from typing import List, Tuple
 
 def scraper_parser():
 
@@ -51,7 +51,17 @@ def _gather_popes(args) -> List[str]:
             uniq.append(p)
     return uniq
 
-def get_scraper_args():
+def get_scraper_args() -> Tuple[argparse.ArgumentParser, argparse.Namespace]:
+    """
+    Parse command-line arguments for the Vatican scraper.
+    Returns:
+        tuple: (ArgumentParser, Namespace) where Namespace contains parsed arguments.
+    Purpose:
+        - Parses arguments for scraping Vatican speeches, including pope(s), years, section, language, etc.
+        - Ensures that the 'pope' argument is always a non-empty list; if not provided, defaults to ['Francis'].
+        - Handles both --pope (repeatable) and --popes (comma-separated) arguments.
+    """
+
 
     p = scraper_parser()
     args = p.parse_args()
