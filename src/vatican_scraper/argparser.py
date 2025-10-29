@@ -8,7 +8,7 @@ def scraper_parser():
     )
 
     # You can repeat --pope or use --popes (comma-separated)
-    p.add_argument("--pope", default=["Francis"], action="append", help='Repeatable. e.g., --pope "Francis" --pope "Benedict XVI"')
+    p.add_argument("--pope", default=None, action="append", help='Repeatable. e.g., --pope "Francis" --pope "Benedict XVI". Default: Francis if not specified.')
     p.add_argument("--popes", help='Comma-separated list. e.g., "Francis,Benedict XVI,John Paul II"')
 
     p.add_argument("--years", default="2025", help='e.g., "2020", "2019,2021-2023", "2021-2023"')
