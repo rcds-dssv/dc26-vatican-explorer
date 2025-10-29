@@ -1,7 +1,6 @@
 # src/vatican_scraper/step04_fetch_speech_texts.py
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import random
@@ -15,6 +14,8 @@ from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
+
+from vatican_scraper.argparser import scraper_parser
 
 try:
     import pandas as pd
@@ -221,7 +222,9 @@ def fetch_speeches_to_feather(
     section: str = "angelus",
     out: Optional[str] = None,
     debug_loc: bool = False,
-) -> Path:
+    max_n_speeches: int = None,
+    save_to_file: bool = False,
+) -> (Path, dict):
     want_lang = lang.strip().upper()
     if not (len(want_lang) == 2 and want_lang.isalpha()):
         raise SystemExit(f"Bad --lang value: {lang}")
@@ -258,7 +261,13 @@ def fetch_speeches_to_feather(
         speeches = extract_speeches_from_year_index(idx_html, idx_url, rec["slug"], section)
         if not speeches:
             continue
-        for s in speeches:
+        if (max_n_speeches is None):
+            max_n_speeches = len(speeches)
+        for si, s in enumerate(speeches):
+            if (si >= max_n_speeches):
+                break
+    
+            print(f"Fetching speech from : {s['url']}")
             base_url = s["url"]
             base_html = fetch_html(base_url)
             final_url = base_url
@@ -296,38 +305,40 @@ def fetch_speeches_to_feather(
                 "text": text_value,
             })
 
+
+
     if not rows:
         raise SystemExit("No speeches collected for the given filters.")
 
-    df = pd.DataFrame.from_records(rows)
-    base_dir = _PKG_DIR / "scrape_result"
-    base_dir.mkdir(parents=True, exist_ok=True)
+    out_path = None
+    if (save_to_file):
+        df = pd.DataFrame.from_records(rows)
 
-    if out:
-        out_path = base_dir / Path(out).name
-    else:
-        years_sorted = sorted(int(y["year"]) for y in year_rows)
-        yr_span = f"{years_sorted[0]}-{years_sorted[-1]}" if len(set(years_sorted)) > 1 else f"{years_sorted[0]}"
-        out_path = base_dir / f"speeches_{rec['slug']}_{section}_{want_lang}_{yr_span}.feather"
+        base_dir = _PKG_DIR / "scrape_result"
+        print(base_dir)
+        base_dir.mkdir(parents=True, exist_ok=True)
 
-    try:
-        df.to_feather(out_path)
-    except Exception as e:
-        if "pyarrow" in str(e).lower():
-            raise SystemExit("Writing Feather requires pyarrow. Install with: pip install pyarrow") from e
-        raise
+        if out:
+            out_path = base_dir / Path(out).name
+        else:
+            years_sorted = sorted(int(y["year"]) for y in year_rows)
+            yr_span = f"{years_sorted[0]}-{years_sorted[-1]}" if len(set(years_sorted)) > 1 else f"{years_sorted[0]}"
+            out_path = base_dir / f"speeches_{rec['slug']}_{section}_{want_lang}_{yr_span}.feather"
 
-    print(f"Wrote {len(df):,} rows to {out_path}")
-    return out_path
+        try:
+            df.to_feather(out_path)
+        except Exception as e:
+            if "pyarrow" in str(e).lower():
+                raise SystemExit("Writing Feather requires pyarrow. Install with: pip install pyarrow") from e
+            raise
+
+        print(f"Wrote {len(df):,} rows to {out_path}")
+
+    return out_path, rows
+
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Fetch Vatican speech texts for a pope and years; write a Feather dataset.")
-    p.add_argument("--pope", required=True)
-    p.add_argument("--years", required=True)
-    p.add_argument("--section", default="angelus", help="e.g., angelus, audiences, speeches")
-    p.add_argument("--lang", default="EN", help="Two-letter language code (e.g., EN, FR, ES). Default: EN.")
-    p.add_argument("--out", default=None, help="Output filename (saved under vatican_scraper/scrape_result/).")
-    p.add_argument("--debug-loc", action="store_true")
+    p = scraper_parser()
     args = p.parse_args()
 
     fetch_speeches_to_feather(
