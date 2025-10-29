@@ -144,7 +144,7 @@ def main() -> None:
     p, args = get_scraper_args()
         
     _, rows = fetch_speeches_to_feather(
-        pope=args.pope[0],
+        pope=args.pope,
         years_spec=args.years,
         lang=args.lang,
         section=args.section,

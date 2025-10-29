@@ -340,7 +340,7 @@ def fetch_speeches_to_feather(
 def main() -> None:
     p, args = get_scraper_args()
 
-
+    # note that this will only take the first pope, since pope is now a list
     fetch_speeches_to_feather(
         pope=args.pope,
         years_spec=args.years,

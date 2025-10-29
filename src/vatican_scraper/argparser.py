@@ -1,5 +1,6 @@
 # contain the arguments that are expected for the scraping step
 import argparse
+from typing import List
 
 def scraper_parser():
 
@@ -26,16 +27,38 @@ def scraper_parser():
 
     return p
 
+
+def _gather_popes(args) -> List[str]:
+
+    popes: List[str] = []
+
+    # Ensure args.pope is a non-empty list; assign default if necessary
+    # and handle repeated flags: --pope "Francis" --pope "Benedict XVI"
+    if args.pope:  
+        popes.extend(args.pope)
+    if not popes or not isinstance(popes, list) or len(popes) == 0:
+        popes = ["Francis"]
+
+    if args.popes:  # comma-separated: --popes "Francis,Benedict XVI,John Paul II"
+        popes.extend([p.strip() for p in args.popes.split(",") if p.strip()])
+
+    # de-dup while preserving order
+    seen = set()
+    uniq = []
+    for p in popes:
+        if p not in seen:
+            seen.add(p)
+            uniq.append(p)
+    return uniq
+
 def get_scraper_args():
 
     p = scraper_parser()
     args = p.parse_args()
+    popes = _gather_popes(args)
+    args.popes = popes
 
-    # Ensure args.pope is a non-empty list; assign default if necessary
-    pope_list = getattr(args, "pope", None)
-    if not pope_list or not isinstance(pope_list, list) or len(pope_list) == 0:
-        pope_list = ["Francis"]
-
-    args.pope = pope_list
+    # only return the first pope here if a list is given
+    args.pope = popes[0]
 
     return (p, args)

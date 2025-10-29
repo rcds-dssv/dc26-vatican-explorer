@@ -14,24 +14,11 @@ _PKG_DIR = Path(__file__).resolve().parent  # .../src/vatican_scraper
 _DB_PATH = _PKG_DIR / ".." / "data" / "vatican_speeches.db"
 
 
-def _gather_popes(args) -> List[str]:
-    popes: List[str] = []
-    if args.pope:   # repeated flags: --pope "Francis" --pope "Benedict XVI"
-        popes.extend(args.pope)
-    if args.popes:  # comma-separated: --popes "Francis,Benedict XVI,John Paul II"
-        popes.extend([p.strip() for p in args.popes.split(",") if p.strip()])
-    # de-dup while preserving order
-    seen = set()
-    uniq = []
-    for p in popes:
-        if p not in seen:
-            seen.add(p)
-            uniq.append(p)
-    return uniq
 
 def main() -> None:
     p, args = get_scraper_args()
-    popes = _gather_popes(args)
+    popes = args.popes
+    
 
     if not popes:
         p.error("Provide at least one pope via --pope (repeatable) or --popes (comma-separated).")
