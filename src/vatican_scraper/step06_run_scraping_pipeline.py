@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 from typing import List, Tuple
 
-from vatican_scraper.argparser import scraper_parser
+from vatican_scraper.argparser import get_scraper_args
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 from vatican_scraper.step05_add_to_database import add_speech_to_db
 
@@ -30,8 +30,7 @@ def _gather_popes(args) -> List[str]:
     return uniq
 
 def main() -> None:
-    p = scraper_parser()
-    args = p.parse_args()
+    p, args = get_scraper_args()
     popes = _gather_popes(args)
 
     if not popes:

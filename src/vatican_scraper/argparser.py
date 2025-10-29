@@ -26,3 +26,16 @@ def scraper_parser():
 
     return p
 
+def get_scraper_args():
+
+    p = scraper_parser()
+    args = p.parse_args()
+
+    # Ensure args.pope is a non-empty list; assign default if necessary
+    pope_list = getattr(args, "pope", None)
+    if not pope_list or not isinstance(pope_list, list) or len(pope_list) == 0:
+        pope_list = ["Francis"]
+
+    args.pope = pope_list
+
+    return (p, args)

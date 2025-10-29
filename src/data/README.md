@@ -6,7 +6,7 @@ This database has the following format :
 DEFAULT_TABLE_SCHEMA = """
 
 CREATE TABLE IF NOT EXISTS popes (
-    _speech_id INTEGER PRIMARY KEY,
+    _pope_id INTEGER PRIMARY KEY,
     pope_name TEXT,
     pope_slug TEXT,
     pope_number TEXT,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS popes (
 );
 
 CREATE TABLE IF NOT EXISTS speeches (
-    _pope_id INTEGER PRIMARY KEY,
+    _speech_id INTEGER PRIMARY KEY,
     pope_name TEXT,
     section TEXT,
     year TEXT,
