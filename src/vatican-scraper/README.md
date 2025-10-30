@@ -1,1 +1,0 @@
-This directory contains code for scraping the Vatican website.
