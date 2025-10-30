@@ -34,3 +34,10 @@ CREATE TABLE IF NOT EXISTS speeches (
 );
 """
 ```
+
+I also included an example python file to test reading from the database.  You can run this from the `src` directory with:
+
+```
+python -m data.database_reader_example
+
+```
