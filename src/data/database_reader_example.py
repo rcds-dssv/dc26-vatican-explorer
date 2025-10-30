@@ -3,8 +3,8 @@
 import pandas as pd
 from pathlib import Path
 import sqlite3
+from vatican_scraper.config import _DB_PATH
 
-_DB_PATH = Path(__file__).resolve().parent / "vatican_speeches.db"
 
 
 def connect_to_database():

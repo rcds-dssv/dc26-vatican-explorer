@@ -10,12 +10,12 @@ import random
 import requests
 from bs4 import BeautifulSoup
 
+from vatican_scraper.config import _BASE
+
 from vatican_scraper.step01_list_popes import (
     vatican_fetch_pope_directory_recent,
     papal_find_by_display_name,
 )
-
-BASE = "https://www.vatican.va/"
 
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
@@ -115,7 +115,7 @@ def extract_year_links_from_main(html: str, pope_slug: str, years: Set[int], sec
         year = int(year_str)
         if year not in years:
             continue
-        abs_url = urljoin(BASE, href)
+        abs_url = urljoin(_BASE, href)
         if year not in found:
             found[year] = abs_url
     return [{"year": str(y), "url": found[y]} for y in sorted(found)]
