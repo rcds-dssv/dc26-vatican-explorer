@@ -8,14 +8,9 @@ def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     """
     
     try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT 1 FROM speeches WHERE url = ? LIMIT 1",
-            (url,)
-        )
-        check = cur.fetchone() is not None
-        conn.close()
-        return check
-    except:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT 1 FROM speeches WHERE url = ? LIMIT 1", (url,))
+            return cur.fetchone() is not None
+    except Exception:
         return False
