@@ -6,6 +6,7 @@
 
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 from vatican_scraper.argparser import get_scraper_args
+from vatican_scraper.config import _DB_PATH
 
 import sqlite3
 from datetime import datetime, timezone
@@ -43,27 +44,6 @@ CREATE TABLE IF NOT EXISTS speeches (
 );
 """
 
-_PKG_DIR = Path(__file__).resolve().parent  # .../src/vatican_scraper
-_DB_PATH = _PKG_DIR / ".." / "data" / "vatican_speeches.db"
-
-def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
-    """
-    Check if a speech with the given URL exists in the database.
-    """
-    
-    try:
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT 1 FROM speeches WHERE url = ? LIMIT 1",
-            (url,)
-        )
-        check = cur.fetchone() is not None
-        conn.close()
-        return check
-    except:
-        return False
-    
 
 def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA) -> None:
     """

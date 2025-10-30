@@ -7,12 +7,12 @@ import re
 from typing import List, Dict, Optional
 from urllib.parse import urljoin, urlparse
 
+from vatican_scraper.config import _BASE, _POPE_INDEX_RECENT_URL
 
 import requests
 from bs4 import BeautifulSoup
 
-POPE_INDEX_RECENT_URL = "https://www.vatican.va/holy_father/index.htm"
-BASE = "https://www.vatican.va/"
+
 
 # -------------------- tiny courtesy pause --------------------
 
@@ -101,7 +101,7 @@ def _papal_collect_english_content_links(soup: BeautifulSoup) -> List[Dict[str, 
         if not _looks_like_pope_display(name):
             continue  # filter out ROMAN CURIA and other non-papal entries
 
-        url = urljoin(BASE, href)
+        url = urljoin(_BASE, href)
         slug = papal_extract_slug_from_content_url(url)
         if not slug:
             continue
@@ -125,7 +125,7 @@ def vatican_fetch_pope_directory_recent() -> List[Dict[str, str]]:
     (e.g., https://www.vatican.va/content/francesco/en.html).
     """
     _papal_pause()
-    r = requests.get(POPE_INDEX_RECENT_URL, timeout=30)
+    r = requests.get(_POPE_INDEX_RECENT_URL, timeout=30)
     r.raise_for_status()
     _papal_pause()
 
