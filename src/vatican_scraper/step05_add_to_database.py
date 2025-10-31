@@ -6,6 +6,7 @@
 
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 from vatican_scraper.argparser import get_scraper_args
+from vatican_scraper.config import _DB_PATH
 
 import sqlite3
 from datetime import datetime, timezone
@@ -43,8 +44,6 @@ CREATE TABLE IF NOT EXISTS speeches (
 );
 """
 
-_PKG_DIR = Path(__file__).resolve().parent  # .../src/vatican_scraper
-_DB_PATH = _PKG_DIR / ".." / "data" / "vatican_speeches.db"
 
 def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA) -> None:
     """

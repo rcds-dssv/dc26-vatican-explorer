@@ -20,8 +20,6 @@ from vatican_scraper.step02_list_pope_year_links import (
     _sanitize_section,  # reuse validation
 )
 
-BASE = "https://www.vatican.va/"
-
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
 

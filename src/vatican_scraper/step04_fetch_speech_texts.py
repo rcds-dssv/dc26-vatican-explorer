@@ -16,14 +16,15 @@ import requests
 from bs4 import BeautifulSoup, NavigableString
 
 from vatican_scraper.argparser import get_scraper_args
+from vatican_scraper.config import _PKG_DIR, _DB_PATH
+from vatican_scraper.db_utils import speech_url_exists_in_db
 
 try:
     import pandas as pd
 except ImportError as e:
     raise SystemExit("pandas is required. Install with: pip install pandas pyarrow") from e
 
-BASE = "https://www.vatican.va/"
-_PKG_DIR = Path(__file__).resolve().parent  # .../src/vatican_scraper
+
 
 from vatican_scraper.step01_list_popes import (
     vatican_fetch_pope_directory_recent,
@@ -215,6 +216,8 @@ def make_speech_id(pope_slug: str, section: str, date_text: Optional[str], title
     short = hashlib.sha1(url.encode("utf-8")).hexdigest()[:8]
     return f"{pope_slug}-{section}-{ymd}-{title_slug}-{short}"
 
+
+
 def fetch_speeches_to_feather(
     pope: str,
     years_spec: str,
@@ -225,6 +228,7 @@ def fetch_speeches_to_feather(
     max_n_speeches: int = None,
     save_to_file: bool = False,
 ) -> Tuple[Optional[Path], List[Dict[str, Optional[str]]]]:
+
     want_lang = lang.strip().upper()
     if not (len(want_lang) == 2 and want_lang.isalpha()):
         raise SystemExit(f"Bad --lang value: {lang}")
@@ -267,8 +271,13 @@ def fetch_speeches_to_feather(
             if (si >= max_n_speeches):
                 break
     
-            print(f"Fetching speech from : {s['url']}")
             base_url = s["url"]
+            if speech_url_exists_in_db(_DB_PATH, base_url):
+                print(f"[skip] Speech already in database (by url): {base_url}")
+                continue
+
+            print(f"Fetching speech from : {base_url}")
+
             base_html = fetch_html(base_url)
             final_url = base_url
             final_html = base_html
