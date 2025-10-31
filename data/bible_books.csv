@@ -1,0 +1,74 @@
+book,group,testament
+Genesis,Pentateuch,old
+Exodus,Pentateuch,old
+Leviticus,Pentateuch,old
+Numbers,Pentateuch,old
+Deuteronomy,Pentateuch,old
+Joshua,Historical,old
+Judges,Historical,old
+Ruth,Historical,old
+1 Samuel,Historical,old
+2 Samuel,Historical,old
+1 Kings,Historical,old
+2 Kings,Historical,old
+1 Chronicles,Historical,old
+2 Chronicles,Historical,old
+Ezra,Historical,old
+Nehemiah,Historical,old
+Tobit,Historical,old
+Judith,Historical,old
+Esther,Historical,old
+1 Maccabees,Historical,old
+2 Maccabees,Historical,old
+Job,Poetic,old
+Pslams,Poetic,old
+Proverbs,Poetic,old
+Ecclesiastes,Poetic,old
+Song of Songs,Poetic,old
+Wisdom of Solomon,Poetic,old
+Sirach,Poetic,old
+Isaiah,Prophetic,old
+Jeremiah,Prophetic,old
+Lamentations,Prophetic,old
+Baruch,Prophetic,old
+Ezekiel,Prophetic,old
+Daniel,Prophetic,old
+Hosea,Prophetic,old
+Joel,Prophetic,old
+Amos,Prophetic,old
+Obadiah,Prophetic,old
+Jonah,Prophetic,old
+Micah,Prophetic,old
+Nahum,Prophetic,old
+Habakkuk,Prophetic,old
+Zephaniah,Prophetic,old
+Haggai,Prophetic,old
+Zechariah,Prophetic,old
+Malachi,Prophetic,old
+Matthew,Gospel,new
+Mark,Gospel,new
+Luke,Gospel,new
+John,Gospel,new
+Acts,Historical,new
+Romans,Pauline,new
+1 Corinthians,Pauline,new
+2 Corinthians,Pauline,new
+Galatians,Pauline,new
+Ephesians,Pauline,new
+Philippians,Pauline,new
+Colossians,Pauline,new
+1 Thessalonians,Pauline,new
+2 Thessalonians,Pauline,new
+1 Timothy,Pauline,new
+2 Timothy,Pauline,new
+Titus,Pauline,new
+Philemon,Pauline,new
+Hebrews,Hebrews,new
+James,NP Epistles,new
+1 Peter,NP Epistles,new
+2 Peter,NP Epistles,new
+1 John,NP Epistles,new
+2 John,NP Epistles,new
+3 John,NP Epistles,new
+Jude,NP Epistles,new
+Apocalypse,Revelations,new
