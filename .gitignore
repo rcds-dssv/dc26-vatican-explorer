@@ -224,3 +224,4 @@ src/vatican_scraper/scrape_result/
 
 # data
 src/data/*.db
+data/*.db
