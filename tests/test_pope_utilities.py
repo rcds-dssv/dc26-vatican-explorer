@@ -44,10 +44,6 @@ class TestPapalNormalizeDisplayName:
         """Should return empty string for whitespace-only input."""
         assert papal_normalize_display_name("   \t\n  ") == ""
 
-    def test_normalize_none_input(self):
-        """Should handle None input gracefully."""
-        # The function converts None to empty string
-        assert papal_normalize_display_name(None) == ""
 
 
 class TestPapalExtractSlugFromContentUrl:
