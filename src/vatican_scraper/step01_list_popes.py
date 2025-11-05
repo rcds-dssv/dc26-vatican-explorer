@@ -7,7 +7,7 @@ import re
 from typing import List, Dict, Optional
 from urllib.parse import urljoin, urlparse
 
-from vatican_scraper.config import _BASE, _POPE_INDEX_RECENT_URL
+from config import _BASE, _POPE_INDEX_RECENT_URL
 
 import requests
 from bs4 import BeautifulSoup

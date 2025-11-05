@@ -3,7 +3,7 @@
 import pandas as pd
 from pathlib import Path
 import sqlite3
-from vatican_scraper.config import _DB_PATH
+from src.config import _DB_PATH
 
 
 

@@ -6,7 +6,7 @@
 
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 from vatican_scraper.argparser import get_scraper_args
-from vatican_scraper.config import _DB_PATH
+from config import _DB_PATH
 
 import sqlite3
 from datetime import datetime, timezone

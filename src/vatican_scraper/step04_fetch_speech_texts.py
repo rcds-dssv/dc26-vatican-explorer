@@ -16,8 +16,10 @@ import requests
 from bs4 import BeautifulSoup, NavigableString
 
 from vatican_scraper.argparser import get_scraper_args
-from vatican_scraper.config import _PKG_DIR, _DB_PATH
+from config import _PKG_DIR, _DB_PATH
 from vatican_scraper.db_utils import speech_url_exists_in_db
+
+_SCRAPER_DIR = _PKG_DIR / "vatican_scaper"
 
 try:
     import pandas as pd
@@ -323,7 +325,7 @@ def fetch_speeches_to_feather(
     if (save_to_file):
         df = pd.DataFrame.from_records(rows)
 
-        base_dir = _PKG_DIR / "scrape_result"
+        base_dir = _SCRAPER_DIR / "scrape_result"
         print(base_dir)
         base_dir.mkdir(parents=True, exist_ok=True)
 
