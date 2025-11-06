@@ -10,6 +10,7 @@ from src.config import _DB_PATH
 def connect_to_database():
     """ Connect to the database """
     conn = sqlite3.connect(_DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
     return conn, cursor
@@ -80,14 +81,14 @@ if __name__ == "__main__":
     print(df)
     print("")
 
-    # print the first speech as a pandas dataframe
-    df = get_first_n_rows_as_df(conn, "speeches", 10)
+    # print the first test as a pandas dataframe
+    df = get_first_n_rows_as_df(conn, "texts", 10)
     print(df)
     print("")
 
-    # get the first 10 speeches in the database, as a list
-    sp = get_first_n_entries_in_column(cursor, "speeches", "text", 10)
-    print("First 10 speeches:")
+    # get the first 10 texts in the database, as a list
+    sp = get_first_n_entries_in_column(cursor, "texts", "text_content", 10)
+    print("First 10 texts:")
     for s in sp:
         print(s)
         print("")

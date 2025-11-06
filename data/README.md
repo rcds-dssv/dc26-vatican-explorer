@@ -6,7 +6,7 @@ This folder serves as a repository for our data. Not all data is on GitHub, but 
 - `bible_books.csv`
 
 **Working Data**
-- (local) `vatican_speeches.db` (This is available by request, and can also be created using the `src/vatican_scraper` pipeline.)
+- (local) `vatican_texts.db` (This is available by request, and can also be created using the `src/vatican_scraper` pipeline.)
 
 
 This database has the following format :
@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS popes (
     UNIQUE(pope_name, pope_number)
 );
 
-CREATE TABLE IF NOT EXISTS speeches (
-    _speech_id INTEGER PRIMARY KEY,
-    pope_name TEXT,
+CREATE TABLE IF NOT EXISTS texts (
+    _texts_id INTEGER PRIMARY KEY,
+    pope_id INTEGER,
     section TEXT,
     year TEXT,
     date TEXT,
@@ -37,9 +37,12 @@ CREATE TABLE IF NOT EXISTS speeches (
     title TEXT,
     language TEXT,
     url TEXT,
-    text TEXT,
+    text_content TEXT,
     entry_creation_date TEXT,
-    UNIQUE(pope_name, title, date)
+    UNIQUE(pope_id, title, date),
+    FOREIGN KEY (pope_id) REFERENCES popes(_pope_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 """
 ```
