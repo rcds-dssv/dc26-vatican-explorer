@@ -10,7 +10,7 @@ import random
 import requests
 from bs4 import BeautifulSoup
 
-from vatican_scraper.config import _BASE
+from config import _BASE
 
 from vatican_scraper.step01_list_popes import (
     vatican_fetch_pope_directory_recent,
