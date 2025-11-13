@@ -134,7 +134,7 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
                 (pope_id, section, year, date, location, title, language, url, text_content, entry_creation_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        cur.execute(sql_text , (_pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
+        cur.execute(sql_text, (_pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
         conn.commit()
         _text_id = cur.lastrowid or 0
 
