@@ -1,7 +1,7 @@
 # Module with tests for search_biblical_citation.py
 
 import pytest
-from search.search_biblical_citation import search_biblical_citations
+from src.search.search_biblical_citation import search_biblical_citations
 
 # TODO: go through the Vatican's website to find more complex examples to test--e.g.: https://www.vatican.va/content/francesco/en/angelus/2025/documents/20250302-angelus.html
 
