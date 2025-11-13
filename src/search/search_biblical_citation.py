@@ -12,7 +12,7 @@ def search_biblical_citations(text: str, context: int=100, pattern: Optional[str
     Args:
         text: The input text to search for biblical citations.
         context: The number of characters to include before and after the citation for context.
-        pattern: The regex pattern to use for searching. If None, a default pattern is used.    
+        pattern: The regex pattern to use for searching. If None, a default pattern is used.
     
     Returns:
         list of tuples: Each tuple contains the found citation and its surrounding context.
