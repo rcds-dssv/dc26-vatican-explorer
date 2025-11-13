@@ -55,7 +55,6 @@ def main() -> None:
                     print("Inserted pope into database with id:", _pope_id)
                 else:
                     print("Pope record already exists (ignored).")
-                        
                 print("")
 
 
