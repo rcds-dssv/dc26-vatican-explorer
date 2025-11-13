@@ -1,13 +1,7 @@
 # Module with tests for search_biblical_citation.py
 
 import pytest
-
-# Doing this for now, but later we'll want to change to a package structure and add __init__.py (TODO)
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-
-from search_biblical_citation import search_biblical_citations
+from search.search_biblical_citation import search_biblical_citations
 
 # TODO: go through the Vatican's website to find more complex examples to test--e.g.: https://www.vatican.va/content/francesco/en/angelus/2025/documents/20250302-angelus.html
 
