@@ -120,13 +120,14 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
         """
         cur.execute(sql_pope, (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date))
         conn.commit()
-
+        _pope_id = cur.lastrowid or 0
+        
         # retrieve the pope_id (whether newly inserted or existing)
         cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
         row = cur.fetchone()
         if row is None:
             raise ValueError(f"Pope {pope_name} (#{pope_number}) not found in database.")
-        _pope_id = row[0]
+        pope_id = row[0]
 
         # update texts database
         sql_text = sql_starter + """
@@ -134,7 +135,7 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
                 (pope_id, section, year, date, location, title, language, url, text_content, entry_creation_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        cur.execute(sql_text, (_pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
+        cur.execute(sql_text, (pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
         conn.commit()
         _text_id = cur.lastrowid or 0
 
