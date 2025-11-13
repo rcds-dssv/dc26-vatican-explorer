@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS popes (
     UNIQUE(pope_name, pope_number)
 );
 
-CREATE TABLE IF NOT EXISTS speeches (
-    _speech_id INTEGER PRIMARY KEY,
-    pope_name TEXT,
+CREATE TABLE IF NOT EXISTS texts (
+    _texts_id INTEGER PRIMARY KEY,
+    pope_id INTEGER,
     section TEXT,
     year TEXT,
     date TEXT,
@@ -38,16 +38,19 @@ CREATE TABLE IF NOT EXISTS speeches (
     title TEXT,
     language TEXT,
     url TEXT,
-    text TEXT,
+    text_content TEXT,
     entry_creation_date TEXT,
-    UNIQUE(pope_name, title, date)
+    UNIQUE(pope_id, title, date),
+    FOREIGN KEY (pope_id) REFERENCES popes(_pope_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 """
 
 
 def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA) -> None:
     """
-    Create the sqlite file and the speeches table if they don't exist.
+    Create the sqlite database if it doesn't exist.
     
     Args:
         db_path: path to sqlite file (creates file if doesn't exist)
@@ -63,9 +66,9 @@ def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA)
     finally:
         conn.close()
 
-def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: bool = False) -> Tuple[int, int]:
+def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: bool = False) -> Tuple[int, int]:
     """
-    Add a speech record (dict) to the SQLite DB. Creates DB if needed.
+    Add a text record (dict) to the SQLite DB. Creates DB if needed.
     Update the popes database if needed.
 
     Args:
@@ -75,7 +78,7 @@ def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: b
                  If False, will IGNORE duplicates (default).
 
     Returns:
-        row id of inserted/updated (speech, pope), or 0 if ignored.
+        row id of inserted/updated (text, pope), or 0 if ignored.
     """
 
     ensure_db_and_table(db_path)
@@ -100,6 +103,7 @@ def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: b
 
 
     conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys = ON;")
     try:
         cur = conn.cursor()
         # IGNORE will skip insertion if UNIQUE constraint conflict occurs
@@ -108,35 +112,41 @@ def add_speech_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: b
             # REPLACE will delete the existing row with conflicting unique key and insert a new one
             sql_starter = "INSERT OR REPLACE INTO"
 
-        # update speeches database
-        sql_cmd = sql_starter + """
-        speeches
-            (pope_name, section, year, date, location, title, language, url, text, entry_creation_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """
-        cur.execute(sql_cmd, (pope_name, section, year, date, location, title, language, url, text, entry_creation_date))
-        conn.commit()
-        _speech_id = cur.lastrowid or 0
-
         # update pope database
-        sql_cmd = sql_starter + """
-        popes
-            (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        sql_pope = sql_starter + """
+            popes
+                (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
-        cur.execute(sql_cmd, (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date))
+        cur.execute(sql_pope, (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date))
         conn.commit()
         _pope_id = cur.lastrowid or 0
+        
+        # retrieve the pope_id (whether newly inserted or existing)
+        cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
+        row = cur.fetchone()
+        if row is None:
+            raise ValueError(f"Pope {pope_name} (#{pope_number}) not found in database.")
+        pope_id = row[0]
 
+        # update texts database
+        sql_text = sql_starter + """
+            texts
+                (pope_id, section, year, date, location, title, language, url, text_content, entry_creation_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        cur.execute(sql_text, (pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
+        conn.commit()
+        _text_id = cur.lastrowid or 0
 
         # If row was ignored, lastrowid will be 0; if replaced/inserted, lastrowid is the row id.
-        return _speech_id, _pope_id
+        return _text_id, _pope_id
     finally:
         conn.close()
 
 def main() -> None:
     """
-    Example of how to add a single speech to the database.  This is not intended to be run on its own.
+    Example of how to add a single text to the database.  This is not intended to be run on its own.
     Instead, the code above should be run as part of the overall scraping pipeline, as in step06_run_scraping_pipeline.py.
     """
 
@@ -155,16 +165,16 @@ def main() -> None:
 
     for row in rows:
         print(row["url"])
-        _speech_id, _pope_id = add_speech_to_db(_DB_PATH, row)
+        _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
-        if _speech_id:
-            print("Inserted speech into database with id:", _speech_id)
+        if _text_id:
+            print("Inserted text into database with id:", _text_id)
         else:
-            print("Speech already exists (ignored).")
+            print("Text record already exists (ignored).")
         if _pope_id:
             print("Inserted pope into database with id:", _pope_id)
         else:
-            print("Record already exists (ignored).")
+            print("Pope record already exists (ignored).")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 from vatican_scraper.argparser import get_scraper_args
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
-from vatican_scraper.step05_add_to_database import add_speech_to_db
+from vatican_scraper.step05_add_to_database import add_content_to_db
 from config import _DB_PATH
 
 
@@ -31,7 +31,7 @@ def main() -> None:
     for pope in popes:
 
         try:
-            print("======= Fetching speeches...")
+            print("======= Fetching content...")
             out_path, rows = fetch_speeches_to_feather(
                 pope=pope,
                 years_spec=args.years,
@@ -42,19 +42,19 @@ def main() -> None:
                 max_n_speeches=args.max_n_speeches
             )
 
-            print("\n======= Adding speeches to database ...")
+            print("\n======= Adding content to database ...")
             for row in rows:
                 print(row["url"])
-                _speech_id, _pope_id = add_speech_to_db(_DB_PATH, row)
+                _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
-                if _speech_id:
-                    print("Inserted speech into database with id:", _speech_id)
+                if _text_id:
+                    print("Inserted text into database with id:", _text_id)
                 else:
-                    print("Speech already exists (ignored).")
+                    print("Text record already exists (ignored).")
                 if _pope_id:
                     print("Inserted pope into database with id:", _pope_id)
                 else:
-                    print("Record already exists (ignored).")
+                    print("Pope record already exists (ignored).")
                 print("")
 
 

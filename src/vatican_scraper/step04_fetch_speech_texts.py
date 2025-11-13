@@ -275,10 +275,10 @@ def fetch_speeches_to_feather(
     
             base_url = s["url"]
             if speech_url_exists_in_db(_DB_PATH, base_url):
-                print(f"[skip] Speech already in database (by url): {base_url}")
+                print(f"[skip] Content already in database (by url): {base_url}")
                 continue
 
-            print(f"Fetching speech from : {base_url}")
+            print(f"Fetching content from : {base_url}")
 
             base_html = fetch_html(base_url)
             final_url = base_url
