@@ -129,7 +129,7 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
         _pope_id = row[0]
 
         # update texts database
-        sql_text  = sql_starter + """
+        sql_text = sql_starter + """
             texts
                 (pope_id, section, year, date, location, title, language, url, text_content, entry_creation_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
