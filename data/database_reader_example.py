@@ -81,7 +81,7 @@ if __name__ == "__main__":
     print(df)
     print("")
 
-    # print the first test as a pandas dataframe
+    # print the first text as a pandas dataframe
     df = get_first_n_rows_as_df(conn, "texts", 10)
     print(df)
     print("")
