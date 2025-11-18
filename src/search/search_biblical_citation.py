@@ -2,11 +2,10 @@
 
 ######################################### IMPORT LIBRARIES #########################################
 import re
-from typing import List, Tuple, Optional
 
 ######################################### DEFINE FUNCTIONS #########################################
 
-def search_biblical_citations(text: str, context: int=100, pattern: Optional[str] = None) -> List[Tuple[str, str]]:
+def search_biblical_citations(text: str, context: int=100, pattern: str | None = None) -> list[tuple[str, str]]:
     """Function to search for biblical citations in a given text.
 
     Args:
