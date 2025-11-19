@@ -2,19 +2,18 @@
 
 ######################################### IMPORT LIBRARIES #########################################
 import re
-from typing import List, Tuple, Optional
 
 ######################################### DEFINE FUNCTIONS #########################################
 
-def search_biblical_citations(text: str, context: int=100, pattern: Optional[str] = None) -> List[Tuple[str, str]]:
-    """
-    Function to search for biblical citations in a given text.
+def search_biblical_citations(text: str, context: int=100, pattern: str | None = None) -> list[tuple[str, str]]:
+    """Function to search for biblical citations in a given text.
 
-    Inputs:
-        text (str): The input text to search for biblical citations.
-        context (int, optional): The number of characters to include before and after the citation for context.
-        pattern (str, optional): The regex pattern to use for searching. If None, a default pattern is used.    
-    Outputs:
+    Args:
+        text: The input text to search for biblical citations.
+        context: The number of characters to include before and after the citation for context.
+        pattern: The regex pattern to use for searching. If None, a default pattern is used.
+    
+    Returns:
         list of tuples: Each tuple contains the found citation and its surrounding context.
     """
     # Check that the input text is a string
