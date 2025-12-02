@@ -23,5 +23,9 @@ def test_connect_to_database_returns_connection_and_cursor(tmp_path, monkeypatch
 
         # Database file is created
         assert test_db_path.exists()
+
+        # Foreign key enforcement is actually enabled
+        fk_status = cursor.execute("PRAGMA foreign_keys;").fetchone()[0]
+        assert fk_status == 1, "Foreign key enforcement should be enabled."
     finally:
         conn.close()
