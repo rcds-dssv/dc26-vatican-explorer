@@ -7,8 +7,6 @@ from sqlite3 import Connection, Cursor
 
 from src.config import _DB_PATH
 
-from typing import Any
-
 ################################## DEFINE FUNCTIONS ##################################
 
 def connect_to_database() -> tuple[Connection, Cursor]:
