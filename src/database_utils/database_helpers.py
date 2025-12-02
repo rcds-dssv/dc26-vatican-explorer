@@ -17,6 +17,6 @@ def connect_to_database() -> tuple[Connection, Cursor]:
         connection and a cursor with foreign key enforcement enabled.
     """
     conn: Connection = sqlite3.connect(_DB_PATH)
-    conn.execute("PRAGMA foreign_keys = ON;")
     cursor: Cursor = conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON;")
     return conn, cursor
