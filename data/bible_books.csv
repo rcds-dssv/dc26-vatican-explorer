@@ -1,74 +1,74 @@
-book,group,testament
-Genesis,Pentateuch,old
-Exodus,Pentateuch,old
-Leviticus,Pentateuch,old
-Numbers,Pentateuch,old
-Deuteronomy,Pentateuch,old
-Joshua,Historical,old
-Judges,Historical,old
-Ruth,Historical,old
-1 Samuel,Historical,old
-2 Samuel,Historical,old
-1 Kings,Historical,old
-2 Kings,Historical,old
-1 Chronicles,Historical,old
-2 Chronicles,Historical,old
-Ezra,Historical,old
-Nehemiah,Historical,old
-Tobit,Historical,old
-Judith,Historical,old
-Esther,Historical,old
-1 Maccabees,Historical,old
-2 Maccabees,Historical,old
-Job,Poetic,old
-Pslams,Poetic,old
-Proverbs,Poetic,old
-Ecclesiastes,Poetic,old
-Song of Songs,Poetic,old
-Wisdom of Solomon,Poetic,old
-Sirach,Poetic,old
-Isaiah,Prophetic,old
-Jeremiah,Prophetic,old
-Lamentations,Prophetic,old
-Baruch,Prophetic,old
-Ezekiel,Prophetic,old
-Daniel,Prophetic,old
-Hosea,Prophetic,old
-Joel,Prophetic,old
-Amos,Prophetic,old
-Obadiah,Prophetic,old
-Jonah,Prophetic,old
-Micah,Prophetic,old
-Nahum,Prophetic,old
-Habakkuk,Prophetic,old
-Zephaniah,Prophetic,old
-Haggai,Prophetic,old
-Zechariah,Prophetic,old
-Malachi,Prophetic,old
-Matthew,Gospel,new
-Mark,Gospel,new
-Luke,Gospel,new
-John,Gospel,new
-Acts,Historical,new
-Romans,Pauline,new
-1 Corinthians,Pauline,new
-2 Corinthians,Pauline,new
-Galatians,Pauline,new
-Ephesians,Pauline,new
-Philippians,Pauline,new
-Colossians,Pauline,new
-1 Thessalonians,Pauline,new
-2 Thessalonians,Pauline,new
-1 Timothy,Pauline,new
-2 Timothy,Pauline,new
-Titus,Pauline,new
-Philemon,Pauline,new
-Hebrews,Hebrews,new
-James,NP Epistles,new
-1 Peter,NP Epistles,new
-2 Peter,NP Epistles,new
-1 John,NP Epistles,new
-2 John,NP Epistles,new
-3 John,NP Epistles,new
-Jude,NP Epistles,new
-Apocalypse,Revelations,new
+book,group,testament,abbreviations
+Genesis,Pentateuch,old,Gen
+Exodus,Pentateuch,old,"Ex., Exo., Exod."
+Leviticus,Pentateuch,old,"Lev., Le., Lv."
+Numbers,Pentateuch,old,"Num., Nu., Nb., Nm."
+Deuteronomy,Pentateuch,old,"Deut., De., Dt."
+Joshua,Historical,old,"Josh., Jos., Jsh."
+Judges,Historical,old,"Judg., Jdg., Jg., Jdgs."
+Ruth,Historical,old,"Ruth., Rth., Ru."
+1 Samuel,Historical,old,1 Sam
+2 Samuel,Historical,old,2 Sam
+1 Kings,Historical,old,1 Kings
+2 Kings,Historical,old,2 Kings
+1 Chronicles,Historical,old,1 Chron
+2 Chronicles,Historical,old,2 Chron
+Ezra,Historical,old,Ezr
+Nehemiah,Historical,old,"Neh, Ne"
+Tobit,Historical,old,"Tob, Tb"
+Judith,Historical,old,"Jdt, Jth"
+Esther,Historical,old,"Esth,Est, Es"
+1 Maccabees,Historical,old,"1 Macc, 1Mc, 1Ma"
+2 Maccabees,Historical,old,"2 Macc, 2Mc, 2Ma"
+Job,Poetic,old,"Job, Jb"
+Pslams,Poetic,old,"Ps, Pss"
+Proverbs,Poetic,old,"Prov, Prv, Pr"
+Ecclesiastes,Poetic,old,"Eccl, Eccles, Ec"
+Song of Songs,Poetic,old,"Song, SS, So, Sg"
+Wisdom of Solomon,Poetic,old,"Wis, Ws"
+Sirach,Poetic,old,Sir
+Isaiah,Prophetic,old,"Isa, Is"
+Jeremiah,Prophetic,old,"Jer, Je"
+Lamentations,Prophetic,old,"Lam, La"
+Baruch,Prophetic,old,"Bar, Ba"
+Ezekiel,Prophetic,old,"Ezek, Ezk, Ez"
+Daniel,Prophetic,old,"Dan, Dn, Da"
+Hosea,Prophetic,old,"Hos, Ho"
+Joel,Prophetic,old,"Joel, Joe, Jl"
+Amos,Prophetic,old,"Amos, Am"
+Obadiah,Prophetic,old,"Obad, Ob"
+Jonah,Prophetic,old,"Jonah, Jon"
+Micah,Prophetic,old,"Mic, Mi"
+Nahum,Prophetic,old,"Nah, Na"
+Habakkuk,Prophetic,old,"Hab, Hb"
+Zephaniah,Prophetic,old,"Zeph, Zep"
+Haggai,Prophetic,old,"Hag, Hg"
+Zechariah,Prophetic,old,"Zech, Zec"
+Malachi,Prophetic,old,"Mal, Ml"
+Matthew,Gospel,new,Mt
+Mark,Gospel,new,Mk
+Luke,Gospel,new,Lk
+John,Gospel,new,Jn
+Acts,Historical,new,Acts
+Romans,Pauline,new,Rom
+1 Corinthians,Pauline,new,1 Cor
+2 Corinthians,Pauline,new,2 Cor
+Galatians,Pauline,new,Gal
+Ephesians,Pauline,new,Eph
+Philippians,Pauline,new,Phil
+Colossians,Pauline,new,Col
+1 Thessalonians,Pauline,new,1 Thess
+2 Thessalonians,Pauline,new,2 Thess
+1 Timothy,Pauline,new,1 Tim
+2 Timothy,Pauline,new,2 Tim
+Titus,Pauline,new,Titus
+Philemon,Pauline,new,"Phlm, Philem, Phm"
+Hebrews,Hebrews,new,Heb
+James,NP Epistles,new,"Jas, Ja"
+1 Peter,NP Epistles,new,1 Pet
+2 Peter,NP Epistles,new,2 Pet
+1 John,NP Epistles,new,1 Jn
+2 John,NP Epistles,new,2 Jn
+3 John,NP Epistles,new,3 Jn
+Jude,NP Epistles,new,"Jude, Ju"
+Apocalypse,Revelations,new,Rev
