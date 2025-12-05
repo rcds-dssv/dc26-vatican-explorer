@@ -1,0 +1,1 @@
+Directory to place resources for later use, agreements, protocols, links, etc.
