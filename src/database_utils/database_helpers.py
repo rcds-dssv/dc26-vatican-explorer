@@ -46,7 +46,7 @@ def get_column_names_in_table(cursor: Cursor, table_name: str) -> list[str]:
     Returns:
         list[str]: A list of column names in the specified table.
     """
-    safe_table = table_name.replace('"', '""')
+    safe_table = sanitize_table_name(table_name)
     cursor.execute(f'PRAGMA table_info("{safe_table}")')  
     columns = cursor.fetchall()
     return [c[1] for c in columns]
@@ -106,7 +106,7 @@ def column_exists_in_table(cursor: Cursor, table_name: str, column_name: str) ->
     Returns:
         bool: True if the column exists in the table, False otherwise.
     """
-    safe_table = table_name.replace('"', '""')
+    safe_table = sanitize_table_name(table_name)
     cursor.execute(f'PRAGMA table_info("{safe_table}")')
     columns = cursor.fetchall()
     return any(col[1] == column_name for col in columns)
@@ -160,3 +160,7 @@ def fetch_rows_by_regexp(
     """
     cursor.execute(query, (pattern,))
     return cursor.fetchall()
+
+def sanitize_table_name(table_name: str) -> str:
+    """Sanitize a table name for safe use in SQL statements."""
+    return table_name.replace('"', '""')
