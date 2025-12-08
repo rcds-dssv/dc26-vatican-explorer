@@ -14,7 +14,8 @@ from src.database_utils.database_helpers import (
     table_exists,
     column_exists_in_table,
     check_texts_table_schema,
-    fetch_rows_by_regexp
+    fetch_rows_by_regexp,
+    sanitize_table_name
 )
 
 #########################################
@@ -398,3 +399,30 @@ def test_fetch_rows_by_regexp_handles_multiple_column_selection():
         ]
     finally:
         conn.close()
+
+#########################################
+# sanitize_table_name
+#########################################
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("users", "users"),                         # no quotes
+        ('user"s', 'user""s'),                     # single quote
+        ('"users"', '""users""'),                 # quotes at both ends
+        ('user"name"with"quotes', 'user""name""with""quotes'),  # multiple quotes
+        ("", ""),                                  # empty string
+    ],
+)
+def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> None:
+    """
+    Verify that `sanitize_table_name` safely escapes double-quote characters.
+
+    SQLite requires double quotes inside identifiers to be escaped by doubling
+    them. These tests ensure:
+
+    - Unquoted table names remain unchanged.
+    - Any occurrence of `"` is correctly replaced with `""`.
+    - Edge cases such as empty strings or multiple embedded quotes behave as expected.
+    """
+    assert sanitize_table_name(raw) == expected
