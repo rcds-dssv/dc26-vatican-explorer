@@ -1,7 +1,14 @@
 # Module with tests for search_biblical_citation.py
 
 import pytest
-from src.search.search_biblical_citation import search_biblical_citations
+
+from src.search.search_biblical_citation import (
+    search_biblical_citations,
+    search_biblical_citations_db,
+    default_regex_pattern
+)
+
+import src.search.search_biblical_citation as search_module
 
 # TODO: go through the Vatican's website to find more complex examples to test--e.g.: https://www.vatican.va/content/francesco/en/angelus/2025/documents/20250302-angelus.html
 
@@ -77,3 +84,147 @@ def test_custom_pattern_and_context():
     expected = [('123', 'tion 123.')]
     result = search_biblical_citations(text, context=context, pattern=pattern)
     assert result == expected
+
+#########################################
+# DATABASE SEARCH TESTS
+#########################################
+
+def test_search_biblical_citations_db_missing_texts_table(monkeypatch):
+    """search_biblical_citations_db should raise if the 'texts' table is missing."""
+
+    def fake_connect_to_database():
+        return "conn", "cursor"
+
+    def fake_register_regexp_function(conn):
+        # no-op
+        return None
+
+    def fake_table_exists(cursor, table_name):
+        assert table_name == "texts"
+        return False  # simulate missing table
+
+    # Patch dependencies in the module under test
+    monkeypatch.setattr(search_module, "connect_to_database", fake_connect_to_database)
+    monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
+    monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
+
+    with pytest.raises(ValueError, match="The 'texts' table does not exist in the database."):
+        search_biblical_citations_db()
+
+def test_search_biblical_citations_db_invalid_schema(monkeypatch):
+    """search_biblical_citations_db should raise if the 'texts' table schema is invalid."""
+
+    def fake_connect_to_database():
+        return "conn", "cursor"
+
+    def fake_register_regexp_function(conn):
+        return None
+
+    def fake_table_exists(cursor, table_name):
+        return True  # table exists
+
+    def fake_check_texts_table_schema(cursor):
+        return False  # but schema is wrong
+
+    monkeypatch.setattr(search_module, "connect_to_database", fake_connect_to_database)
+    monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
+    monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
+    monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
+
+    with pytest.raises(ValueError, match="The 'texts' table schema does not match the expected format."):
+        search_biblical_citations_db()
+
+def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
+    """
+    search_biblical_citations_db should use the default SQL query and default
+    regex pattern when none are provided, and extract citations from row[9].
+    """
+    captured = {}
+
+    def fake_connect_to_database():
+        return "conn", "cursor"
+
+    def fake_register_regexp_function(conn):
+        return None
+
+    def fake_table_exists(cursor, table_name):
+        return True
+
+    def fake_check_texts_table_schema(cursor):
+        return True
+
+    def fake_fetch_rows_by_regexp(cursor, sql, pattern):
+        captured["sql"] = sql
+        captured["pattern"] = pattern
+        # row[0] = id, row[9] = text_content
+        row = (
+            1, None, None, None, None,
+            None, None, None, None,
+            "This passage cites Jn 3:16 and 1 Cor 13:6 together."
+        )
+        return [row]
+
+    monkeypatch.setattr(search_module, "connect_to_database", fake_connect_to_database)
+    monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
+    monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
+    monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
+    monkeypatch.setattr(search_module, "fetch_rows_by_regexp", fake_fetch_rows_by_regexp)
+
+    results = search_biblical_citations_db()
+
+    # Ensure default pattern was used
+    assert captured["pattern"] == default_regex_pattern()
+
+    # Ensure default query (whitespace-insensitive check)
+    expected_default_query = """SELECT * FROM texts WHERE text_content REGEXP ?
+    """
+    assert captured["sql"].strip() == expected_default_query.strip()
+
+    # Ensure citations were extracted from text_content at index 9
+    assert len(results) == 1
+    row_id, citations = results[0]
+    assert row_id == 1
+    citation_strings = [c[0] for c in citations]
+    assert citation_strings == ["Jn 3:16", "1 Cor 13:6"]
+
+def test_search_biblical_citations_db_custom_query_and_pattern(monkeypatch):
+    """
+    search_biblical_citations_db should forward a custom query and pattern to
+    fetch_rows_by_regexp when provided.
+    """
+    captured = {}
+
+    def fake_connect_to_database():
+        return "conn", "cursor"
+
+    def fake_register_regexp_function(conn):
+        return None
+
+    def fake_table_exists(cursor, table_name):
+        return True
+
+    def fake_check_texts_table_schema(cursor):
+        return True
+
+    def fake_fetch_rows_by_regexp(cursor, sql, pattern):
+        captured["sql"] = sql
+        captured["pattern"] = pattern
+        return []  # no rows needed for this test
+
+    monkeypatch.setattr(search_module, "connect_to_database", fake_connect_to_database)
+    monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
+    monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
+    monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
+    monkeypatch.setattr(search_module, "fetch_rows_by_regexp", fake_fetch_rows_by_regexp)
+
+    custom_pattern = r"CUSTOM_PATTERN"
+    custom_query = "SELECT id, text_content FROM texts WHERE text_content REGEXP ?"
+
+    results = search_biblical_citations_db(
+        pattern=custom_pattern,
+        query=custom_query,
+    )
+
+    assert results == []
+    assert captured["sql"] == custom_query
+    assert captured["pattern"] == custom_pattern
