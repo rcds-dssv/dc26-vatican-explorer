@@ -9,6 +9,8 @@ from src.config import _DB_PATH
 
 import re
 
+from pathlib import Path
+
 ################################## DEFINE FUNCTIONS ##################################
 
 def connect_to_database() -> tuple[Connection, Cursor]:
@@ -164,3 +166,26 @@ def fetch_rows_by_regexp(
 def sanitize_table_name(table_name: str) -> str:
     """Sanitize a table name for safe use in SQL statements."""
     return table_name.replace('"', '""')
+
+def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
+    """Checks whether a speech with the given URL exists in the database.
+
+    This function queries the `speeches` table in the SQLite database located
+    at `db_path` and determines whether at least one record exists with the
+    specified URL.
+
+    Args:
+        db_path (Path): Path to the SQLite database file.
+        url (str): The URL of the speech to look up.
+
+    Returns:
+        bool: True if a speech with the given URL exists in the database;
+        False otherwise, including when an error occurs during the query.
+    """
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT 1 FROM speeches WHERE url = ? LIMIT 1", (url,))
+            return cur.fetchone() is not None
+    except Exception:
+        return False

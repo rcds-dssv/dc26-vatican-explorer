@@ -4,6 +4,8 @@ import pytest
 
 import sqlite3
 
+from pathlib import Path
+
 import src.database_utils.database_helpers as db_module
 from src.database_utils.database_helpers import (
     connect_to_database,
@@ -426,3 +428,124 @@ def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> 
     - Edge cases such as empty strings or multiple embedded quotes behave as expected.
     """
     assert sanitize_table_name(raw) == expected
+
+#########################################
+# speech_url_exists_in_db
+#########################################
+
+def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns True when the given URL
+    is present in the speeches table.
+    """
+    test_db_path = tmp_path / "test_speeches.db"
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.executemany(
+            "INSERT INTO speeches (url) VALUES (?);",
+            [
+                ("https://example.com/s1",),
+                ("https://example.com/s2",),
+            ],
+        )
+        conn.commit()
+
+        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1") is True
+    finally:
+        conn.close()
+
+def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns False when the given URL
+    is not present in the speeches table.
+    """
+    test_db_path = tmp_path / "test_speeches.db"
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.executemany(
+            "INSERT INTO speeches (url) VALUES (?);",
+            [
+                ("https://example.com/s1",),
+            ],
+        )
+        conn.commit()
+
+        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/not-there") is False
+    finally:
+        conn.close()
+
+def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns False when the speeches table
+    does not exist (should be handled by the function's exception guard).
+    """
+    test_db_path = tmp_path / "test_missing_table.db"
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Deliberately do NOT create speeches table.
+        cursor.execute("CREATE TABLE other_table (id INTEGER PRIMARY KEY, url TEXT);")
+        conn.commit()
+
+        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1") is False
+    finally:
+        conn.close()
+
+def test_speech_url_exists_in_db_returns_false_when_db_path_does_not_exist(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns False when the database file
+    does not exist and/or cannot be queried as expected.
+    """
+    missing_db_path = tmp_path / "does_not_exist.db"
+    assert missing_db_path.exists() is False
+
+    assert db_module.speech_url_exists_in_db(missing_db_path, "https://example.com/s1") is False
+
+def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns True even if multiple rows share
+    the same URL (query uses LIMIT 1).
+    """
+    test_db_path = tmp_path / "test_duplicates.db"
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.executemany(
+            "INSERT INTO speeches (url) VALUES (?);",
+            [
+                ("https://example.com/dup",),
+                ("https://example.com/dup",),
+            ],
+        )
+        conn.commit()
+
+        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/dup") is True
+    finally:
+        conn.close()
+
+def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
+    """
+    Test that speech_url_exists_in_db returns False when url is None.
+    This should be safely handled (either by query semantics or exception guard).
+    """
+    test_db_path = tmp_path / "test_none_url.db"
+    conn = sqlite3.connect(test_db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("INSERT INTO speeches (url) VALUES (?);", ("https://example.com/s1",))
+        conn.commit()
+
+        assert db_module.speech_url_exists_in_db(test_db_path, None) is False
+    finally:
+        conn.close()
