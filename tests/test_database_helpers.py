@@ -4,8 +4,6 @@ import pytest
 
 import sqlite3
 
-from pathlib import Path
-
 import src.database_utils.database_helpers as db_module
 from src.database_utils.database_helpers import (
     connect_to_database,
