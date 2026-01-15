@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup, NavigableString
 
 from vatican_scraper.argparser import get_scraper_args
 from config import _PKG_DIR, _DB_PATH
-from vatican_scraper.db_utils import speech_url_exists_in_db
+from vatican_scraper.database_utils.database_helpers import speech_url_exists_in_db
 
 _SCRAPER_DIR = _PKG_DIR / "vatican_scaper"
 
