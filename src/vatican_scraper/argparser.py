@@ -29,20 +29,21 @@ def scraper_parser():
 
 
 def _gather_popes(args) -> List[str]:
-
     popes: List[str] = []
 
-    # Ensure args.pope is a non-empty list; assign default if necessary
-    # and handle repeated flags: --pope "Francis" --pope "Benedict XVI"
-    if args.pope:  
+    # repeated flags: --pope "Francis" --pope "Benedict XVI"
+    if args.pope:
         popes.extend(args.pope)
-    if not popes or not isinstance(popes, list) or len(popes) == 0:
-        popes = ["Francis"]
 
-    if args.popes:  # comma-separated: --popes "Francis,Benedict XVI,John Paul II"
+    # comma-separated: --popes "Francis,Benedict XVI"
+    if args.popes:
         popes.extend([p.strip() for p in args.popes.split(",") if p.strip()])
 
-    # de-dup while preserving order
+    # ONLY default if still empty
+    if not popes:
+        popes = ["Francis"]
+
+    # de-dup preserving order
     seen = set()
     uniq = []
     for p in popes:
