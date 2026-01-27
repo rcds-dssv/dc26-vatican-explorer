@@ -1,4 +1,4 @@
-# src/vatican_scraper/step06_run_pipeline.py
+# src/vatican_scraper/step06_run_scraping_pipeline.py
 from __future__ import annotations
 
 import argparse
@@ -14,7 +14,27 @@ from config import _DB_PATH
 
 def main() -> None:
     p, args = get_scraper_args()
-    popes = args.popes
+    popes: List[str] = []
+
+    # Support --pope (string or list, depending on argparser)
+    pope_arg = getattr(args, "pope", None)
+    if pope_arg:
+        if isinstance(pope_arg, list):
+            popes.extend(pope_arg)
+        else:
+            popes.append(pope_arg)
+
+    # Support --popes "A,B,C" (comma-separated)
+    popes_arg = getattr(args, "popes", None)
+    if popes_arg:
+        if isinstance(popes_arg, list):
+            popes.extend(popes_arg)
+        else:
+            popes.extend([p.strip() for p in popes_arg.split(",") if p.strip()])
+
+    # de-dup while preserving order
+    seen = set()
+    popes = [p for p in popes if not (p in seen or seen.add(p))]
     
 
     if not popes:
