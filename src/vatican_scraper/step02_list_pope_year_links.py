@@ -6,6 +6,9 @@ from urllib.parse import urljoin
 import re
 import time
 import random
+import argparse
+import json
+from typing import List, Dict, Optional, Set, Pattern
 
 import requests
 from bs4 import BeautifulSoup
@@ -54,30 +57,72 @@ def _sanitize_section(section: str) -> str:
 
 def _make_year_href_re(section: str) -> Pattern[str]:
     sec = _sanitize_section(section)
-    # Year index pages are under EN on the site
-    return re.compile(rf"/content/([^/]+)/en/{re.escape(sec)}/(\d{{4}})\.index\.html?$")
+    # Accept both:
+    #   .../2024.html
+    #   .../2024.index.html
+    return re.compile(
+        rf"/content/([^/]+)/en/{re.escape(sec)}/(\d{{4}})(?:\.index)?\.html?$"
+    )
+
+def _norm_label(s: str) -> str:
+    s = (s or "").replace("\xa0", " ").strip().lower()
+    s = re.sub(r"[:\s]+$", "", s)   # drop trailing ":" etc.
+    s = re.sub(r"\s+", " ", s)
+    return s
 
 def extract_pope_metadata_from_main(html: str) -> Dict[str, Optional[str]]:
     soup = BeautifulSoup(html, "html.parser")
-    subtitle = soup.select_one(".subtitle")
-    subtitle_txt = _txt(subtitle)
-    pope_number = None
+
+    meta: Dict[str, Optional[str]] = {
+        "pope_number": None,
+        "pontificate_begin": None,
+        "pontificate_end": None,
+        "secular_name": None,
+        "place_of_birth": None,
+    }
+
+    # First pass: pope number from subtitle (works on many pages)
+    subtitle_txt = _txt(soup.select_one(".subtitle"))
     if subtitle_txt:
         m = re.search(r"\b(\d+)\b", subtitle_txt)
-        pope_number = m.group(1) if m else subtitle_txt
+        meta["pope_number"] = m.group(1) if m else subtitle_txt
 
-    begin = soup.select_one(".sinottico > tbody > tr:nth-child(1) > td:nth-child(2)")
-    end   = soup.select_one(".sinottico > tbody > tr:nth-child(2) > td:nth-child(2)")
-    secnm = soup.select_one(".sinottico > tbody > tr:nth-child(3) > td:nth-child(2)")
-    pob   = soup.select_one(".sinottico > tbody > tr:nth-child(4) > td:nth-child(2)")
+    # Robust label-based parsing from the sinottico table
+    table = soup.select_one(".sinottico")
+    if not table:
+        # keep whatever we got from subtitle and return
+        meta.setdefault("pontificate_end", None)
+        return meta
 
-    return {
-        "pope_number": pope_number,
-        "pontificate_begin": _txt(begin),
-        "pontificate_end": _txt(end),
-        "secular_name": _txt(secnm),
-        "place_of_birth": _txt(pob),
-    }
+    for tr in table.find_all("tr"):
+        cells = tr.find_all(["th", "td"], recursive=False)
+        if len(cells) < 2:
+            # sometimes Vatican uses nested structure; fall back
+            cells = tr.find_all(["th", "td"])
+        if len(cells) < 2:
+            continue
+
+        label = _norm_label(cells[0].get_text(" ", strip=True))
+        value = cells[1].get_text(" ", strip=True).replace("\xa0", " ").strip() or None
+        if not value:
+            continue
+
+        if label in {"beginning pontificate", "inizio pontificato", "début du pontificat"}:
+            meta["pontificate_begin"] = value
+        elif label in {"end pontificate", "fine pontificato", "fin du pontificat"}:
+            meta["pontificate_end"] = value
+        elif label in {"secular name", "nome di nascita", "nom de naissance"}:
+            meta["secular_name"] = value
+        elif label in {"place of birth", "luogo di nascita", "lieu de naissance"}:
+            meta["place_of_birth"] = value
+        elif label in {"pope number", "numero del papa", "numéro du pape"}:
+            # only override if subtitle didn't already give us something
+            if not meta["pope_number"]:
+                meta["pope_number"] = value
+
+    # active pope often has no end date
+    meta.setdefault("pontificate_end", None)
+    return meta
 
 def _candidate_anchors(soup: BeautifulSoup):
     return soup.select(

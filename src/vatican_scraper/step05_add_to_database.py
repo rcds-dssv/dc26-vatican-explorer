@@ -17,7 +17,7 @@ DEFAULT_TABLE_SCHEMA = """
 
 CREATE TABLE IF NOT EXISTS popes (
     _pope_id INTEGER PRIMARY KEY,
-    pope_name TEXT,
+    pope_name TEXT NOT NULL,
     pope_slug TEXT,
     pope_number TEXT,
     secular_name TEXT,
@@ -30,17 +30,20 @@ CREATE TABLE IF NOT EXISTS popes (
 
 CREATE TABLE IF NOT EXISTS texts (
     _texts_id INTEGER PRIMARY KEY,
-    pope_id INTEGER,
+    pope_id INTEGER NOT NULL,
     section TEXT,
     year TEXT,
     date TEXT,
     location TEXT,
     title TEXT,
     language TEXT,
-    url TEXT,
+    url TEXT NOT NULL,
     text_content TEXT,
     entry_creation_date TEXT,
-    UNIQUE(pope_id, title, date),
+
+    -- prevent duplicates (this is the simplest + strongest)
+    UNIQUE(url),
+
     FOREIGN KEY (pope_id) REFERENCES popes(_pope_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
@@ -58,7 +61,7 @@ def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA)
 
     Does not return content
     """
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     try:
         cur = conn.cursor()
         cur.executescript(table_schema)
@@ -96,13 +99,13 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
     date = record.get("date")
     location = record.get("location")
     title = record.get("title")
-    language = record.get("language")
+    language = record.get("lang_available") or record.get("lang_requested") or record.get("language")
     text = record.get("text")
     url = record.get("url")
     entry_creation_date = datetime.now(timezone.utc).isoformat()  # store UTC timestamp
 
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     conn.execute("PRAGMA foreign_keys = ON;")
     try:
         cur = conn.cursor()
