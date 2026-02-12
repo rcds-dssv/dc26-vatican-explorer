@@ -6,11 +6,17 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
 
-[dependency-groups]
-scrape = [
-    "requests",
-]
+[project.scripts]
+vatican = "dc26_vatican_explorer.__main__:main"
 
-data-manipulation = [
-    "pandas",
-]
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
+
+
+[dependency-groups]
+scrape = ["requests"]
+
+data-manipulation = ["pandas"]
+dev = ["ruff>=0.15.0"]

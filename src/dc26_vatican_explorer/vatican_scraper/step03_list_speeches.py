@@ -1,7 +1,11 @@
 # src/vatican_scraper/step03_list_speeches.py
 from __future__ import annotations
 
-import argparse, random, re, sys, time
+import argparse
+import random
+import re
+import sys
+import time
 from typing import Dict, List, Optional, Set
 from urllib.parse import urljoin
 
@@ -20,8 +24,10 @@ from vatican_scraper.step02_list_pope_year_links import (
     _sanitize_section,  # reuse validation
 )
 
+
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
+
 
 def fetch_html(url: str) -> str:
     _pause()
@@ -29,6 +35,7 @@ def fetch_html(url: str) -> str:
     r.raise_for_status()
     _pause()
     return r.text
+
 
 def extract_speeches_from_year_index(
     year_index_html: str,
@@ -62,7 +69,9 @@ def extract_speeches_from_year_index(
         if ds:
             date_text = ds.get_text(" ", strip=True)
         if not date_text:
-            m = re.search(r"\b(\d{1,2}\s+[A-Z][a-z]+\s+\d{4})\b", li.get_text(" ", strip=True))
+            m = re.search(
+                r"\b(\d{1,2}\s+[A-Z][a-z]+\s+\d{4})\b", li.get_text(" ", strip=True)
+            )
             if m:
                 date_text = m.group(1)
 
@@ -73,29 +82,40 @@ def extract_speeches_from_year_index(
 
     return items
 
+
 def main() -> None:
-    p = argparse.ArgumentParser(description="List individual speech links from Vatican year indexes.")
+    p = argparse.ArgumentParser(
+        description="List individual speech links from Vatican year indexes."
+    )
     p.add_argument("--pope", required=True)
     p.add_argument("--years", required=True)
-    p.add_argument("--section", default="angelus", help="e.g., angelus, audiences, speeches")
+    p.add_argument(
+        "--section", default="angelus", help="e.g., angelus, audiences, speeches"
+    )
     args = p.parse_args()
 
     section = _sanitize_section(args.section)
     years = set(parse_years(args.years))
     if not years:
-        print("No valid years parsed from --years.", file=sys.stderr); raise SystemExit(2)
+        print("No valid years parsed from --years.", file=sys.stderr)
+        raise SystemExit(2)
 
     popes = vatican_fetch_pope_directory_recent()
     rec = papal_find_by_display_name(popes, args.pope)
     if not rec:
         avail = ", ".join(p["display_name"] for p in popes)
-        print(f'Pope "{args.pope}" not found. Available: {avail}', file=sys.stderr); raise SystemExit(1)
+        print(f'Pope "{args.pope}" not found. Available: {avail}', file=sys.stderr)
+        raise SystemExit(1)
 
     pope_main_html = fetch_pope_main_html(rec["url"])
 
-    year_rows = extract_year_links_from_main(pope_main_html, rec["slug"], years, section)
+    year_rows = extract_year_links_from_main(
+        pope_main_html, rec["slug"], years, section
+    )
     if not year_rows:
-        available = extract_available_years_from_main(pope_main_html, rec["slug"], section)
+        available = extract_available_years_from_main(
+            pope_main_html, rec["slug"], section
+        )
         req_str = ", ".join(map(str, sorted(years)))
         avail_str = ", ".join(map(str, available)) if available else "none yet"
         print(
@@ -109,7 +129,9 @@ def main() -> None:
     for row in year_rows:
         year, idx_url = row["year"], row["url"]
         idx_html = fetch_html(idx_url)
-        speeches = extract_speeches_from_year_index(idx_html, idx_url, rec["slug"], section)
+        speeches = extract_speeches_from_year_index(
+            idx_html, idx_url, rec["slug"], section
+        )
         if not speeches:
             print(f"No speeches found on {idx_url}", file=sys.stderr)
             continue
@@ -122,6 +144,7 @@ def main() -> None:
 
     if not any_out:
         raise SystemExit(4)
+
 
 if __name__ == "__main__":
     main()
