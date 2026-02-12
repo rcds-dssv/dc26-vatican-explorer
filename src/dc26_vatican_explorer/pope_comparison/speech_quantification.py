@@ -1,6 +1,6 @@
-'''
+"""
 Something or other here
-'''
+"""
 
 # imports
 from dataclasses import dataclass
@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 # TODO:
 # - individual BibleRef (per verse) vs span (multiple verses)?
+
 
 @dataclass
 class BibleRef:
@@ -26,13 +27,13 @@ class PopeSpeech:
     text: str
     bible_references: list[BibleRef]
 
+
 # functions
-
-
 
 
 def main():
     return
+
 
 if __name__ == "__main__":
     main()

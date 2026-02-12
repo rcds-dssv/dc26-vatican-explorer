@@ -13,27 +13,32 @@ import requests
 from bs4 import BeautifulSoup
 
 
-
 # -------------------- tiny courtesy pause --------------------
+
 
 def _papal_pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     """Sleep a small random amount to be polite."""
     time.sleep(random.uniform(min_s, max_s))
+
 
 # -------------------- name/URL utilities --------------------
 
 _ROMAN_RE = re.compile(r"^[IVXLCDM]+$", re.IGNORECASE)
 _TITLE_RE = re.compile(r"^[A-Z][a-z]+$")
 
+
 def _is_roman(token: str) -> bool:
     return bool(_ROMAN_RE.match(token or ""))
+
 
 def _is_titlecase_word(token: str) -> bool:
     return bool(_TITLE_RE.match(token or ""))
 
+
 def papal_normalize_display_name(text: str) -> str:
     """Collapse whitespace and trim display names."""
     return re.sub(r"\s+", " ", (text or "").strip())
+
 
 def _looks_like_pope_display(name: str) -> bool:
     """
@@ -56,6 +61,7 @@ def _looks_like_pope_display(name: str) -> bool:
     # all preceding tokens must be Title-case words
     return all(_is_titlecase_word(p) for p in parts[:-1])
 
+
 def papal_extract_slug_from_content_url(url: str) -> Optional[str]:
     """
     From URLs like:
@@ -70,7 +76,9 @@ def papal_extract_slug_from_content_url(url: str) -> Optional[str]:
         pass
     return None
 
+
 # -------------------- core scraping --------------------
+
 
 def _papal_collect_english_content_links(soup: BeautifulSoup) -> List[Dict[str, str]]:
     """
@@ -116,7 +124,9 @@ def _papal_collect_english_content_links(soup: BeautifulSoup) -> List[Dict[str, 
             out.append(it)
     return out
 
+
 # -------------------- public helpers (task-specific names) --------------------
+
 
 def vatican_fetch_pope_directory_recent() -> List[Dict[str, str]]:
     """
@@ -133,7 +143,10 @@ def vatican_fetch_pope_directory_recent() -> List[Dict[str, str]]:
     results = _papal_collect_english_content_links(soup)
     return results
 
-def papal_find_by_display_name(popes: List[Dict[str, str]], name: str) -> Optional[Dict[str, str]]:
+
+def papal_find_by_display_name(
+    popes: List[Dict[str, str]], name: str
+) -> Optional[Dict[str, str]]:
     """
     Case-insensitive exact match on display_name.
     Example: papal_find_by_display_name(popes, "Leo XIV") -> {...}
@@ -143,6 +156,7 @@ def papal_find_by_display_name(popes: List[Dict[str, str]], name: str) -> Option
         if papal_normalize_display_name(p["display_name"]).lower() == key:
             return p
     return None
+
 
 # -------------------- optional quick test --------------------
 

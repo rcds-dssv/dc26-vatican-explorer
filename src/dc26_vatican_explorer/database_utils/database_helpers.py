@@ -13,6 +13,7 @@ from pathlib import Path
 
 ################################## DEFINE FUNCTIONS ##################################
 
+
 def connect_to_database() -> tuple[Connection, Cursor]:
     """Connects to the SQLite database.
 
@@ -24,6 +25,7 @@ def connect_to_database() -> tuple[Connection, Cursor]:
     cursor: Cursor = conn.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")
     return conn, cursor
+
 
 def get_tables_in_database(cursor: Cursor) -> list[str]:
     """Retrieves a list of tables in the database.
@@ -38,6 +40,7 @@ def get_tables_in_database(cursor: Cursor) -> list[str]:
     tables = cursor.fetchall()
     return [t[0] for t in tables]
 
+
 def get_column_names_in_table(cursor: Cursor, table_name: str) -> list[str]:
     """Retrieves a list of column names in a specified table.
 
@@ -49,9 +52,10 @@ def get_column_names_in_table(cursor: Cursor, table_name: str) -> list[str]:
         list[str]: A list of column names in the specified table.
     """
     safe_table = sanitize_table_name(table_name)
-    cursor.execute(f'PRAGMA table_info("{safe_table}")')  
+    cursor.execute(f'PRAGMA table_info("{safe_table}")')
     columns = cursor.fetchall()
     return [c[1] for c in columns]
+
 
 def regexp(pattern: str, text: str | None) -> int:
     """Implements REGEXP operator for SQLite.
@@ -70,6 +74,7 @@ def regexp(pattern: str, text: str | None) -> int:
     except re.error as exc:
         raise ValueError(f"Invalid regex pattern {pattern!r}") from exc
 
+
 def register_regexp_function(conn: Connection) -> None:
     """Registers the REGEXP function with the SQLite connection.
 
@@ -80,6 +85,7 @@ def register_regexp_function(conn: Connection) -> None:
         None
     """
     conn.create_function("REGEXP", 2, regexp)
+
 
 def table_exists(cursor: Cursor, table_name: str) -> bool:
     """Checks whether a given table exists in the database.
@@ -97,6 +103,7 @@ def table_exists(cursor: Cursor, table_name: str) -> bool:
     )
     return cursor.fetchone() is not None
 
+
 def column_exists_in_table(cursor: Cursor, table_name: str, column_name: str) -> bool:
     """Checks whether a given column exists in the specified table.
 
@@ -112,6 +119,7 @@ def column_exists_in_table(cursor: Cursor, table_name: str, column_name: str) ->
     cursor.execute(f'PRAGMA table_info("{safe_table}")')
     columns = cursor.fetchall()
     return any(col[1] == column_name for col in columns)
+
 
 def check_texts_table_schema(cursor: Cursor) -> bool:
     """Checks whether the 'texts' table has the expected columns in the correct order.
@@ -134,17 +142,14 @@ def check_texts_table_schema(cursor: Cursor) -> bool:
         "language",
         "url",
         "text_content",
-        "entry_creation_date"
+        "entry_creation_date",
     ]
 
     actual_columns = get_column_names_in_table(cursor, "texts")
     return actual_columns == expected_columns
 
-def fetch_rows_by_regexp(
-    cursor: Cursor,
-    query: str,
-    pattern: str
-) -> list:
+
+def fetch_rows_by_regexp(cursor: Cursor, query: str, pattern: str) -> list:
     """
     Execute a SQL query using a regular-expression filter and return matching rows.
 
@@ -163,9 +168,11 @@ def fetch_rows_by_regexp(
     cursor.execute(query, (pattern,))
     return cursor.fetchall()
 
+
 def sanitize_table_name(table_name: str) -> str:
     """Sanitize a table name for safe use in SQL statements."""
     return table_name.replace('"', '""')
+
 
 def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     """Checks whether a speech with the given URL exists in the database.

@@ -45,7 +45,6 @@ class TestPapalNormalizeDisplayName:
         assert papal_normalize_display_name("   \t\n  ") == ""
 
 
-
 class TestPapalExtractSlugFromContentUrl:
     """Tests for papal_extract_slug_from_content_url function."""
 

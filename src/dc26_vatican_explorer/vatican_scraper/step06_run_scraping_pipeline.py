@@ -1,7 +1,6 @@
 # src/vatican_scraper/step06_run_pipeline.py
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 from typing import List, Tuple
 
@@ -11,25 +10,26 @@ from vatican_scraper.step05_add_to_database import add_content_to_db
 from config import _DB_PATH
 
 
-
 def main() -> None:
     p, args = get_scraper_args()
     popes = args.popes
-    
 
     if not popes:
-        p.error("Provide at least one pope via --pope (repeatable) or --popes (comma-separated).")
+        p.error(
+            "Provide at least one pope via --pope (repeatable) or --popes (comma-separated)."
+        )
 
     # If more than one pope, ignore --out (each run auto-names its own file).
     multi = len(popes) > 1
     if multi and args.out:
-        print("[info] Multiple popes provided; ignoring --out and using per-pope auto filenames.")
+        print(
+            "[info] Multiple popes provided; ignoring --out and using per-pope auto filenames."
+        )
 
     successes: List[Tuple[str, Path]] = []
     failures: List[Tuple[str, str]] = []
 
     for pope in popes:
-
         try:
             print("======= Fetching content...")
             out_path, rows = fetch_speeches_to_feather(
@@ -39,7 +39,7 @@ def main() -> None:
                 section=args.section,
                 out=(None if multi else args.out),
                 debug_loc=args.debug_loc,
-                max_n_speeches=args.max_n_speeches
+                max_n_speeches=args.max_n_speeches,
             )
 
             print("\n======= Adding content to database ...")
@@ -56,7 +56,6 @@ def main() -> None:
                 else:
                     print("Pope record already exists (ignored).")
                 print("")
-
 
             successes.append((pope, out_path))
 
@@ -82,7 +81,6 @@ def main() -> None:
 
     print("\n======= Pipeline complete.")
 
+
 if __name__ == "__main__":
     main()
-
-
