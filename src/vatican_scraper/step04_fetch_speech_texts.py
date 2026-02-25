@@ -464,7 +464,7 @@ def fetch_speeches_to_feather(
                 break
 
             base_url = s["url"]
-            base_url, _ = urldefrag(base_url)
+            base_url, _ = urldefrag(base_url)  # Strip fragment to normalize URL for DB duplicate detection.
             # If we are scraping EN, base_url is the canonical URL.
             # If we are scraping IT, we *guess* the IT URL and skip only if that exists.
             if want_lang == "EN":
