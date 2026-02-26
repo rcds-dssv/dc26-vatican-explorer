@@ -1,0 +1,182 @@
+site_name: DSSV Data Conclave FY26 - Vatican Explorer
+site_description: Documentation for the DSSV Vatican Explorer
+site_url: https://rcds-dssv.github.io/dc26-vatican-explorer # GH Pages URL
+site_author: RCDS DSSV Team, Northwestern University
+
+repo_name: rcds-dssv/dc26-vatican-explorer  # shows the repo name in the top-right corner
+repo_url: https://github.com/rcds-dssv/dc26-vatican-explorer  # links the repo icon in the header to your GitHub repo
+edit_uri: edit/main/docs/               # adds an "Edit this page" pencil icon linking to the source file
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  logo: assets/logo.png                  # replaces the site name text with an image in the header
+  favicon: assets/favicon.ico                # sets the browser tab icon (also used when sharing links on social media)
+  icon:
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right        # sets the browser tab icon
+
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  font:
+    text: Roboto                         # sets the body font (loaded from Google Fonts)
+    code: Roboto Mono                    # sets the monospace font used in code blocks
+
+  features:
+
+    # --- Navigation ---
+    - navigation.tabs                    # shows top-level nav items as horizontal tabs under the header (desktop widths)
+    - navigation.tabs.sticky             # keeps the tab bar visible while scrolling down the page
+    - navigation.sections                # renders second-level nav items as expandable labeled sections instead of plain links
+    - navigation.expand                  # auto-expands all collapsible nav sections on page load
+    - navigation.path                    # shows a breadcrumb trail below the page title indicating the current location in the hierarchy
+    - navigation.indexes                 # lets a section have its own index page (place an index.md inside the section folder)
+    - navigation.top                     # adds a "back to top" button that appears after the user scrolls down
+    - navigation.footer                  # adds previous / next page links at the bottom of every page
+    - navigation.tracking                # updates the URL fragment in the address bar as the user scrolls through sections
+    - navigation.instant                 # turns page navigation into a single-page app (XHR loads) for faster transitions
+    - navigation.instant.progress        # shows a thin loading progress bar at the top during instant navigation
+
+    # --- Table of Contents ---
+    - toc.follow                         # auto-scrolls the right-hand TOC sidebar to keep the active heading in view
+    - toc.integrate                      # merges the page TOC into the left nav sidebar instead of showing it on the right
+
+    # --- Search ---
+    - search.highlight                   # highlights the search term on the page after the user clicks a result
+    - search.suggest                     # shows inline autocomplete suggestions as the user types in the search box
+    - search.share                       # adds a share button inside the search dialog that copies a deep-link URL to the clipboard
+
+    # --- Header ---
+    - header.autohide                    # hides the header when the user scrolls down and reveals it when they scroll up
+
+    # --- Content ---
+    - content.code.copy                  # adds a copy-to-clipboard button to every code block
+    - content.code.select                # adds a select-all button to every code block so users can highlight the full snippet
+    - content.code.annotate              # enables inline code annotations (numbered markers that expand to explanatory tooltips)
+    - content.tabs.link                  # syncs all content tab groups across the page so selecting one tab selects the same tab everywhere
+    - content.tooltips                   # renders title attributes on links and abbreviations as rich hover tooltips
+    - content.action.edit                # shows an "Edit this page" button (requires repo_url + edit_uri)
+    - content.action.view                # shows a "View source" button that links to the raw file in the repository
+
+markdown_extensions:
+
+  # --- Code blocks ---
+  - pymdownx.highlight:                  # enables syntax highlighting for fenced code blocks via Pygments
+      anchor_linenums: true              # makes every line number a linkable anchor so you can share a direct link to a specific line
+      line_spans: __span                 # wraps each line in a <span> enabling per-line highlighting and annotation targeting
+      pygments_lang_class: true          # adds a CSS class for the language name so themes can style per-language
+  - pymdownx.inlinehilite                # enables syntax highlighting inside inline backtick code spans
+  - pymdownx.superfences:               # allows nesting of fenced code blocks inside lists, admonitions, tabs, etc.
+      custom_fences:
+        - name: mermaid                  # adds first-class support for Mermaid diagram blocks (flowcharts, sequence diagrams, etc.)
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  # --- Content organisation ---
+  - pymdownx.tabbed:                     # enables content tabs (=== "Tab Title" syntax) for grouping related content
+      alternate_style: true
+  - admonition                           # enables admonition blocks (note, tip, warning, danger, etc.)
+  - pymdownx.details                     # makes admonitions collapsible with a click (??? instead of !!!)
+  - pymdownx.snippets:                   # lets you embed external files or reusable text snippets with --8<-- syntax
+      base_path: docs
+
+  # --- Text formatting ---
+  - pymdownx.critic                      # supports CriticMarkup for tracking additions, deletions, and comments in text
+  - pymdownx.caret                       # adds ^^underline^^ and superscript ^text^ syntax
+  - pymdownx.keys                        # renders keyboard shortcuts with the ++ctrl+alt+del++ syntax
+  - pymdownx.mark                        # adds ==highlight== syntax for marking text in yellow
+  - pymdownx.tilde                       # adds ~~strikethrough~~ and subscript ~text~ syntax
+  - pymdownx.smartsymbols                # converts ASCII sequences like (c), (tm), 1/2 into proper typographic symbols
+
+  # --- Lists & tasks ---
+  - pymdownx.tasklist:                   # enables GitHub-style task lists with [ ] and [x] checkboxes
+      custom_checkbox: true              # replaces the native browser checkbox with a styled Material Design checkbox
+
+  # --- Diagrams & math ---
+  - pymdownx.arithmatex:                 # enables LaTeX math rendering via MathJax or KaTeX (add the JS snippet to extra_javascript)
+      generic: true
+
+  # --- Links & references ---
+  - attr_list                            # allows adding HTML attributes and CSS classes to any Markdown element
+  - md_in_html                           # allows writing Markdown inside raw HTML blocks
+  - abbr                                 # enables abbreviation definitions that show as tooltips on hover
+  - footnotes                            # adds footnote syntax [^1] with back-references at the bottom of the page
+  - def_list                             # enables definition list syntax (term / : definition)
+  - tables                               # enables GFM-style pipe tables
+
+  # --- Meta & SEO ---
+  - meta                                 # reads YAML front-matter from each page (used for page titles, descriptions, etc.)
+
+plugins:
+  - search:                              # built-in full-text search (required for the search feature flags above to work)
+      lang: en
+  - mkdocstrings:                          # generates API documentation from docstrings in your code
+      enabled: true
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]                   # tells mkdocstrings where to find your package source (path is realative to mkdocs.yml)
+          import:                        # cross-reference external libraries — downloads their objects.inv to resolve links
+            - https://docs.python.org/3/objects.inv
+            - https://docs.pydantic.dev/latest/objects.inv
+          options:
+            # --- What to document ---
+            show_source: true            # adds a collapsible "View source" code block under each documented object
+            show_root_heading: true      # renders the module/class name as an <h2> heading rather than just bold text
+            show_root_full_path: false   # shows only the short name (e.g. MyClass) rather than the full dotted path as the heading
+            show_symbol_type_heading: true  # shows a type badge (class / function / attribute) next to each heading
+            show_symbol_type_toc: true   # includes the type badge in the right-hand TOC entries as well
+            show_if_no_docstring: false  # skips objects that have no docstring rather than generating an empty stub
+            members_order: source        # documents members in the order they appear in the source file (alternative: alphabetical)
+            filters:
+              - "!^_"                    # excludes private members (names starting with _) from generated docs by default
+
+            # --- Signatures & type hints ---
+            show_signature: true         # renders the full function/method signature under the heading
+            show_signature_annotations: true  # includes type annotations in the rendered signature (e.g. def foo(x: int) -> str)
+            separate_signature: true     # puts the signature in its own code block below the heading instead of inline
+            signature_crossrefs: true    # turns types in signatures into clickable cross-reference links
+            unwrap_annotated: true       # unwraps Annotated[X, ...] to show only the base type X in signatures
+
+            # --- Docstring parsing ---
+            docstring_style: google      # parser to use: google | numpy | sphinx — match whatever style your codebase uses
+            docstring_options:
+              ignore_init_summary: true  # ignores the one-liner in __init__ and uses the class docstring summary instead
+            merge_init_into_class: true  # merges __init__ parameters into the class docstring so they appear in one place
+
+            # --- Class layout ---
+            show_bases: true             # lists the parent classes a class inherits from
+            show_inheritance_diagram: true  # renders a Mermaid inheritance diagram showing the class hierarchy (requires pymdownx.superfences + mermaid)
+
+            # --- Module layout ---
+            show_submodules: false       # suppresses auto-listing of submodules when documenting a package (avoids duplication)
+
+            # --- Headings & TOC ---
+            heading_level: 2             # sets the starting <h> level for documented objects (2 = <h2>)
+            show_category_heading: true  # adds group headings (Attributes, Functions, Classes) to separate member types
+            show_labels: true            # shows labels like deprecated, classmethod, staticmethod, property next to members
+
+
+nav:
+  - Home: index.md
+  - Getting Started: using-vatican-explorer.md
+  - Data Sources:
+      - Vatican Library: https://www.vatican.va/content/francesco/en/speeches.html
