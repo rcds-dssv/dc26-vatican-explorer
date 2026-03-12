@@ -5,7 +5,7 @@
 import sqlite3
 from sqlite3 import Connection, Cursor
 
-from src.config import _DB_PATH
+from dc26_vatican_explorer.config import _DB_PATH
 
 import re
 
