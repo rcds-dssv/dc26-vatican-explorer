@@ -108,8 +108,9 @@ def search_biblical_citations_db(
         list[tuple[tuple, list[tuple[str, str]]]]:
             A list of tuples where each item contains:
             - The full database row (all columns from `texts`)
-            - A list of extracted biblical citations as (book, verse) tuples.
-
+            - A list of extracted biblical citations as (citation, surrounding_text) tuples,
+              where `citation` is the matched citation string and `surrounding_text` is the
+              surrounding context from the source text.
     Raises:
         ValueError:
             If the `texts` table does not exist or its schema does not match
