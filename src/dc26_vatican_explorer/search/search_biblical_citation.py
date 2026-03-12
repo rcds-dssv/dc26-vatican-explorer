@@ -82,7 +82,7 @@ def search_biblical_citations(text: str, context: int=100, pattern: str | None =
 def search_biblical_citations_db(
     pattern: str | None = None,
     query: str | None = None
-) -> list[tuple[tuple, list[tuple[str, str]]]]:
+) -> list[tuple[tuple[Any, ...], list[tuple[str, str]]]]:
     """Search database texts for biblical citations using a regex pattern.
 
     This function queries the `texts` table for rows whose `text_content`
