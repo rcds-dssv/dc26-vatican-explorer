@@ -3,7 +3,7 @@
 ######################################### IMPORT LIBRARIES #########################################
 from re import finditer
 
-from src.database_utils.database_helpers import (
+from dc26_vatican_explorer.database_utils.database_helpers import (
     connect_to_database,
     register_regexp_function,
     table_exists,
@@ -82,76 +82,102 @@ def search_biblical_citations(text: str, context: int=100, pattern: str | None =
 def search_biblical_citations_db(
     pattern: str | None = None,
     query: str | None = None
-) -> list[tuple[int, list[tuple[str, str]]]]:
-    """Search database texts for biblical citations matching a regex pattern.
+) -> list[tuple[tuple[Any, ...], list[tuple[str, str]]]]:
+    """Search database texts for biblical citations using a regex pattern.
 
-    This function connects to the database, validates the schema, executes a
-    regex-based SQL query, and extracts biblical citations from each row's
-    text content.
+    This function queries the `texts` table for rows whose `text_content`
+    column matches a regular expression. For each matching row, it extracts
+    biblical citations from the text content.
 
     Args:
-        pattern:
-            Optional regex pattern used when searching within the `text_content`
-            column. If not provided, the default biblical citation pattern is
-            used via `default_regex_pattern()`.
-        query:
-            Optional SQL query override. If not provided, a default query is
-            used that searches the `text_content` column with a REGEXP clause.
-            The query must contain exactly one positional placeholder (?) for
-            the regex pattern. The query must return all columns from the `texts`
-            table in the same order as the schema.
+        pattern (str | None):
+            Regular expression used to search the `text_content` column.
+            If None, the default biblical citation regex from
+            `default_regex_pattern()` is used.
+
+        query (str | None):
+            Optional SQL query override. If not provided, the function uses
+            a default query that searches `text_content` using a REGEXP clause.
+
+            The query must:
+            - Contain exactly one positional placeholder (?) for the regex.
+            - Return all columns from the `texts` table in the same order
+              defined in the schema.
 
     Returns:
-        A list of tuples containing the row ID and the extracted citations.
-
+        list[tuple[tuple, list[tuple[str, str]]]]:
+            A list of tuples where each item contains:
+            - The full database row (all columns from `texts`)
+            - A list of extracted biblical citations as (citation, surrounding_text) tuples,
+              where `citation` is the matched citation string and `surrounding_text` is the
+              surrounding context from the source text.
     Raises:
-        ValueError: If required tables, columns, or schema definitions are
-            missing or incorrect.
+        ValueError:
+            If the `texts` table does not exist or its schema does not match
+            the expected structure.
     """
+
+    # Initialize database connection and cursor placeholders
     conn = None
     cursor = None
+
     try:
-        # Connect to the database
+        # Connect to the SQLite database and obtain a cursor
         conn, cursor = connect_to_database()
 
-        # Register REGEXP function (SQLite compatibility)
+        # Register a Python REGEXP function for SQLite compatibility
         register_regexp_function(conn)
 
-        # Validate table
+        # Verify that the required table exists in the database
         if not table_exists(cursor, "texts"):
             raise ValueError("The 'texts' table does not exist in the database.")
 
-        # Validate schema format
+        # Validate that the table schema matches the expected format
         if not check_texts_table_schema(cursor):
-            raise ValueError("The 'texts' table schema does not match the expected format.")
+            raise ValueError(
+                "The 'texts' table schema does not match the expected format."
+            )
 
-        # Default SQL query
-        default_query = """SELECT * FROM texts WHERE text_content REGEXP ?
-        """
+        # Define the default SQL query used to search the text content
+        default_query = """SELECT * FROM texts WHERE text_content REGEXP ?"""
 
-        # Use default query if none provided
+        # Use the user-supplied query if provided, otherwise use the default
         sql = query or default_query
 
-        # Use default regex pattern if none provided
+        # If no regex pattern was provided, use the default citation pattern
         if pattern is None:
             pattern = default_regex_pattern()
 
-        # Fetch rows matching the regex pattern
+        # Execute the SQL query and fetch rows whose text matches the regex
         rows = fetch_rows_by_regexp(cursor, sql, pattern)
 
+        # Initialize a list to store the final results
         results = []
 
-        # Extract citations from each row's text content
+        # Iterate through each returned row from the database
         for row in rows:
-            row_id = row[0]
-            text_content = row[9] 
+
+            # Extract the text_content column (index 9 based on schema)
+            text_content = row[9]
+
+            # If the text content is not a string, no citations can be extracted
             if not isinstance(text_content, str):
                 citations = []
-            else:
-                citations = search_biblical_citations(text_content, pattern=pattern)
-            results.append((row_id, citations))
 
+            # Otherwise, search the text for biblical citations
+            else:
+                citations = search_biblical_citations(
+                    text_content,
+                    pattern=pattern
+                )
+
+            # Store the full row along with the extracted citations
+            results.append((row, citations))
+
+        # Return the list of rows and their extracted citations
         return results
+
     finally:
+        # Ensure the database connection is safely closed
         if conn is not None and hasattr(conn, "close"):
             conn.close()
