@@ -36,8 +36,9 @@ ignore = [
     "D100",   # undocumented public module
     "D103",   # undocumented public function 
     "D203",   # requires a blank line before class docstring
+    "D205",   # missing blank line after summary
     "D213",   # summary on the second line
     "D401",   # Docstring summary should use imperative voice
-    
+
 ]
 fixable = ["ALL"]
