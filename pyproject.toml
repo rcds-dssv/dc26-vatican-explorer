@@ -21,15 +21,18 @@ build-backend = "uv_build"
 
 [tool.ruff.lint]
 select = [
-    "E", "W",    # pycodestyle
-    "F",         # pyflakes
-    "I",         # isort
-    "B",         # bugbear
-    "UP",        # pyupgrade
-    "SIM",       # simplify
-    "RUF",       # ruff-native
+    "D",         # docstring rules from pycodestyle
+    "E", "W",    # pycodestyle - enforce PEP8 style
+    "F",         # pyflakes - detect actual mistakes in code, logical errors
+    "I",         # isort - Ensures imports are grouped and ordered consistently.
+    "B",         # bugbear - Detects subtle bugs or risky patterns.
+    "UP",        # pyupgrade - Encourages modern Python syntax.
+    "SIM",       # simplify - Suggests cleaner or shorter code.
+    "RUF",       # ruff-native - These catch things Ruff's developers specifically added.
 ]
 ignore = [
     "E501",   # line too long (let the formatter handle this)
     "B008",   # function call in default arg (common in FastAPI)
+    "D203",   # requires a blank line before class docstring
+    "D213",   # summary on the second line
 ]
