@@ -1,14 +1,12 @@
 # Module with tests for search_biblical_citation.py
 
 import pytest
-
+import src.search.search_biblical_citation as search_module
 from src.search.search_biblical_citation import (
+    default_regex_pattern,
     search_biblical_citations,
     search_biblical_citations_db,
-    default_regex_pattern
 )
-
-import src.search.search_biblical_citation as search_module
 
 # TODO: go through the Vatican's website to find more complex examples to test--e.g.: https://www.vatican.va/content/francesco/en/angelus/2025/documents/20250302-angelus.html
 
@@ -135,8 +133,7 @@ def test_search_biblical_citations_db_invalid_schema(monkeypatch):
         search_biblical_citations_db()
 
 def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
-    """
-    search_biblical_citations_db should use the default SQL query and default
+    """search_biblical_citations_db should use the default SQL query and default
     regex pattern when none are provided, and extract citations from row[9].
     """
     captured = {}
@@ -188,8 +185,7 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     assert citation_strings == ["Jn 3:16", "1 Cor 13:6"]
 
 def test_search_biblical_citations_db_custom_query_and_pattern(monkeypatch):
-    """
-    search_biblical_citations_db should forward a custom query and pattern to
+    """search_biblical_citations_db should forward a custom query and pattern to
     fetch_rows_by_regexp when provided.
     """
     captured = {}
