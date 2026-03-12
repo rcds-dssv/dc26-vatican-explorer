@@ -36,3 +36,4 @@ ignore = [
     "D203",   # requires a blank line before class docstring
     "D213",   # summary on the second line
 ]
+fixable = ["ALL"]
