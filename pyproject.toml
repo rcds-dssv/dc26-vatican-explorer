@@ -18,3 +18,18 @@ vatican = "dc26_vatican_explorer.__main__:main"
 [build-system]
 requires = ["uv_build>=0.10.2,<0.11.0"]
 build-backend = "uv_build"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "B",         # bugbear
+    "UP",        # pyupgrade
+    "SIM",       # simplify
+    "RUF",       # ruff-native
+]
+ignore = [
+    "E501",   # line too long (let the formatter handle this)
+    "B008",   # function call in default arg (common in FastAPI)
+]
