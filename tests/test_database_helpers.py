@@ -1,21 +1,20 @@
 # Module with tests for database_helpers.py
 
-import pytest
-
 import sqlite3
 
+import pytest
 import src.database_utils.database_helpers as db_module
 from src.database_utils.database_helpers import (
+    check_texts_table_schema,
+    column_exists_in_table,
     connect_to_database,
-    get_tables_in_database,
+    fetch_rows_by_regexp,
     get_column_names_in_table,
+    get_tables_in_database,
     regexp,
     register_regexp_function,
+    sanitize_table_name,
     table_exists,
-    column_exists_in_table,
-    check_texts_table_schema,
-    fetch_rows_by_regexp,
-    sanitize_table_name
 )
 
 #########################################
@@ -209,8 +208,7 @@ def create_texts_table(cursor, columns):
     cursor.execute(f"CREATE TABLE texts ({col_defs});")
 
 def test_check_texts_table_schema_returns_true_for_correct_schema():
-    """
-    Test that check_texts_table_schema returns True when the 'texts' table
+    """Test that check_texts_table_schema returns True when the 'texts' table
     contains exactly the expected columns in the correct order.
     """
     conn = sqlite3.connect(":memory:")
@@ -225,8 +223,7 @@ def test_check_texts_table_schema_returns_true_for_correct_schema():
         conn.close()
 
 def test_check_texts_table_schema_returns_false_when_columns_out_of_order():
-    """
-    Test that check_texts_table_schema returns False when the columns exist
+    """Test that check_texts_table_schema returns False when the columns exist
     but are not in the expected order.
     """
     conn = sqlite3.connect(":memory:")
@@ -244,8 +241,7 @@ def test_check_texts_table_schema_returns_false_when_columns_out_of_order():
         conn.close()
 
 def test_check_texts_table_schema_returns_false_when_column_missing():
-    """
-    Test that check_texts_table_schema returns False when one or more expected
+    """Test that check_texts_table_schema returns False when one or more expected
     columns are missing from the 'texts' table.
     """
     conn = sqlite3.connect(":memory:")
@@ -262,15 +258,14 @@ def test_check_texts_table_schema_returns_false_when_column_missing():
         conn.close()
 
 def test_check_texts_table_schema_returns_false_when_extra_column_present():
-    """
-    Test that check_texts_table_schema returns False when the table contains
+    """Test that check_texts_table_schema returns False when the table contains
     all expected columns but also includes additional unwanted columns.
     """
     conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
 
     try:
-        extra_cols = EXPECTED_COLUMNS + ["extra_column"]
+        extra_cols = [*EXPECTED_COLUMNS, "extra_column"]
 
         create_texts_table(cursor, extra_cols)
         conn.commit()
@@ -280,8 +275,7 @@ def test_check_texts_table_schema_returns_false_when_extra_column_present():
         conn.close()
 
 def test_check_texts_table_schema_returns_false_when_table_missing():
-    """
-    Test that check_texts_table_schema returns False when the 'texts' table
+    """Test that check_texts_table_schema returns False when the 'texts' table
     does not exist in the database.
     """
     conn = sqlite3.connect(":memory:")
@@ -298,8 +292,7 @@ def test_check_texts_table_schema_returns_false_when_table_missing():
 #########################################
 
 def test_fetch_rows_by_regexp_returns_matching_rows():
-    """
-    Test that fetch_rows_by_regexp returns rows whose column values match
+    """Test that fetch_rows_by_regexp returns rows whose column values match
     the given regular-expression pattern.
     """
     conn = sqlite3.connect(":memory:")
@@ -333,8 +326,7 @@ def test_fetch_rows_by_regexp_returns_matching_rows():
         conn.close()
 
 def test_fetch_rows_by_regexp_returns_empty_list_when_no_rows_match():
-    """
-    Test that fetch_rows_by_regexp returns an empty list when no rows
+    """Test that fetch_rows_by_regexp returns an empty list when no rows
     match the provided regular-expression pattern.
     """
     conn = sqlite3.connect(":memory:")
@@ -364,8 +356,7 @@ def test_fetch_rows_by_regexp_returns_empty_list_when_no_rows_match():
         conn.close()
 
 def test_fetch_rows_by_regexp_handles_multiple_column_selection():
-    """
-    Test that fetch_rows_by_regexp correctly returns full rows when the query
+    """Test that fetch_rows_by_regexp correctly returns full rows when the query
     selects multiple columns, not just one.
     """
     conn = sqlite3.connect(":memory:")
@@ -415,8 +406,7 @@ def test_fetch_rows_by_regexp_handles_multiple_column_selection():
     ],
 )
 def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> None:
-    """
-    Verify that `sanitize_table_name` safely escapes double-quote characters.
+    """Verify that `sanitize_table_name` safely escapes double-quote characters.
 
     SQLite requires double quotes inside identifiers to be escaped by doubling
     them. These tests ensure:
@@ -432,8 +422,7 @@ def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> 
 #########################################
 
 def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns True when the given URL
+    """Test that speech_url_exists_in_db returns True when the given URL
     is present in the speeches table.
     """
     test_db_path = tmp_path / "test_speeches.db"
@@ -456,8 +445,7 @@ def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
         conn.close()
 
 def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns False when the given URL
+    """Test that speech_url_exists_in_db returns False when the given URL
     is not present in the speeches table.
     """
     test_db_path = tmp_path / "test_speeches.db"
@@ -479,8 +467,7 @@ def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
         conn.close()
 
 def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns False when the speeches table
+    """Test that speech_url_exists_in_db returns False when the speeches table
     does not exist (should be handled by the function's exception guard).
     """
     test_db_path = tmp_path / "test_missing_table.db"
@@ -497,8 +484,7 @@ def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_p
         conn.close()
 
 def test_speech_url_exists_in_db_returns_false_when_db_path_does_not_exist(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns False when the database file
+    """Test that speech_url_exists_in_db returns False when the database file
     does not exist and/or cannot be queried as expected.
     """
     missing_db_path = tmp_path / "does_not_exist.db"
@@ -507,8 +493,7 @@ def test_speech_url_exists_in_db_returns_false_when_db_path_does_not_exist(tmp_p
     assert db_module.speech_url_exists_in_db(missing_db_path, "https://example.com/s1") is False
 
 def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns True even if multiple rows share
+    """Test that speech_url_exists_in_db returns True even if multiple rows share
     the same URL (query uses LIMIT 1).
     """
     test_db_path = tmp_path / "test_duplicates.db"
@@ -531,8 +516,7 @@ def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
         conn.close()
 
 def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
-    """
-    Test that speech_url_exists_in_db returns False when url is None.
+    """Test that speech_url_exists_in_db returns False when url is None.
     This should be safely handled (either by query semantics or exception guard).
     """
     test_db_path = tmp_path / "test_none_url.db"

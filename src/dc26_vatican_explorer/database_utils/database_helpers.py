@@ -2,14 +2,12 @@
 
 ################################## IMPORT LIBRARIES ##################################
 
+import re
 import sqlite3
+from pathlib import Path
 from sqlite3 import Connection, Cursor
 
 from dc26_vatican_explorer.config import _DB_PATH
-
-import re
-
-from pathlib import Path
 
 ################################## DEFINE FUNCTIONS ##################################
 
@@ -19,6 +17,7 @@ def connect_to_database() -> tuple[Connection, Cursor]:
     Returns:
         tuple[Connection, Cursor]: A tuple containing the active database
         connection and a cursor with foreign key enforcement enabled.
+
     """
     conn: Connection = sqlite3.connect(_DB_PATH)
     cursor: Cursor = conn.cursor()
@@ -33,6 +32,7 @@ def get_tables_in_database(cursor: Cursor) -> list[str]:
 
     Returns:
         list[str]: A list of table names in the database.
+
     """
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
@@ -47,9 +47,10 @@ def get_column_names_in_table(cursor: Cursor, table_name: str) -> list[str]:
 
     Returns:
         list[str]: A list of column names in the specified table.
+
     """
     safe_table = sanitize_table_name(table_name)
-    cursor.execute(f'PRAGMA table_info("{safe_table}")')  
+    cursor.execute(f'PRAGMA table_info("{safe_table}")')
     columns = cursor.fetchall()
     return [c[1] for c in columns]
 
@@ -62,6 +63,7 @@ def regexp(pattern: str, text: str | None) -> int:
 
     Returns:
         int: 1 if the pattern matches the text, 0 otherwise.
+
     """
     if text is None:
         return 0
@@ -78,6 +80,7 @@ def register_regexp_function(conn: Connection) -> None:
 
     Returns:
         None
+
     """
     conn.create_function("REGEXP", 2, regexp)
 
@@ -90,6 +93,7 @@ def table_exists(cursor: Cursor, table_name: str) -> bool:
 
     Returns:
         bool: True if the table exists, False otherwise.
+
     """
     cursor.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1;",
@@ -107,6 +111,7 @@ def column_exists_in_table(cursor: Cursor, table_name: str, column_name: str) ->
 
     Returns:
         bool: True if the column exists in the table, False otherwise.
+
     """
     safe_table = sanitize_table_name(table_name)
     cursor.execute(f'PRAGMA table_info("{safe_table}")')
@@ -122,6 +127,7 @@ def check_texts_table_schema(cursor: Cursor) -> bool:
     Returns:
         bool: True if the 'texts' table contains exactly the expected columns
         in the correct order, False otherwise.
+
     """
     expected_columns = [
         "_texts_id",
@@ -145,8 +151,7 @@ def fetch_rows_by_regexp(
     query: str,
     pattern: str
 ) -> list:
-    """
-    Execute a SQL query using a regular-expression filter and return matching rows.
+    """Execute a SQL query using a regular-expression filter and return matching rows.
 
     Args:
         cursor:
@@ -159,6 +164,7 @@ def fetch_rows_by_regexp(
 
     Returns:
         A list of rows returned by the database driver.
+
     """
     cursor.execute(query, (pattern,))
     return cursor.fetchall()
@@ -181,6 +187,7 @@ def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     Returns:
         bool: True if a speech with the given URL exists in the database;
         False otherwise, including when an error occurs during the query.
+
     """
     try:
         with sqlite3.connect(db_path) as conn:
