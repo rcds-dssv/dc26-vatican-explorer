@@ -1,9 +1,5 @@
 """
 Docstring Placeholder
-TODO:
-!! Not perfect, I'm getting a 1986 from Francis (see first one after rearranging).
-'To the National Confederation ... on the occasion of ... John Paul II on 14 June 1986 (14 June 2014)'
-'date': '1986-06-14'
 """
 
 # ----------------------
@@ -51,8 +47,10 @@ def format_date_to_iso(date:str):
     if date is None:
         return date
     
-    # STEP 1 - translate month
+    # normalize
     date = date.lower()
+    month_map = {k.lower():v.lower() for k, v in month_map.items()}
+    # STEP 1 - translate month
     for it_month, eng_month in month_map.items():
         if it_month in date:
             date = date.replace(it_month, eng_month)
@@ -72,7 +70,7 @@ def extract_date_from_title(sentence:str):
     """
     obtains the date from the end of a sentence.
     Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
-        - TODO: Month characters from [A-Z][a-z], some languages may use others so could change to \w+?
+        - TODO: Month characters from [A-Z][a-z], some languages may use others so could change to w+?
     """
     # pattern = r"\((?:.*,\s+)?([A-Z][a-z]+ \d{1,2}, \d{4}|\d{1,2}(?:st|nd|rd|th)? [A-Z][a-z]+ \d{4})\)$"
     pattern = r"""
@@ -95,12 +93,14 @@ def extract_date_from_title(sentence:str):
 # :: MAIN ENTRYPOINT ::
 # ----------------------
 def main():
+    base_path = Path('src/dc26_vatican_explorer/data_cleaning/playground')
+
     # test papacy dates
     papacy_date_test = '01,11.VII.2020'
     print(f"Papacy date old: {papacy_date_test}\nPapacy date new: {format_pontificate_date(papacy_date_test)}\n")
 
     # test date from title
-    test_titles_path = Path('src/data_cleaning/playground/test_titles.txt')
+    test_titles_path = base_path / 'test_titles.txt'
     with test_titles_path.open('r') as f:
         for ttl in f.readlines():
             tdt = extract_date_from_title(ttl)
@@ -108,7 +108,7 @@ def main():
             print(format_date_to_iso(tdt), '\n')
     
     # test other dates
-    test_dates_path = Path('src/data_cleaning/playground/test_dates.txt')
+    test_dates_path = base_path / 'test_dates.txt'
     with test_dates_path.open('r') as f:
         for tdt in f.readlines():
             print(tdt.rstrip('\n'))

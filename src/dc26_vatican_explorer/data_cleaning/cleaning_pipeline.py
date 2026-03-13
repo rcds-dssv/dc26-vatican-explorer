@@ -88,7 +88,7 @@ def main():
     print(pope_speech_metadata['Francis']['texts'][465])
     # write dates to file for debugging
     if write_for_debug:
-        dates_file_path = Path('src/data_cleaning/playground/reformatted_dates.txt')
+        dates_file_path = Path('src/dc26_vatican_explorer/data_cleaning/playground/reformatted_dates.txt')
         write_dates(pope_speech_metadata, dates_file_path)
     return
 
