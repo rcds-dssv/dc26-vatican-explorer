@@ -1,62 +1,85 @@
-"""
-Docstring Placeholder
+"""Docstring Placeholder
 TODO:
 !! Not perfect, I'm getting a 1986 from Francis (see first one after rearranging).
 'To the National Confederation ... on the occasion of ... John Paul II on 14 June 1986 (14 June 2014)'
-'date': '1986-06-14'
+'date': '1986-06-14'.
 """
 
 # ----------------------
 # :: IMPORTS ::
 # ----------------------
 import re
-from dateutil import parser as date_parser
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+from dateutil import parser as date_parser
+
 
 # ----------------------
 # :: FUNCTIONS ::
 # ----------------------
-def format_pontificate_date(date_old_format:str):
-    """
-    Converting from the following format: DD,HH.MMM.YYYY, but months are in roman
-    """
+def format_pontificate_date(date_old_format: str):
+    """Converting from the following format: DD,HH.MMM.YYYY, but months are in roman."""
     roman_map = {
-        'I':'01', 'II':'02', 'III':'03', 'IV':'04', 'V':'05', 'VI':'06',
-        'VII':'07', 'VIII':'08', 'IX':'09', 'X':'10', 'XI':'11', 'XII':'12'
+        "I": "01",
+        "II": "02",
+        "III": "03",
+        "IV": "04",
+        "V": "05",
+        "VI": "06",
+        "VII": "07",
+        "VIII": "08",
+        "IX": "09",
+        "X": "10",
+        "XI": "11",
+        "XII": "12",
     }
-    temp = date_old_format.split(',')
+    temp = date_old_format.split(",")
     day = temp[0]
     if len(day) == 1:
-        day = '0' + day
-    month, year = temp[1].split('.')[1:]
+        day = "0" + day
+    month, year = temp[1].split(".")[1:]
     month = roman_map[month]
     new_date = f"{year}-{month}-{day}"
     return new_date
 
-def format_date_to_iso(date:str):
-    """
-    Turns date from a given format to YYYY-MM-DD
-    Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
+
+def format_date_to_iso(date: str):
+    """Turns date from a given format to YYYY-MM-DD
+    Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY).
     """
     month_map = {
-        "gennaio": "January", "febbraio": "February", "marzo": "March", "aprile": "April",
-        "maggio": "May", "giugno": "June", "luglio": "July", "agosto": "August",
-        "settembre": "September", "ottobre": "October", "novembre": "November", "dicembre": "December",
+        "gennaio": "January",
+        "febbraio": "February",
+        "marzo": "March",
+        "aprile": "April",
+        "maggio": "May",
+        "giugno": "June",
+        "luglio": "July",
+        "agosto": "August",
+        "settembre": "September",
+        "ottobre": "October",
+        "novembre": "November",
+        "dicembre": "December",
         # also adding others that are typos or other languages:
-        "agoo": "August", "Octber": "October", "Jaunary": "January", "Septembre": "September",
-        "octobre": "October", "Novembrer": "November", "Febraury": "February"
+        "agoo": "August",
+        "Octber": "October",
+        "Jaunary": "January",
+        "Septembre": "September",
+        "octobre": "October",
+        "Novembrer": "November",
+        "Febraury": "February",
     }
     # STEP 0 - date is none
     if date is None:
         return date
-    
+
     # STEP 1 - translate month
     date = date.lower()
     for it_month, eng_month in month_map.items():
         if it_month in date:
             date = date.replace(it_month, eng_month)
-    
+
     # STEP 2 - try parser
     default_date = datetime(1, 1, 1)
     try:
@@ -65,12 +88,12 @@ def format_date_to_iso(date:str):
             return None
         else:
             return new_date.strftime("%Y-%m-%d")
-    except (date_parser.ParserError, ValueError) as e:
+    except (date_parser.ParserError, ValueError):
         return None
 
-def extract_date_from_title(sentence:str):
-    """
-    obtains the date from the end of a sentence.
+
+def extract_date_from_title(sentence: str):
+    r"""Obtains the date from the end of a sentence.
     Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
         - TODO: Month characters from [A-Z][a-z], some languages may use others so could change to \w+?
     """
@@ -91,29 +114,33 @@ def extract_date_from_title(sentence:str):
         return match.group(1)  # returns the content inside the parentheses
     return None
 
+
 # ----------------------
 # :: MAIN ENTRYPOINT ::
 # ----------------------
 def main():
     # test papacy dates
-    papacy_date_test = '01,11.VII.2020'
-    print(f"Papacy date old: {papacy_date_test}\nPapacy date new: {format_pontificate_date(papacy_date_test)}\n")
+    papacy_date_test = "01,11.VII.2020"
+    print(
+        f"Papacy date old: {papacy_date_test}\nPapacy date new: {format_pontificate_date(papacy_date_test)}\n"
+    )
 
     # test date from title
-    test_titles_path = Path('src/data_cleaning/playground/test_titles.txt')
-    with test_titles_path.open('r') as f:
+    test_titles_path = Path("src/data_cleaning/playground/test_titles.txt")
+    with test_titles_path.open("r") as f:
         for ttl in f.readlines():
             tdt = extract_date_from_title(ttl)
             print(tdt)
-            print(format_date_to_iso(tdt), '\n')
-    
+            print(format_date_to_iso(tdt), "\n")
+
     # test other dates
-    test_dates_path = Path('src/data_cleaning/playground/test_dates.txt')
-    with test_dates_path.open('r') as f:
+    test_dates_path = Path("src/data_cleaning/playground/test_dates.txt")
+    with test_dates_path.open("r") as f:
         for tdt in f.readlines():
-            print(tdt.rstrip('\n'))
-            print(format_date_to_iso(tdt), '\n')
+            print(tdt.rstrip("\n"))
+            print(format_date_to_iso(tdt), "\n")
     return
+
 
 if __name__ == "__main__":
     main()
