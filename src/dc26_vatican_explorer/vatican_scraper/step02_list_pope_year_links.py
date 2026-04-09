@@ -22,6 +22,7 @@ from vatican_scraper.step01_list_popes import (
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
 
+
 def parse_years(spec: str) -> list[int]:
     years: set[int] = set()
     for part in (p.strip() for p in spec.split(",")):
@@ -38,6 +39,7 @@ def parse_years(spec: str) -> list[int]:
             years.add(int(part))
     return sorted(years)
 
+
 def fetch_pope_main_html(pope_url: str) -> str:
     _pause()
     r = requests.get(pope_url, timeout=30)
@@ -45,14 +47,17 @@ def fetch_pope_main_html(pope_url: str) -> str:
     _pause()
     return r.text
 
+
 def _txt(el) -> str | None:
     return el.get_text(" ", strip=True) if el else None
+
 
 def _sanitize_section(section: str) -> str:
     s = (section or "").strip().lower()
     if not re.match(r"^[a-z][a-z0-9-]*$", s):
         raise ValueError(f"Bad section '{section}'")
     return s
+
 
 def _make_year_href_re(section: str) -> Pattern[str]:
     sec = _sanitize_section(section)
@@ -63,11 +68,13 @@ def _make_year_href_re(section: str) -> Pattern[str]:
         rf"/content/([^/]+)/en/{re.escape(sec)}/(\d{{4}})(?:\.index)?\.html?$"
     )
 
+
 def _norm_label(s: str) -> str:
     s = (s or "").replace("\xa0", " ").strip().lower()
-    s = re.sub(r"[:\s]+$", "", s)   # drop trailing ":" etc.
+    s = re.sub(r"[:\s]+$", "", s)  # drop trailing ":" etc.
     s = re.sub(r"\s+", " ", s)
     return s
+
 
 def extract_pope_metadata_from_main(html: str) -> dict[str, str | None]:
     soup = BeautifulSoup(html, "html.parser")
@@ -106,7 +113,11 @@ def extract_pope_metadata_from_main(html: str) -> dict[str, str | None]:
         if not value:
             continue
 
-        if label in {"beginning pontificate", "inizio pontificato", "début du pontificat"}:
+        if label in {
+            "beginning pontificate",
+            "inizio pontificato",
+            "début du pontificat",
+        }:
             meta["pontificate_begin"] = value
         elif label in {"end pontificate", "fine pontificato", "fin du pontificat"}:
             meta["pontificate_end"] = value
@@ -123,13 +134,17 @@ def extract_pope_metadata_from_main(html: str) -> dict[str, str | None]:
     meta.setdefault("pontificate_end", None)
     return meta
 
+
 def _candidate_anchors(soup: BeautifulSoup):
     return soup.select(
         ".open a[href*='/content/'][href$='.index.html'], "
         ".open a[href*='/content/'][href$='.index.htm']"
     ) or soup.find_all("a", href=True)
 
-def extract_available_years_from_main(html: str, pope_slug: str, section: str) -> list[int]:
+
+def extract_available_years_from_main(
+    html: str, pope_slug: str, section: str
+) -> list[int]:
     soup = BeautifulSoup(html, "html.parser")
     HREF_YEAR_RE = _make_year_href_re(section)
     years: set[int] = set()
@@ -144,7 +159,10 @@ def extract_available_years_from_main(html: str, pope_slug: str, section: str) -
         years.add(int(year_str))
     return sorted(years)
 
-def extract_year_links_from_main(html: str, pope_slug: str, years: set[int], section: str) -> list[dict[str, str]]:
+
+def extract_year_links_from_main(
+    html: str, pope_slug: str, years: set[int], section: str
+) -> list[dict[str, str]]:
     soup = BeautifulSoup(html, "html.parser")
     HREF_YEAR_RE = _make_year_href_re(section)
     found: dict[int, str] = {}
@@ -164,26 +182,31 @@ def extract_year_links_from_main(html: str, pope_slug: str, years: set[int], sec
             found[year] = abs_url
     return [{"year": str(y), "url": found[y]} for y in sorted(found)]
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="List year-archive links for a given pope and section, plus metadata."
     )
     parser.add_argument("--pope", required=True)
     parser.add_argument("--years", required=True)
-    parser.add_argument("--section", default="angelus", help="e.g., angelus, audiences, speeches")
+    parser.add_argument(
+        "--section", default="angelus", help="e.g., angelus, audiences, speeches"
+    )
     args = parser.parse_args()
 
     section = _sanitize_section(args.section)
     years_list = parse_years(args.years)
     if not years_list:
-        print("No valid years parsed from --years.", file=sys.stderr); raise SystemExit(2)
+        print("No valid years parsed from --years.", file=sys.stderr)
+        raise SystemExit(2)
     years_set = set(years_list)
 
     popes = vatican_fetch_pope_directory_recent()
     rec = papal_find_by_display_name(popes, args.pope)
     if not rec:
         avail = ", ".join(p["display_name"] for p in popes)
-        print(f'Pope "{args.pope}" not found. Available: {avail}', file=sys.stderr); raise SystemExit(1)
+        print(f'Pope "{args.pope}" not found. Available: {avail}', file=sys.stderr)
+        raise SystemExit(1)
 
     html = fetch_pope_main_html(rec["url"])
     meta = extract_pope_metadata_from_main(html)
@@ -206,7 +229,8 @@ def main() -> None:
         print("Missing years: " + ", ".join(map(str, missing)), file=sys.stderr)
 
     for r in rows:
-        print(f'{r["year"]}\t{r["url"]}')
+        print(f"{r['year']}\t{r['url']}")
+
 
 if __name__ == "__main__":
     main()
