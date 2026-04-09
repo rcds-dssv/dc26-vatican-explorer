@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="agent_feature_files/libs/clipboard/clipboard.min.js"></script>
+<script src="agent_feature_files/libs/quarto-html/tabby.min.js"></script>
+<script src="agent_feature_files/libs/quarto-html/popper.min.js"></script>
+<script src="agent_feature_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="agent_feature_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="agent_feature_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="agent_feature_files/libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.36">
+
+  <meta name="author" content="Yangyang Li">
+  <meta name="dcterms.date" content="2026-04-09">
+  <title>Adding an Agent to Vatican Explorer</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="agent_feature_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="agent_feature_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #24292e;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #24292e; } /* Normal */
+    code span.al { color: #ff5555; font-weight: bold; } /* Alert */
+    code span.an { color: #6a737d; } /* Annotation */
+    code span.at { color: #d73a49; } /* Attribute */
+    code span.bn { color: #005cc5; } /* BaseN */
+    code span.bu { color: #d73a49; } /* BuiltIn */
+    code span.cf { color: #d73a49; } /* ControlFlow */
+    code span.ch { color: #032f62; } /* Char */
+    code span.cn { color: #005cc5; } /* Constant */
+    code span.co { color: #6a737d; } /* Comment */
+    code span.cv { color: #6a737d; } /* CommentVar */
+    code span.do { color: #6a737d; } /* Documentation */
+    code span.dt { color: #d73a49; } /* DataType */
+    code span.dv { color: #005cc5; } /* DecVal */
+    code span.er { color: #ff5555; text-decoration: underline; } /* Error */
+    code span.ex { color: #d73a49; font-weight: bold; } /* Extension */
+    code span.fl { color: #005cc5; } /* Float */
+    code span.fu { color: #6f42c1; } /* Function */
+    code span.im { color: #032f62; } /* Import */
+    code span.in { color: #6a737d; } /* Information */
+    code span.kw { color: #d73a49; } /* Keyword */
+    code span.op { color: #24292e; } /* Operator */
+    code span.ot { color: #6f42c1; } /* Other */
+    code span.pp { color: #d73a49; } /* Preprocessor */
+    code span.re { color: #6a737d; } /* RegionMarker */
+    code span.sc { color: #005cc5; } /* SpecialChar */
+    code span.ss { color: #032f62; } /* SpecialString */
+    code span.st { color: #032f62; } /* String */
+    code span.va { color: #e36209; } /* Variable */
+    code span.vs { color: #032f62; } /* VerbatimString */
+    code span.wa { color: #ff5555; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="agent_feature_files/libs/revealjs/dist/theme/quarto-2abc1c5b7b5c7eecd6137558e106e4c3.css">
+  <link href="agent_feature_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="agent_feature_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="agent_feature_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="agent_feature_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <meta name="mermaid-theme" content="neutral">
+  <script src="agent_feature_files/libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="agent_feature_files/libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="agent_feature_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Adding an Agent to Vatican Explorer</h1>
+  <p class="subtitle">From SQL pipelines to natural-language exploration</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Yangyang Li 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-04-09</p>
+</section>
+<section class="slide level2">
+
+<style>
+  :root {
+    --vat-red:   #7b1e2b;
+    --vat-red-2: #9b2a3a;
+    --vat-gold:  #c9a227;
+    --vat-cream: #fdf6e3;
+    --vat-cream-2: #f3e7c4;
+    --vat-ink:   #2b2b2b;
+    --vat-dim:   #6b6b6b;
+  }
+
+  /* Headings */
+  .reveal h1,
+  .reveal h2,
+  .reveal h3 {
+    color: var(--vat-red);
+    font-family: Georgia, "Times New Roman", serif;
+    letter-spacing: 0.5px;
+  }
+  .reveal h2 {
+    border-bottom: 2px solid var(--vat-gold);
+    padding-bottom: 0.25em;
+    display: inline-block;
+  }
+
+  /* Code blocks: cream background, red left rule */
+  .reveal pre {
+    border-left: 4px solid var(--vat-red);
+    background: var(--vat-cream);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .reveal code {
+    color: var(--vat-red-2);
+  }
+  .reveal pre code {
+    color: var(--vat-ink);
+  }
+
+  /* Tables: zebra stripes + red header */
+  .reveal table {
+    border-collapse: collapse;
+    margin: 0.5em auto;
+    font-size: 0.78em;
+  }
+  .reveal table th {
+    background: var(--vat-red);
+    color: var(--vat-cream);
+    padding: 0.4em 0.7em;
+    text-align: left;
+  }
+  .reveal table td {
+    padding: 0.35em 0.7em;
+    border-bottom: 1px solid var(--vat-cream-2);
+  }
+  .reveal table tr:nth-child(even) td {
+    background: var(--vat-cream);
+  }
+
+  /* Tool catalog: responsive card grid */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-top: 0.6em;
+  }
+  @media (max-width: 900px) {
+    .tool-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .tool-card {
+    background: var(--vat-cream);
+    border: 1px solid var(--vat-red);
+    border-top: 3px solid var(--vat-gold);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    font-size: 0.72em;
+    text-align: left;
+  }
+  .tool-card h3 {
+    margin: 0 0 0.3em 0;
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    color: var(--vat-red);
+    font-size: 1em;
+    border: none;
+  }
+  .tool-card .tool-name {
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    color: var(--vat-red);
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 0.35em;
+    border-bottom: 1px solid var(--vat-cream-2);
+    padding-bottom: 0.25em;
+  }
+  .tool-card .tool-desc {
+    margin: 0.2em 0 0.5em 0;
+    color: var(--vat-ink);
+    line-height: 1.35;
+  }
+  .tool-card p {
+    margin: 0.2em 0 0.5em 0;
+    color: var(--vat-ink);
+    line-height: 1.35;
+  }
+  .tool-card .wraps {
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    font-size: 0.82em;
+    color: var(--vat-dim);
+    border-top: 1px dashed var(--vat-cream-2);
+    padding-top: 0.35em;
+    margin-top: 0.35em;
+    word-break: break-word;
+  }
+
+  /* Fake terminal for the scripted demo */
+  .terminal {
+    background: #1e1e1e;
+    color: #e6e6e6;
+    border-radius: 10px;
+    padding: 2.2em 1.1em 1.1em 1.1em;
+    position: relative;
+    margin: 0.6em auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    font-size: 0.62em;
+    text-align: left;
+    max-width: 92%;
+  }
+  .terminal::before {
+    content: "";
+    position: absolute;
+    top: 0.7em;
+    left: 0.9em;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff5f56;
+    box-shadow:
+      18px 0 0 #ffbd2e,
+      36px 0 0 #27c93f;
+  }
+  .terminal::after {
+    content: "agent session";
+    position: absolute;
+    top: 0.55em;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #888;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+  }
+  .terminal div.sourceCode,
+  .terminal .sourceCode {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .terminal pre,
+  .terminal pre.sourceCode {
+    background: transparent !important;
+    border: none !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #e6e6e6 !important;
+  }
+  .terminal pre code,
+  .terminal pre.sourceCode code,
+  .terminal code.sourceCode {
+    color: #e6e6e6 !important;
+    background: transparent !important;
+  }
+  /* Force every syntax-highlighted token inside the terminal to inherit */
+  .terminal pre code span,
+  .terminal pre.sourceCode code span,
+  .terminal pre code *,
+  .terminal .sourceCode span {
+    color: #e6e6e6 !important;
+    background: transparent !important;
+  }
+
+  /* Section dividers */
+  .section-divider {
+    text-align: center;
+  }
+  .section-divider .sec-num {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 5em;
+    color: var(--vat-gold);
+    line-height: 1;
+    margin-bottom: 0.1em;
+    letter-spacing: 4px;
+  }
+  .section-divider .sec-title {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 2.2em;
+    color: var(--vat-red);
+    border-top: 2px solid var(--vat-gold);
+    border-bottom: 2px solid var(--vat-gold);
+    padding: 0.3em 0;
+    margin: 0 auto;
+    max-width: 70%;
+  }
+
+  /* Two-column compare cards for "agent vs chatbot" */
+  .compare-col {
+    background: var(--vat-cream);
+    border: 1px solid var(--vat-cream-2);
+    border-top: 3px solid var(--vat-red);
+    border-radius: 8px;
+    padding: 0.8em 1em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .compare-col h4 {
+    margin-top: 0;
+    color: var(--vat-red);
+    font-family: Georgia, serif;
+  }
+  .compare-col .compare-title {
+    margin: 0 0 0.5em 0;
+    color: var(--vat-red);
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.25em;
+    border-bottom: 1px solid var(--vat-gold);
+    padding-bottom: 0.2em;
+  }
+
+  /* Title-slide flourishes */
+  .reveal .slides > section:first-child h1 {
+    border-bottom: 3px solid var(--vat-gold);
+    padding-bottom: 0.2em;
+    display: inline-block;
+  }
+
+  /* Footer tint */
+  .reveal .footer {
+    color: var(--vat-dim);
+    font-style: italic;
+  }
+
+  /* Small-text helper */
+  .tight li { margin: 0.2em 0; }
+  .muted { color: var(--vat-dim); font-size: 0.85em; }
+</style>
+</section>
+<section class="slide level2">
+
+<div class="section-divider">
+<p><span class="sec-num">01</span> <span class="sec-title">Where we are</span></p>
+</div>
+</section>
+<section id="where-we-are-today" class="slide level2">
+<h2>Where we are today</h2>
+<p><strong>Vatican Explorer</strong>, DSSV FY26 Data Conclave project.</p>
+<ul>
+<li>Scrapes speeches, homilies, and audiences from <code>vatican.va</code></li>
+<li>Stores them in a local SQLite database</li>
+<li>Enables analyses like <em>“who cites 1 John 4 and how often?”</em></li>
+</ul>
+<p>Working branch: <code>agent</code>. Goal of this talk: <strong>propose</strong> giving the corpus a natural-language front door, and decide together if it’s worth building.</p>
+</section>
+<section id="what-we-already-built" class="slide level2">
+<h2>What we already built</h2>
+<div class="cell" data-reveal="true" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fdf6e3','primaryTextColor':'#2b2b2b','primaryBorderColor':'#7b1e2b','lineColor':'#c9a227','fontFamily':'Georgia, serif'}}}%%
+flowchart LR
+  A([vatican.va]) --&gt; B[scraper&lt;br/&gt;6 steps]
+  B --&gt; C[(SQLite&lt;br/&gt;vatican_texts.db)]
+  C --&gt; D[database_helpers]
+  D --&gt; E[search&lt;br/&gt;biblical citations]
+  D --&gt; F[data_cleaning]
+  D --&gt; G[notebooks&lt;br/&gt;analyses/]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Key files:</p>
+<ul>
+<li><code>vatican_scraper/step06_run_scraping_pipeline.py</code></li>
+<li><code>database_utils/database_helpers.py</code></li>
+<li><code>search/search_biblical_citation.py</code></li>
+</ul>
+</section>
+<section id="our-sql-backbone" class="slide level2">
+<h2>Our SQL backbone</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource sql number-lines code-with-copy"><code class="sourceCode sql"><span id="cb1-1"><a href=""></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> popes (</span>
+<span id="cb1-2"><a href=""></a>  _pope_id <span class="dt">INTEGER</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb1-3"><a href=""></a>  pope_name TEXT, pope_number TEXT,</span>
+<span id="cb1-4"><a href=""></a>  secular_name TEXT, place_of_birth TEXT,</span>
+<span id="cb1-5"><a href=""></a>  pontificate_begin TEXT, pontificate_end TEXT,</span>
+<span id="cb1-6"><a href=""></a>  <span class="kw">UNIQUE</span>(pope_name, pope_number)</span>
+<span id="cb1-7"><a href=""></a>);</span>
+<span id="cb1-8"><a href=""></a></span>
+<span id="cb1-9"><a href=""></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> texts (</span>
+<span id="cb1-10"><a href=""></a>  _texts_id <span class="dt">INTEGER</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb1-11"><a href=""></a>  pope_id <span class="dt">INTEGER</span>, section TEXT, <span class="dt">year</span> TEXT,</span>
+<span id="cb1-12"><a href=""></a>  <span class="dt">date</span> TEXT, location TEXT, title TEXT,</span>
+<span id="cb1-13"><a href=""></a>  language TEXT, url TEXT, text_content TEXT,</span>
+<span id="cb1-14"><a href=""></a>  <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (pope_id) <span class="kw">REFERENCES</span> popes(_pope_id)</span>
+<span id="cb1-15"><a href=""></a>);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-friction-today" class="slide level2">
+<h2>The friction today</h2>
+<p>To ask: <em>“How did Benedict XVI talk about mercy in 2010?”</em> a user must:</p>
+<div class="columns">
+<div class="column" style="width:58%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a>conn, cur <span class="op">=</span> connect_to_database()</span>
+<span id="cb2-2"><a href=""></a>register_regexp_function(conn)</span>
+<span id="cb2-3"><a href=""></a>cur.execute(<span class="st">"""</span></span>
+<span id="cb2-4"><a href=""></a><span class="st">  SELECT t.title, t.date, t.text_content</span></span>
+<span id="cb2-5"><a href=""></a><span class="st">  FROM texts t JOIN popes p</span></span>
+<span id="cb2-6"><a href=""></a><span class="st">  ON t.pope_id = p._pope_id</span></span>
+<span id="cb2-7"><a href=""></a><span class="st">  WHERE p.pope_name = ?</span></span>
+<span id="cb2-8"><a href=""></a><span class="st">    AND t.year = ?</span></span>
+<span id="cb2-9"><a href=""></a><span class="st">    AND t.text_content REGEXP ?</span></span>
+<span id="cb2-10"><a href=""></a><span class="st">"""</span>, (<span class="st">"Benedict XVI"</span>, <span class="st">"2010"</span>, <span class="vs">r"mercy</span><span class="cf">|</span><span class="vs">misericord"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div><div class="column" style="width:42%;">
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Warning</strong></p>
+</div>
+<div class="callout-content">
+<p><strong>Requires knowing</strong></p>
+<ul>
+<li>The schema</li>
+<li>Python + SQL</li>
+<li>Regex</li>
+<li>Which notebook to open</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div>
+<p><span class="muted">Not accessible to historians or theologians.</span></p>
+</section>
+<section class="slide level2">
+
+<div class="section-divider">
+<p><span class="sec-num">02</span> <span class="sec-title">Why an agent?</span></p>
+</div>
+</section>
+<section id="the-proposal" class="slide level2">
+<h2>The proposal</h2>
+<blockquote>
+<p>Same backend. <strong>New front door.</strong></p>
+</blockquote>
+<ul>
+<li class="fragment">User asks a question in plain English.</li>
+<li class="fragment">An <strong>agent</strong> would pick the right queries, run them against our existing DB, and return a grounded answer with citations.</li>
+<li class="fragment">No new scraping, no new schema; we reuse what we already built.</li>
+<li class="fragment"><strong>Today is about deciding if this is worth doing</strong>, not about a finished product.</li>
+</ul>
+</section>
+<section id="what-is-an-agent" class="slide level2">
+<h2>What is an agent?</h2>
+<p>An <strong>agent</strong> is an LLM <em>in a loop</em> that can <strong>call tools</strong>.</p>
+<div class="columns">
+<div class="column" style="width:48%;">
+<div class="compare-col">
+<p class="compare-title">
+Chatbot
+</p>
+<ul>
+<li>One shot</li>
+<li>Text in, text out</li>
+<li>Cannot touch your data</li>
+<li>Can make things up</li>
+</ul>
+</div>
+</div><div class="column" style="width:48%;">
+<div class="compare-col">
+<p class="compare-title">
+Agent
+</p>
+<ul>
+<li>Runs in a loop</li>
+<li>Decides which tool to call</li>
+<li>Reads real results</li>
+<li>Iterates until done</li>
+</ul>
+</div>
+</div></div>
+<p>The LLM is the planner. <strong>Your functions are the hands.</strong></p>
+</section>
+<section id="the-agent-loop" class="slide level2">
+<h2>The agent loop</h2>
+<div class="cell" data-reveal="true" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fdf6e3','primaryTextColor':'#2b2b2b','primaryBorderColor':'#7b1e2b','lineColor':'#c9a227','fontFamily':'Georgia, serif'}}}%%
+flowchart LR
+  U([User&lt;br/&gt;question]) --&gt; L[LLM&lt;br/&gt;plan]
+  L --&gt;|tool_call| T[Run tool&lt;br/&gt;SQL / regex / ...]
+  T --&gt;|observation| L
+  L --&gt;|done| A([Final answer&lt;br/&gt;with citations])
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><span class="muted">Every hop is transparent: we can log it, test it, and debug it.</span></p>
+</section>
+<section id="tools-are-just-functions" class="slide level2">
+<h2>Tools are just functions</h2>
+<p>We already wrote most of them.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="co"># database_helpers.py (existing)</span></span>
+<span id="cb3-2"><a href=""></a><span class="kw">def</span> fetch_rows_by_regexp(cursor, query, pattern): ...</span>
+<span id="cb3-3"><a href=""></a></span>
+<span id="cb3-4"><a href=""></a><span class="co"># search_biblical_citation.py (existing)</span></span>
+<span id="cb3-5"><a href=""></a><span class="kw">def</span> search_biblical_citations_db(pattern, query): ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Turn them into agent tools with a Pydantic schema:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href=""></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel, Field</span>
+<span id="cb4-2"><a href=""></a></span>
+<span id="cb4-3"><a href=""></a><span class="kw">class</span> SearchTextsInput(BaseModel):</span>
+<span id="cb4-4"><a href=""></a>    pope:    <span class="bu">str</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> Field(<span class="va">None</span>, description<span class="op">=</span><span class="st">"e.g. 'Francis'"</span>)</span>
+<span id="cb4-5"><a href=""></a>    section: <span class="bu">str</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> Field(<span class="va">None</span>, description<span class="op">=</span><span class="st">"homilies | audiences | ..."</span>)</span>
+<span id="cb4-6"><a href=""></a>    year:    <span class="bu">str</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb4-7"><a href=""></a>    regex:   <span class="bu">str</span> <span class="op">|</span> <span class="va">None</span> <span class="op">=</span> Field(<span class="va">None</span>, description<span class="op">=</span><span class="st">"Python regex over text_content"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>We have already written 90% of the agent.</strong> The LLM just picks which one to run.</p>
+</section>
+<section class="slide level2">
+
+<div class="section-divider">
+<p><span class="sec-num">03</span> <span class="sec-title">The tech</span></p>
+</div>
+</section>
+<section id="tech-stack-the-choices" class="slide level2">
+<h2>Tech stack: the choices</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Options</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LLM provider</td>
+<td>Anthropic Claude · OpenAI · Ollama (local)</td>
+</tr>
+<tr class="even">
+<td>Agent framework</td>
+<td>Raw SDK loop · <strong>PydanticAI</strong> · LangChain · LlamaIndex</td>
+</tr>
+<tr class="odd">
+<td>Validation</td>
+<td><strong>Pydantic</strong></td>
+</tr>
+<tr class="even">
+<td>Vector store</td>
+<td>(optional) sqlite-vec · Chroma</td>
+</tr>
+<tr class="odd">
+<td>CLI</td>
+<td><code>python -m dc26_vatican_explorer.agent</code></td>
+</tr>
+</tbody>
+</table>
+<p><span class="muted">Evaluation axes: stability, lock-in, typed I/O, deps, offline story.</span></p>
+</section>
+<section id="tech-stack-our-pick" class="slide level2">
+<h2>Tech stack: our pick</h2>
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p><strong>Anthropic Claude + PydanticAI + Pydantic</strong></p>
+</div>
+</div>
+</div>
+<p>Why:</p>
+<ul>
+<li>First-class <strong>tool use</strong> that is stable and well-documented</li>
+<li><strong>Typed tool I/O</strong> matches our existing function signatures naturally</li>
+<li><strong>Minimal new dependencies</strong>, no heavy framework lock-in</li>
+<li>Fits a clean <code>pyproject.toml</code> optional group:</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource toml number-lines code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href=""></a><span class="kw">[project.optional-dependencies]</span></span>
+<span id="cb5-2"><a href=""></a><span class="dt">agent</span> <span class="op">=</span> <span class="op">[</span><span class="st">"anthropic"</span><span class="op">,</span> <span class="st">"pydantic-ai"</span><span class="op">,</span> <span class="st">"pydantic&gt;=2"</span><span class="op">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fallbacks if constraints change:</p>
+<ul>
+<li><strong>OpenAI + raw SDK.</strong> If we need OpenAI-specific features.</li>
+<li><strong>Ollama + local model.</strong> If we go fully offline or zero-cost.</li>
+</ul>
+</section>
+<section id="how-we-could-build-it" class="slide level2">
+<h2>How we <em>could</em> build it</h2>
+<p>Proposed layout (parallel to <code>search/</code>, <code>pope_comparison/</code>):</p>
+<pre><code>src/dc26_vatican_explorer/agent/
+  __init__.py
+  tools.py      # @tool wrappers around DB helpers
+  schemas.py    # Pydantic models for tool I/O
+  runner.py     # the LLM loop
+  __main__.py   # python -m ...agent</code></pre>
+</section>
+<section id="tool-catalog-v1" class="slide level2">
+<h2>Tool catalog (v1)</h2>
+<div class="tool-grid">
+
+  <div class="tool-card">
+    <div class="tool-name"><code>list_popes()</code></div>
+    <div class="tool-desc">Return every pope with metadata.</div>
+    <div class="wraps">SELECT * FROM popes</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>search_texts(...)</code></div>
+    <div class="tool-desc">Filter texts by pope, section, year, or regex.</div>
+    <div class="wraps">database_helpers.<br>fetch_rows_by_regexp</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>find_biblical_citations()</code></div>
+    <div class="tool-desc">Extract Bible refs from matching texts.</div>
+    <div class="wraps">search.<br>search_biblical_citations_db</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>get_speech(url)</code></div>
+    <div class="tool-desc">Fetch a single speech by URL.</div>
+    <div class="wraps">SELECT ... FROM texts<br>WHERE url = ?</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>summarize_pope(name)</code></div>
+    <div class="tool-desc">Cleaned per-pope corpus summary.</div>
+    <div class="wraps">cleaning_pipeline.<br>get_clean_speech_metadata</div>
+  </div>
+
+</div>
+</section>
+<section id="what-it-might-feel-like" class="slide level2">
+<h2>What it <em>might</em> feel like</h2>
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Warning</strong></p>
+</div>
+<div class="callout-content">
+<p><strong>Thought experiment, not a demo.</strong> Nothing below is built. Numbers are made up.</p>
+</div>
+</div>
+</div>
+<div class="terminal">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a href=""></a>$ python -m dc26_vatican_explorer.agent   # imagined CLI</span>
+<span id="cb7-2"><a href=""></a></span>
+<span id="cb7-3"><a href=""></a>&gt; Which 5 Bible verses does Francis quote most often in his</span>
+<span id="cb7-4"><a href=""></a>  homilies, and how does that compare to Benedict XVI?</span>
+<span id="cb7-5"><a href=""></a></span>
+<span id="cb7-6"><a href=""></a>[agent] planning...</span>
+<span id="cb7-7"><a href=""></a>[tool]  search_texts(pope="Francis", section="homilies")</span>
+<span id="cb7-8"><a href=""></a>        -&gt; ~1,284 rows</span>
+<span id="cb7-9"><a href=""></a>[tool]  find_biblical_citations(pattern=DEFAULT)</span>
+<span id="cb7-10"><a href=""></a>        -&gt; ~4,917 citations extracted</span>
+<span id="cb7-11"><a href=""></a>[tool]  search_texts(pope="Benedict XVI", section="homilies")</span>
+<span id="cb7-12"><a href=""></a>        -&gt; ~962 rows</span>
+<span id="cb7-13"><a href=""></a>[tool]  find_biblical_citations(pattern=DEFAULT)</span>
+<span id="cb7-14"><a href=""></a>        -&gt; ~3,201 citations extracted</span>
+<span id="cb7-15"><a href=""></a>[agent] aggregating...</span>
+<span id="cb7-16"><a href=""></a></span>
+<span id="cb7-17"><a href=""></a>Top 5 verses cited by Francis (homilies):</span>
+<span id="cb7-18"><a href=""></a>  1. Mt 25:40   -- 38 times</span>
+<span id="cb7-19"><a href=""></a>  2. Lk 15:20   -- 31 times</span>
+<span id="cb7-20"><a href=""></a>  3. Jn 13:34   -- 27 times</span>
+<span id="cb7-21"><a href=""></a>  4. 1 Jn 4:8   -- 22 times</span>
+<span id="cb7-22"><a href=""></a>  5. Mt 5:3     -- 19 times</span>
+<span id="cb7-23"><a href=""></a></span>
+<span id="cb7-24"><a href=""></a>Compared to Benedict XVI:</span>
+<span id="cb7-25"><a href=""></a>  - Francis cites Mt 25 (works of mercy) ~3x more often per homily.</span>
+<span id="cb7-26"><a href=""></a>  - Benedict cites Jn 1 and Rom 8 more than Francis.</span>
+<span id="cb7-27"><a href=""></a>  - Both share 1 Jn 4:8 ("God is love") in their top 10.</span>
+<span id="cb7-28"><a href=""></a></span>
+<span id="cb7-29"><a href=""></a>Sources: 47 homilies (URLs available via get_speech).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section class="slide level2">
+
+<div class="section-divider">
+<p><span class="sec-num">04</span> <span class="sec-title">Discussion</span></p>
+</div>
+</section>
+<section id="if-we-say-yes-possible-roadmap" class="slide level2">
+<h2>If we say yes: possible roadmap</h2>
+<p><strong>Milestones (for discussion)</strong></p>
+<ul>
+<li><strong>M1.</strong> Tool wrappers + unit tests (mirror <code>tests/test_database_helpers.py</code>)</li>
+<li><strong>M2.</strong> LLM loop + CLI entry point</li>
+<li><strong>M3.</strong> Evaluation set: 20 gold Q/A pairs, regression-tested</li>
+<li><strong>M4.</strong> <em>Optional</em> semantic search via embeddings (<code>sqlite-vec</code>)</li>
+</ul>
+<p><strong>Risks to watch</strong></p>
+<ul>
+<li>Hallucinated SQL or citations → mitigate with typed tools + grounded answers</li>
+<li>Cost &amp; latency → cache tool results, cap loop iterations</li>
+<li>Evaluation → build the gold set <em>before</em> we tune prompts</li>
+</ul>
+</section>
+<section id="open-questions-for-the-group" class="slide level2">
+<h2>Open questions for the group</h2>
+<ol type="1">
+<li class="fragment"><strong>Is this the right next feature?</strong> Or should effort go into <code>pope_comparison/</code> instead?</li>
+<li class="fragment"><strong>Which LLM provider?</strong> Cloud (Claude/OpenAI) vs.&nbsp;local (Ollama): cost, privacy, reproducibility tradeoffs.</li>
+<li class="fragment"><strong>Framework: PydanticAI, raw SDK, or LangChain?</strong> How much abstraction do we want?</li>
+<li class="fragment"><strong>Who is the user?</strong> Us, other researchers, or a public-facing demo? Changes UX <em>and</em> security.</li>
+<li class="fragment"><strong>How do we evaluate it?</strong> What does “good enough” look like for a humanities corpus?</li>
+</ol>
+</section>
+<section id="thank-you" class="slide level2" data-background-gradient-radial="#fdf6e3, #e8d9a8">
+<h2>Thank you</h2>
+<p><strong>Discussion time.</strong></p>
+<ul>
+<li>Repo: <code>dc26-vatican-explorer</code>, branch <code>agent</code></li>
+<li>This is a proposal; nothing here is built yet</li>
+<li>Goal of this meeting: agree (or not) on the next concrete step</li>
+</ul>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+<p>Vatican Explorer · agent proposal</p>
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="agent_feature_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="agent_feature_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="agent_feature_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="agent_feature_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'fast',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

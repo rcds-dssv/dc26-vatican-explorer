@@ -1,0 +1,660 @@
+---
+title: "Adding an Agent to Vatican Explorer"
+subtitle: "From SQL pipelines to natural-language exploration"
+author: "Yangyang Li"
+date: today
+format:
+  revealjs:
+    theme: serif
+    slide-level: 2
+    slide-number: c/t
+    progress: true
+    transition: fade
+    transition-speed: fast
+    code-line-numbers: true
+    highlight-style: github
+    incremental: false
+    footer: "Vatican Explorer · agent proposal"
+    mermaid:
+      theme: neutral
+---
+
+```{=html}
+<style>
+  :root {
+    --vat-red:   #7b1e2b;
+    --vat-red-2: #9b2a3a;
+    --vat-gold:  #c9a227;
+    --vat-cream: #fdf6e3;
+    --vat-cream-2: #f3e7c4;
+    --vat-ink:   #2b2b2b;
+    --vat-dim:   #6b6b6b;
+  }
+
+  /* Headings */
+  .reveal h1,
+  .reveal h2,
+  .reveal h3 {
+    color: var(--vat-red);
+    font-family: Georgia, "Times New Roman", serif;
+    letter-spacing: 0.5px;
+  }
+  .reveal h2 {
+    border-bottom: 2px solid var(--vat-gold);
+    padding-bottom: 0.25em;
+    display: inline-block;
+  }
+
+  /* Code blocks: cream background, red left rule */
+  .reveal pre {
+    border-left: 4px solid var(--vat-red);
+    background: var(--vat-cream);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .reveal code {
+    color: var(--vat-red-2);
+  }
+  .reveal pre code {
+    color: var(--vat-ink);
+  }
+
+  /* Tables: zebra stripes + red header */
+  .reveal table {
+    border-collapse: collapse;
+    margin: 0.5em auto;
+    font-size: 0.78em;
+  }
+  .reveal table th {
+    background: var(--vat-red);
+    color: var(--vat-cream);
+    padding: 0.4em 0.7em;
+    text-align: left;
+  }
+  .reveal table td {
+    padding: 0.35em 0.7em;
+    border-bottom: 1px solid var(--vat-cream-2);
+  }
+  .reveal table tr:nth-child(even) td {
+    background: var(--vat-cream);
+  }
+
+  /* Tool catalog: responsive card grid */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-top: 0.6em;
+  }
+  @media (max-width: 900px) {
+    .tool-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .tool-card {
+    background: var(--vat-cream);
+    border: 1px solid var(--vat-red);
+    border-top: 3px solid var(--vat-gold);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    font-size: 0.72em;
+    text-align: left;
+  }
+  .tool-card h3 {
+    margin: 0 0 0.3em 0;
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    color: var(--vat-red);
+    font-size: 1em;
+    border: none;
+  }
+  .tool-card .tool-name {
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    color: var(--vat-red);
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 0.35em;
+    border-bottom: 1px solid var(--vat-cream-2);
+    padding-bottom: 0.25em;
+  }
+  .tool-card .tool-desc {
+    margin: 0.2em 0 0.5em 0;
+    color: var(--vat-ink);
+    line-height: 1.35;
+  }
+  .tool-card p {
+    margin: 0.2em 0 0.5em 0;
+    color: var(--vat-ink);
+    line-height: 1.35;
+  }
+  .tool-card .wraps {
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    font-size: 0.82em;
+    color: var(--vat-dim);
+    border-top: 1px dashed var(--vat-cream-2);
+    padding-top: 0.35em;
+    margin-top: 0.35em;
+    word-break: break-word;
+  }
+
+  /* Fake terminal for the scripted demo */
+  .terminal {
+    background: #1e1e1e;
+    color: #e6e6e6;
+    border-radius: 10px;
+    padding: 2.2em 1.1em 1.1em 1.1em;
+    position: relative;
+    margin: 0.6em auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    font-family: "Fira Code", Menlo, Consolas, monospace;
+    font-size: 0.62em;
+    text-align: left;
+    max-width: 92%;
+  }
+  .terminal::before {
+    content: "";
+    position: absolute;
+    top: 0.7em;
+    left: 0.9em;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff5f56;
+    box-shadow:
+      18px 0 0 #ffbd2e,
+      36px 0 0 #27c93f;
+  }
+  .terminal::after {
+    content: "agent session";
+    position: absolute;
+    top: 0.55em;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #888;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+  }
+  .terminal div.sourceCode,
+  .terminal .sourceCode {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .terminal pre,
+  .terminal pre.sourceCode {
+    background: transparent !important;
+    border: none !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #e6e6e6 !important;
+  }
+  .terminal pre code,
+  .terminal pre.sourceCode code,
+  .terminal code.sourceCode {
+    color: #e6e6e6 !important;
+    background: transparent !important;
+  }
+  /* Force every syntax-highlighted token inside the terminal to inherit */
+  .terminal pre code span,
+  .terminal pre.sourceCode code span,
+  .terminal pre code *,
+  .terminal .sourceCode span {
+    color: #e6e6e6 !important;
+    background: transparent !important;
+  }
+
+  /* Section dividers */
+  .section-divider {
+    text-align: center;
+  }
+  .section-divider .sec-num {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 5em;
+    color: var(--vat-gold);
+    line-height: 1;
+    margin-bottom: 0.1em;
+    letter-spacing: 4px;
+  }
+  .section-divider .sec-title {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 2.2em;
+    color: var(--vat-red);
+    border-top: 2px solid var(--vat-gold);
+    border-bottom: 2px solid var(--vat-gold);
+    padding: 0.3em 0;
+    margin: 0 auto;
+    max-width: 70%;
+  }
+
+  /* Two-column compare cards for "agent vs chatbot" */
+  .compare-col {
+    background: var(--vat-cream);
+    border: 1px solid var(--vat-cream-2);
+    border-top: 3px solid var(--vat-red);
+    border-radius: 8px;
+    padding: 0.8em 1em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .compare-col h4 {
+    margin-top: 0;
+    color: var(--vat-red);
+    font-family: Georgia, serif;
+  }
+  .compare-col .compare-title {
+    margin: 0 0 0.5em 0;
+    color: var(--vat-red);
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.25em;
+    border-bottom: 1px solid var(--vat-gold);
+    padding-bottom: 0.2em;
+  }
+
+  /* Title-slide flourishes */
+  .reveal .slides > section:first-child h1 {
+    border-bottom: 3px solid var(--vat-gold);
+    padding-bottom: 0.2em;
+    display: inline-block;
+  }
+
+  /* Footer tint */
+  .reveal .footer {
+    color: var(--vat-dim);
+    font-style: italic;
+  }
+
+  /* Small-text helper */
+  .tight li { margin: 0.2em 0; }
+  .muted { color: var(--vat-dim); font-size: 0.85em; }
+</style>
+```
+---
+
+::: {.section-divider}
+[01]{.sec-num}
+[Where we are]{.sec-title}
+:::
+
+---
+
+## Where we are today
+
+**Vatican Explorer**, DSSV FY26 Data Conclave project.
+
+- Scrapes speeches, homilies, and audiences from `vatican.va`
+- Stores them in a local SQLite database
+- Enables analyses like *"who cites 1 John 4 and how often?"*
+
+Working branch: `agent`.
+Goal of this talk: **propose** giving the corpus a natural-language front door, and decide together if it's worth building.
+
+---
+
+## What we already built
+
+```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fdf6e3','primaryTextColor':'#2b2b2b','primaryBorderColor':'#7b1e2b','lineColor':'#c9a227','fontFamily':'Georgia, serif'}}}%%
+flowchart LR
+  A([vatican.va]) --> B[scraper<br/>6 steps]
+  B --> C[(SQLite<br/>vatican_texts.db)]
+  C --> D[database_helpers]
+  D --> E[search<br/>biblical citations]
+  D --> F[data_cleaning]
+  D --> G[notebooks<br/>analyses/]
+```
+
+Key files:
+
+- `vatican_scraper/step06_run_scraping_pipeline.py`
+- `database_utils/database_helpers.py`
+- `search/search_biblical_citation.py`
+
+---
+
+## Our SQL backbone
+
+```sql
+CREATE TABLE popes (
+  _pope_id INTEGER PRIMARY KEY,
+  pope_name TEXT, pope_number TEXT,
+  secular_name TEXT, place_of_birth TEXT,
+  pontificate_begin TEXT, pontificate_end TEXT,
+  UNIQUE(pope_name, pope_number)
+);
+
+CREATE TABLE texts (
+  _texts_id INTEGER PRIMARY KEY,
+  pope_id INTEGER, section TEXT, year TEXT,
+  date TEXT, location TEXT, title TEXT,
+  language TEXT, url TEXT, text_content TEXT,
+  FOREIGN KEY (pope_id) REFERENCES popes(_pope_id)
+);
+```
+
+
+---
+
+## The friction today
+
+To ask: *"How did Benedict XVI talk about mercy in 2010?"*
+a user must:
+
+::: {.columns}
+::: {.column width="58%"}
+```python
+conn, cur = connect_to_database()
+register_regexp_function(conn)
+cur.execute("""
+  SELECT t.title, t.date, t.text_content
+  FROM texts t JOIN popes p
+  ON t.pope_id = p._pope_id
+  WHERE p.pope_name = ?
+    AND t.year = ?
+    AND t.text_content REGEXP ?
+""", ("Benedict XVI", "2010", r"mercy|misericord"))
+```
+:::
+::: {.column width="42%"}
+::: {.callout-warning}
+**Requires knowing**
+
+- The schema
+- Python + SQL
+- Regex
+- Which notebook to open
+:::
+:::
+:::
+
+[Not accessible to historians or theologians.]{.muted}
+
+---
+
+::: {.section-divider}
+[02]{.sec-num}
+[Why an agent?]{.sec-title}
+:::
+
+---
+
+## The proposal
+
+> Same backend. **New front door.**
+
+::: {.incremental}
+- User asks a question in plain English.
+- An **agent** would pick the right queries, run them against our existing DB, and return a grounded answer with citations.
+- No new scraping, no new schema; we reuse what we already built.
+- **Today is about deciding if this is worth doing**, not about a finished product.
+:::
+
+---
+
+## What is an agent?
+
+An **agent** is an LLM *in a loop* that can **call tools**.
+
+::: {.columns}
+::: {.column width="48%"}
+<div class="compare-col">
+<p class="compare-title">Chatbot</p>
+
+- One shot
+- Text in, text out
+- Cannot touch your data
+- Can make things up
+
+</div>
+:::
+::: {.column width="48%"}
+<div class="compare-col">
+<p class="compare-title">Agent</p>
+
+- Runs in a loop
+- Decides which tool to call
+- Reads real results
+- Iterates until done
+
+</div>
+:::
+:::
+
+The LLM is the planner. **Your functions are the hands.**
+
+---
+
+## The agent loop
+
+```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fdf6e3','primaryTextColor':'#2b2b2b','primaryBorderColor':'#7b1e2b','lineColor':'#c9a227','fontFamily':'Georgia, serif'}}}%%
+flowchart LR
+  U([User<br/>question]) --> L[LLM<br/>plan]
+  L -->|tool_call| T[Run tool<br/>SQL / regex / ...]
+  T -->|observation| L
+  L -->|done| A([Final answer<br/>with citations])
+```
+
+[Every hop is transparent: we can log it, test it, and debug it.]{.muted}
+
+---
+
+## Tools are just functions
+
+We already wrote most of them.
+
+```python
+# database_helpers.py (existing)
+def fetch_rows_by_regexp(cursor, query, pattern): ...
+
+# search_biblical_citation.py (existing)
+def search_biblical_citations_db(pattern, query): ...
+```
+
+Turn them into agent tools with a Pydantic schema:
+
+```python
+from pydantic import BaseModel, Field
+
+class SearchTextsInput(BaseModel):
+    pope:    str | None = Field(None, description="e.g. 'Francis'")
+    section: str | None = Field(None, description="homilies | audiences | ...")
+    year:    str | None = None
+    regex:   str | None = Field(None, description="Python regex over text_content")
+```
+
+**We have already written 90% of the agent.** The LLM just picks which one to run.
+
+---
+
+::: {.section-divider}
+[03]{.sec-num}
+[The tech]{.sec-title}
+:::
+
+---
+
+## Tech stack: the choices
+
+| Layer           | Options                                                 |
+|-----------------|---------------------------------------------------------|
+| LLM provider    | Anthropic Claude · OpenAI · Ollama (local)              |
+| Agent framework | Raw SDK loop · **PydanticAI** · LangChain · LlamaIndex  |
+| Validation      | **Pydantic**                                            |
+| Vector store    | (optional) sqlite-vec · Chroma                          |
+| CLI             | `python -m dc26_vatican_explorer.agent`                 |
+
+[Evaluation axes: stability, lock-in, typed I/O, deps, offline story.]{.muted}
+
+---
+
+## Tech stack: our pick
+
+::: {.callout-tip}
+**Anthropic Claude + PydanticAI + Pydantic**
+:::
+
+Why:
+
+- First-class **tool use** that is stable and well-documented
+- **Typed tool I/O** matches our existing function signatures naturally
+- **Minimal new dependencies**, no heavy framework lock-in
+- Fits a clean `pyproject.toml` optional group:
+
+```toml
+[project.optional-dependencies]
+agent = ["anthropic", "pydantic-ai", "pydantic>=2"]
+```
+
+Fallbacks if constraints change:
+
+- **OpenAI + raw SDK.** If we need OpenAI-specific features.
+- **Ollama + local model.** If we go fully offline or zero-cost.
+
+---
+
+## How we *could* build it
+
+Proposed layout (parallel to `search/`, `pope_comparison/`):
+
+```
+src/dc26_vatican_explorer/agent/
+  __init__.py
+  tools.py      # @tool wrappers around DB helpers
+  schemas.py    # Pydantic models for tool I/O
+  runner.py     # the LLM loop
+  __main__.py   # python -m ...agent
+```
+
+---
+
+## Tool catalog (v1)
+
+```{=html}
+<div class="tool-grid">
+
+  <div class="tool-card">
+    <div class="tool-name"><code>list_popes()</code></div>
+    <div class="tool-desc">Return every pope with metadata.</div>
+    <div class="wraps">SELECT * FROM popes</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>search_texts(...)</code></div>
+    <div class="tool-desc">Filter texts by pope, section, year, or regex.</div>
+    <div class="wraps">database_helpers.<br>fetch_rows_by_regexp</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>find_biblical_citations()</code></div>
+    <div class="tool-desc">Extract Bible refs from matching texts.</div>
+    <div class="wraps">search.<br>search_biblical_citations_db</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>get_speech(url)</code></div>
+    <div class="tool-desc">Fetch a single speech by URL.</div>
+    <div class="wraps">SELECT ... FROM texts<br>WHERE url = ?</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-name"><code>summarize_pope(name)</code></div>
+    <div class="tool-desc">Cleaned per-pope corpus summary.</div>
+    <div class="wraps">cleaning_pipeline.<br>get_clean_speech_metadata</div>
+  </div>
+
+</div>
+```
+
+---
+
+## What it *might* feel like
+
+::: {.callout-warning}
+**Thought experiment, not a demo.** Nothing below is built. Numbers are made up.
+:::
+
+::: {.terminal}
+```text
+$ python -m dc26_vatican_explorer.agent   # imagined CLI
+
+> Which 5 Bible verses does Francis quote most often in his
+  homilies, and how does that compare to Benedict XVI?
+
+[agent] planning...
+[tool]  search_texts(pope="Francis", section="homilies")
+        -> ~1,284 rows
+[tool]  find_biblical_citations(pattern=DEFAULT)
+        -> ~4,917 citations extracted
+[tool]  search_texts(pope="Benedict XVI", section="homilies")
+        -> ~962 rows
+[tool]  find_biblical_citations(pattern=DEFAULT)
+        -> ~3,201 citations extracted
+[agent] aggregating...
+
+Top 5 verses cited by Francis (homilies):
+  1. Mt 25:40   -- 38 times
+  2. Lk 15:20   -- 31 times
+  3. Jn 13:34   -- 27 times
+  4. 1 Jn 4:8   -- 22 times
+  5. Mt 5:3     -- 19 times
+
+Compared to Benedict XVI:
+  - Francis cites Mt 25 (works of mercy) ~3x more often per homily.
+  - Benedict cites Jn 1 and Rom 8 more than Francis.
+  - Both share 1 Jn 4:8 ("God is love") in their top 10.
+
+Sources: 47 homilies (URLs available via get_speech).
+```
+:::
+
+
+---
+
+::: {.section-divider}
+[04]{.sec-num}
+[Discussion]{.sec-title}
+:::
+
+---
+
+## If we say yes: possible roadmap
+
+**Milestones (for discussion)**
+
+- **M1.** Tool wrappers + unit tests (mirror `tests/test_database_helpers.py`)
+- **M2.** LLM loop + CLI entry point
+- **M3.** Evaluation set: 20 gold Q/A pairs, regression-tested
+- **M4.** *Optional* semantic search via embeddings (`sqlite-vec`)
+
+**Risks to watch**
+
+- Hallucinated SQL or citations → mitigate with typed tools + grounded answers
+- Cost & latency → cache tool results, cap loop iterations
+- Evaluation → build the gold set *before* we tune prompts
+
+---
+
+## Open questions for the group
+
+::: {.incremental}
+1. **Is this the right next feature?** Or should effort go into `pope_comparison/` instead?
+2. **Which LLM provider?** Cloud (Claude/OpenAI) vs. local (Ollama): cost, privacy, reproducibility tradeoffs.
+3. **Framework: PydanticAI, raw SDK, or LangChain?** How much abstraction do we want?
+4. **Who is the user?** Us, other researchers, or a public-facing demo? Changes UX *and* security.
+5. **How do we evaluate it?** What does "good enough" look like for a humanities corpus?
+:::
+
+---
+
+## Thank you {background-gradient-radial="#fdf6e3, #e8d9a8"}
+
+**Discussion time.**
+
+- Repo: `dc26-vatican-explorer`, branch `agent`
+- This is a proposal; nothing here is built yet
+- Goal of this meeting: agree (or not) on the next concrete step
