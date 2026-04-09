@@ -13,7 +13,7 @@ from datetime import datetime
 # ----------------------
 # :: FUNCTIONS ::
 # ----------------------
-def format_pontificate_date(date_old_format:str):
+def format_pontificate_date(date_old_format:str) -> str:
     """
     Converting from the following format: DD,HH.MMM.YYYY, but months are in roman
     """
@@ -21,11 +21,9 @@ def format_pontificate_date(date_old_format:str):
         'I':'01', 'II':'02', 'III':'03', 'IV':'04', 'V':'05', 'VI':'06',
         'VII':'07', 'VIII':'08', 'IX':'09', 'X':'10', 'XI':'11', 'XII':'12'
     }
-    temp = date_old_format.split(',')
-    day = temp[0]
-    if len(day) == 1:
-        day = '0' + day
-    month, year = temp[1].split('.')[1:]
+    date_parts = date_old_format.split(',')
+    day = date_parts[0].zfill(2)
+    month, year = date_parts[1].split('.')[1:]
     month = roman_map[month]
     new_date = f"{year}-{month}-{day}"
     return new_date
@@ -50,6 +48,7 @@ def format_date_to_iso(date:str):
     # normalize
     date = date.lower()
     month_map = {k.lower():v.lower() for k, v in month_map.items()}
+    
     # STEP 1 - translate month
     for it_month, eng_month in month_map.items():
         if it_month in date:
@@ -70,16 +69,17 @@ def extract_date_from_title(sentence:str):
     """
     obtains the date from the end of a sentence.
     Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
-        - TODO: Month characters from [A-Z][a-z], some languages may use others so could change to w+?
     """
+    if sentence is None:
+        return None
     # pattern = r"\((?:.*,\s+)?([A-Z][a-z]+ \d{1,2}, \d{4}|\d{1,2}(?:st|nd|rd|th)? [A-Z][a-z]+ \d{4})\)$"
     pattern = r"""
         \(                # opening parenthesis
         (?:.*,\s+)?       # optional location and comma
         (                 # start capture group for date
-            [A-Z][a-z]+\s+\d{1,2},\s+\d{4}     # Month DD, YYYY
+            \w+\s+\d{1,2},\s+\d{4}     # Month DD, YYYY
             |                                  # OR
-            \d{1,2}(?:st|nd|rd|th)?\s+[A-Z][a-z]+\s+\d{4} # DD Month YYYY
+            \d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4} # DD Month YYYY
         )                 # end capture group
         \)                # closing parenthesis
         $                 # end of line

@@ -15,14 +15,21 @@ from pathlib import Path
 # ----------------------
 def fetch_speech_metadata(db_path:str | Path) -> list[dict]:
     """
-    popes_data is a dict that looks like this:
-    {
-        "<pope_name>": {"pope_name": str,
-                        "papacy_began": str,
-                        "texts": [{ "title": str,
-                                    "date": str | date,
-                                    "category": str}, ...]
-        },...}
+    Fetch speech metadata from the SQLite database.
+    Parameters
+    ----------
+    db_path : str | Path
+        Path to the SQLite database file.
+    Returns
+    -------
+    list[dict]
+        A list of dictionaries, one per row returned by the query.
+        Each dict contains at least the following keys:
+        - "pope_name": str
+        - "title": str
+        - "date": str
+        - "section": str
+        - "pontificate_begin": str
     """
     with closing(sqlite3.connect(db_path)) as connection:
         with connection:

@@ -6,7 +6,7 @@ PLACEHOLDER
 # :: IMPORTS ::
 # ----------------------
 from .query_speeches import fetch_speech_metadata
-from . import date_cleaning
+from . import format_dates
 from pathlib import Path
 
 # ----------------------
@@ -14,13 +14,20 @@ from pathlib import Path
 # ----------------------
 def clean_dates(raw_data:list[dict]) -> dict:
     """
-    placeholder
+    popes_data is a dict that looks like this:
+    {
+        "<pope_name>": {"pope_name": str,
+                        "papacy_began": str,
+                        "texts": [{ "title": str,
+                                    "date": str | date,
+                                    "category": str}, ...]
+        },...}
     """
     popes_data = {}
     for row in raw_data:
         pope_name = row['pope_name']
         if pope_name not in popes_data:
-            pontificate_began = date_cleaning.format_pontificate_date(row['pontificate_begin'])
+            pontificate_began = format_dates.format_pontificate_date(row['pontificate_begin'])
             popes_data[pope_name] = {
                 'pope_name': pope_name,
                 'papacy_began': pontificate_began,
@@ -29,14 +36,14 @@ def clean_dates(raw_data:list[dict]) -> dict:
         pontificate_began = popes_data[pope_name]['papacy_began']
         # reformat dates
         if row['date'] is not None:
-            new_date = date_cleaning.format_date_to_iso(row['date'])
+            new_date = format_dates.format_date_to_iso(row['date'])
         else:
-            date_from_title = date_cleaning.extract_date_from_title(row['title'])
-            new_date = date_cleaning.format_date_to_iso(date_from_title)
+            date_from_title = format_dates.extract_date_from_title(row['title'])
+            new_date = format_dates.format_date_to_iso(date_from_title)
         # validate: if speech given before papacy began, try to extract again
         if new_date and new_date < pontificate_began:
-            date_from_title = date_cleaning.extract_date_from_title(row['title'])
-            candidate_date = date_cleaning.format_date_to_iso(date_from_title)
+            date_from_title = format_dates.extract_date_from_title(row['title'])
+            candidate_date = format_dates.format_date_to_iso(date_from_title)
             if candidate_date and candidate_date >= pontificate_began:
                 new_date = candidate_date
             else:
