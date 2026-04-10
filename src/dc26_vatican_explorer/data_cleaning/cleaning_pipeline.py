@@ -27,17 +27,7 @@ def clean_dates(raw_data:list[dict]) -> dict[str, Pope]:
         raw_data(list of dict): List of raw dictionaries fetched from the database.
 
     Returns:
-        A dictionary keyed by pope name, containing cleaned speech metadata.
-    
-    TODO: clean this up:
-    popes_data is a dict that looks like this:
-    {
-        "<pope_name>": {"pope_name": str,
-                        "papacy_began": str,
-                        "texts": [{ "title": str,
-                                    "date": str | date,
-                                    "category": str}, ...]
-        },...}
+        A dictionary of Pope objects, containing cleaned Speech metadata.
     """
     popes_data: dict[str, Pope] = {}
 
@@ -48,16 +38,8 @@ def clean_dates(raw_data:list[dict]) -> dict[str, Pope]:
             popes_data[pope_name] = Pope(
                 pope_name=pope_name,
                 papacy_began=format_dates.format_pontificate_date(row['pontificate_begin']),
-                # texts = []?
             )
-            # popes_data[pope_name] = {
-            #     'pope_name': pope_name,
-            #     'papacy_began': pontificate_began,
-            #     'texts': []
-            # }
-        
         current_pope = popes_data[pope_name]
-        # pontificate_began = popes_data[pope_name]['papacy_began']
 
         # reformat dates
         if row['date'] is not None:
@@ -82,12 +64,6 @@ def clean_dates(raw_data:list[dict]) -> dict[str, Pope]:
             category=row['section']
         )
         current_pope.texts.append(speech)
-        # # fill in dictionary
-        # popes_data[pope_name]['texts'].append({
-        #     'title': row["title"],
-        #     'date': clean_date,
-        #     'category': row['section']
-        # })
     return popes_data
 
 def rearrange_pope_data(popes_data:dict[str,Pope]) -> dict[str,Pope]:
