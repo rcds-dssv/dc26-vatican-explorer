@@ -1,5 +1,8 @@
 """
-PLACEHOLDER
+Pipeline for loading and validating Vatican speech metadata.
+
+This module connects database retrieval with date formatting and applies
+historical validation logic to ensure data integrity.
 """
 
 # ----------------------
@@ -14,6 +17,15 @@ from pathlib import Path
 # ----------------------
 def clean_dates(raw_data:list[dict]) -> dict:
     """
+    Groups speeches by Pope and applies date normalization and validation.
+
+    Args:
+        raw_data(list of dict): List of raw dictionaries fetched from the database.
+
+    Returns:
+        A dictionary keyed by pope name, containing cleaned speech metadata.
+    
+    TODO: clean this up:
     popes_data is a dict that looks like this:
     {
         "<pope_name>": {"pope_name": str,
@@ -56,12 +68,30 @@ def clean_dates(raw_data:list[dict]) -> dict:
         })
     return popes_data
 
-def rearrange_pope_data(popes_data):
+def rearrange_pope_data(popes_data:dict) -> dict:
+    """
+    Sorts each Pope's texts chronologically, placing unknown dates at the end.
+
+    Args:
+        popes_data (dict): The nested dictionary of pope and speech data.
+
+    Returns:
+        The dictionary with sorted text lists.
+    """
     for pdata in popes_data.values():
         pdata['texts'].sort(key=lambda x: (x['date'] is None, x['date']))
     return popes_data
 
-def get_clean_speech_metadata(db_path):
+def get_clean_speech_metadata(db_path: str | Path) -> dict:
+    """
+    Executes the full loading and cleaning pipeline.
+
+    Args:
+        db_path: Path to the SQLite database file.
+
+    Returns:
+        The fully processed and sorted pope metadata dictionary.
+    """
     raw_data = fetch_speech_metadata(db_path)
     pope_speech_metadata = clean_dates(raw_data)
     pope_speech_metadata = rearrange_pope_data(pope_speech_metadata)

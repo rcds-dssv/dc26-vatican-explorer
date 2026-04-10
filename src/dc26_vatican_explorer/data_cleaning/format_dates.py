@@ -1,5 +1,8 @@
 """
-Docstring Placeholder
+Date transformation utilities for Vatican text metadata.
+
+This module provides functions to parse non-standard historical date formats
+and normalize them into ISO 8601 strings.
 """
 
 # ----------------------
@@ -11,11 +14,30 @@ from pathlib import Path
 from datetime import datetime
 
 # ----------------------
+# :: GLOBAL CONSTANTS ::
+# ----------------------
+MONTH_MAP = {
+    "gennaio": "January", "febbraio": "February", "marzo": "March", "aprile": "April",
+    "maggio": "May", "giugno": "June", "luglio": "July", "agosto": "August",
+    "settembre": "September", "ottobre": "October", "novembre": "November", "dicembre": "December",
+    # also adding others that are typos or other languages:
+    "agoo": "August", "Octber": "October", "Jaunary": "January", "Septembre": "September",
+    "octobre": "October", "Novembrer": "November", "Febraury": "February"
+}
+MONTH_MAP = {k.lower():v.lower() for k, v in MONTH_MAP.items()}
+
+# ----------------------
 # :: FUNCTIONS ::
 # ----------------------
-def format_pontificate_date(date_old_format:str) -> str:
+def format_pontificate_date(date_old_format:str) -> str | None:
     """
-    Converting from the following format: DD,HH.MMM.YYYY, but months are in roman
+    Converts a papal election date from custom format to ISO.
+
+    Args:
+        date_old_format (str): String in format 'DD,HH.MMM.YYYY', where months are in Roman (e.g., '01,11.VII.2020').
+
+    Returns:
+        A date string in 'YYYY-MM-DD' format.
     """
     roman_map = {
         'I':'01', 'II':'02', 'III':'03', 'IV':'04', 'V':'05', 'VI':'06',
@@ -28,29 +50,26 @@ def format_pontificate_date(date_old_format:str) -> str:
     new_date = f"{year}-{month}-{day}"
     return new_date
 
-def format_date_to_iso(date:str):
+def format_date_to_iso(date:str) -> str | None:
     """
-    Turns date from a given format to YYYY-MM-DD
+    Normalizes various date formats into ISO 8601 (YYYY-MM-DD).
     Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
+    
+    Args:
+        date (str): A date string (e.g., 'June 14, 2014' or '14 giugno 2014').
+        
+    Returns:
+        A string in YYYY-MM-DD format, or None if parsing fails or the year is missing.
     """
-    month_map = {
-        "gennaio": "January", "febbraio": "February", "marzo": "March", "aprile": "April",
-        "maggio": "May", "giugno": "June", "luglio": "July", "agosto": "August",
-        "settembre": "September", "ottobre": "October", "novembre": "November", "dicembre": "December",
-        # also adding others that are typos or other languages:
-        "agoo": "August", "Octber": "October", "Jaunary": "January", "Septembre": "September",
-        "octobre": "October", "Novembrer": "November", "Febraury": "February"
-    }
     # STEP 0 - date is none
     if date is None:
         return date
     
     # normalize
     date = date.lower()
-    month_map = {k.lower():v.lower() for k, v in month_map.items()}
     
     # STEP 1 - translate month
-    for it_month, eng_month in month_map.items():
+    for it_month, eng_month in MONTH_MAP.items():
         if it_month in date:
             date = date.replace(it_month, eng_month)
     
@@ -65,10 +84,16 @@ def format_date_to_iso(date:str):
     except (date_parser.ParserError, ValueError) as e:
         return None
 
-def extract_date_from_title(sentence:str):
+def extract_date_from_title(sentence:str) -> str | None:
     """
-    obtains the date from the end of a sentence.
+    Extracts a date string found within trailing parentheses of a title.
     Supports: (Month DD, YYYY) OR (DD Month YYYY) OR (DD[nd, rd, st] Month YYYY)
+
+    Args:
+        sentence (str): The full title of the text.
+
+    Returns:
+        The extracted date substring if a match is found, otherwise None.
     """
     if sentence is None:
         return None

@@ -1,5 +1,9 @@
 """
-Placeholder
+Database interaction layer for fetching Vatican speech metadata.
+
+This module handles connection management and raw data retrieval from the 
+SQLite database containing Pope and Text records.
+
 TODO: Decide if I want to turn the dictionary into a dataclass instead, this may make it easy for dependents
 """
 
@@ -15,21 +19,18 @@ from pathlib import Path
 # ----------------------
 def fetch_speech_metadata(db_path:str | Path) -> list[dict]:
     """
-    Fetch speech metadata from the SQLite database.
-    Parameters
-    ----------
-    db_path : str | Path
-        Path to the SQLite database file.
+    Fetch raw speech and pontificate metadata from the SQLite database.
+    
+    Args:
+        db_path (str or Path): Path to the SQLite database file.
+    
     Returns
-    -------
-    list[dict]
-        A list of dictionaries, one per row returned by the query.
-        Each dict contains at least the following keys:
-        - "pope_name": str
-        - "title": str
-        - "date": str
-        - "section": str
-        - "pontificate_begin": str
+        A list of dictionaries, one per row returned by the query. Each dict contains:
+            - pope_name (str): The name of the pope.
+            - title (str): The speech title.
+            - date (str): The date of the speech.
+            - section (str): The type of speech.
+            - pontificate_begin (str): The start date of the pontificate.
     """
     with closing(sqlite3.connect(db_path)) as connection:
         with connection:
