@@ -2,7 +2,8 @@
 # :: IMPORTS ::
 # ----------------------
 import pytest
-from src.dc26_vatican_explorer.data_cleaning.cleaning_pipeline import clean_dates, rearrange_pope_data
+from dc26_vatican_explorer.data_cleaning.cleaning_pipeline import clean_dates, rearrange_pope_data
+from dc26_vatican_explorer.data_cleaning.data_objects import Pope, Speech
 
 # ----------------------
 # :: TESTS ::
@@ -48,30 +49,32 @@ def test_clean_dates_logic(sample_raw_data):
     assert "Benedict XVI" in result
     
     # Verify Date Extraction from Title
-    francis_texts = result["Francis"]["texts"]
+    francis_texts = result["Francis"].texts
     # The one with None date should now have "2020-01-10"
-    assert any(t["date"] == "2020-01-10" for t in francis_texts)
+    assert any(t.date == "2020-01-10" for t in francis_texts)
 
     # Verify Validation Logic (The "Candidate Date" check)
-    benedict_texts = result["Benedict XVI"]["texts"]
+    benedict_texts = result["Benedict XVI"].texts
     # 1990 is before 2005, so it should have tried the title and found April 15
-    assert benedict_texts[0]["date"] == "2005-04-15"
+    assert benedict_texts[0].date == "2005-04-15"
 
 # --  sorting by date --
 def test_rearrange_pope_data_sorting():
     # Setup out-of-order data
     unsorted = {
-        "Francis": {
-            "texts": [
-                {"date": "2023-01-01", "title": "Newer"},
-                {"date": "2020-01-01", "title": "Older"},
-                {"date": None, "title": "Unknown"}
+        "Francis": Pope(
+            pope_name='Francis',
+            papacy_began='somewhen',
+            texts=[
+                Speech(date="2023-01-01", title="Newer", category='Homily'),
+                Speech(date="2020-01-01", title="Older", category='Homily'),
+                Speech(date=None, title="Unknown", category='Homily')
             ]
-        }
+        )
     }
     
     sorted_data = rearrange_pope_data(unsorted)
-    dates = [t["date"] for t in sorted_data["Francis"]["texts"]]
+    dates = [t.date for t in sorted_data["Francis"].texts]
     
     # Expected order: Oldest first, Nones at the end
     assert dates == ["2020-01-01", "2023-01-01", None]
