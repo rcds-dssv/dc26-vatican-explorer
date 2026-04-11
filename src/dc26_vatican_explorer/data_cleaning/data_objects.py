@@ -5,7 +5,6 @@
 # ----------------------
 
 from dataclasses import dataclass, field
-from typing import Optional, List
 
 # ----------------------
 # :: CLASSES ::
@@ -21,7 +20,7 @@ class Speech:
         category: The section or category the speech belongs to.
     """
     title: str
-    date: Optional[str]
+    date: str | None
     category: str
 
 @dataclass
@@ -35,4 +34,4 @@ class Pope:
     """
     pope_name: str
     papacy_began: str
-    texts: List[Speech] = field(default_factory=list)
+    texts: list[Speech] = field(default_factory=list)
