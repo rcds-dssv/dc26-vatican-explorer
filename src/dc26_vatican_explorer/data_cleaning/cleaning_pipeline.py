@@ -113,15 +113,21 @@ def write_dates(popes_data, file_path):
 # ----------------------
 
 def main():
-    write_for_debug = 0
+    """ -- example usage -- """
+    # parameters
+    text_index = 465    # this was a problematic date
     db_path = Path('data/vatican_texts.db')
+    write_for_debug = 0
+
     # load raw data
     raw_data = fetch_speech_metadata(db_path)
     # clean the data
     pope_speech_metadata = clean_dates(raw_data)
     pope_speech_metadata = rearrange_pope_data(pope_speech_metadata)
-    print(pope_speech_metadata['Francis'].texts[465])
-    # write dates to file for debugging
+    # show clean data
+    print(pope_speech_metadata['Francis'].texts[text_index])
+    
+    # (optional) write dates to file for debugging
     if write_for_debug:
         dates_file_path = Path('src/dc26_vatican_explorer/data_cleaning/playground/reformatted_dates.txt')
         write_dates(pope_speech_metadata, dates_file_path)
