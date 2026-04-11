@@ -10,9 +10,13 @@ dependencies = []
 dev = [
     "ipykernel",
     "jupyter",
+    "pytest>=9.0.2",
 ]
 scrape = ["requests"]
-data-manipulation = ["pandas"]
+data-manipulation = [
+    "pandas",
+    "python-dateutil",
+]
 
 [project.scripts]
 vatican = "dc26_vatican_explorer.__main__:main"
