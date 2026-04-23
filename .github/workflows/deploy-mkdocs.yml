@@ -1,0 +1,25 @@
+name: Deploy MkDocs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main         # Trigger when a PR is merged into main
+  workflow_dispatch: # Trigger manually
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: "**/requirements*.txt"
+
+      - run: pip install mkdocs mkdocs-material
+      - run: pip install -r requirements.txt
+      - run: mkdocs gh-deploy --force --clean --verbose
