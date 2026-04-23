@@ -77,10 +77,7 @@ exclude = [
 ]
 
 # Ignore known unused dependencies
-ignore_unused = [
-    "pytest",  # Only used in tests
-    "black",   # Dev tool
-]
+ignore_unused = []
 
 # Ignore missing dependencies (e.g., if they're installed globally) and local imports
 ignore_missing = [
