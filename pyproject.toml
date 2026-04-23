@@ -5,8 +5,8 @@ description = "---TODO---"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "requests",          # Move from scrape group
-    "pandas",            # Move from data-manipulation group
+    "requests",          # runtime dependency; also listed in scrape group
+    "pandas",            # runtime dependency; also listed in data-manipulation group
     "beautifulsoup4",    # bs4 - add explicitly
     "python-dateutil",   # dateutil - add explicitly
     "urllib3",           # transitive error
