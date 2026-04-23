@@ -79,11 +79,8 @@ exclude = [
 # Ignore known unused dependencies
 ignore_unused = []
 
-# Ignore missing dependencies (e.g., if they're installed globally) and local imports
-ignore_missing = [
-    "config",
-    "vatican_scraper",
-]
+# Ignore missing dependencies (e.g., if they're installed globally)
+ignore_missing = []
 
 # Ignore transitive dependencies
 ignore_transitive = [
