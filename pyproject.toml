@@ -82,11 +82,6 @@ ignore_unused = []
 # Ignore missing dependencies (e.g., if they're installed globally)
 ignore_missing = []
 
-# Ignore transitive dependencies
-ignore_transitive = [
-    "urllib3",
-]
-
 # Extend default exclude patterns
 extend_exclude = [
     "scripts/",
