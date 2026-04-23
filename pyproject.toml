@@ -4,10 +4,18 @@ version = "0.1.0"
 description = "---TODO---"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "requests",          # runtime dependency; also listed in scrape group
+    "pandas",            # runtime dependency; also listed in data-manipulation group
+    "beautifulsoup4",    # bs4 - add explicitly
+    "python-dateutil",   # dateutil - add explicitly
+    "urllib3",           # transitive error
+]
+
 
 [dependency-groups]
 dev = [
+    "deptry>=0.25.1",
     "ipykernel",
     "jupyter",
 ]
@@ -45,3 +53,36 @@ ignore = [
 
 ]
 fixable = ["ALL"]
+
+[tool.deptry]
+
+# Declare first-party modules
+known_first_party = [
+    "dc26_vatican_explorer", 
+    "vatican_scraper", 
+    "config"
+]
+
+# Use per-rule ignores to skip DEP001 for specific modules
+[tool.deptry.per_rule_ignores]
+DEP001 = ["config", "vatican_scraper"]
+
+# Exclude directories
+exclude = [
+    "tests/",
+    "docs/",
+    ".venv/",
+    "venv/",
+    "__pycache__/",
+]
+
+# Ignore known unused dependencies
+ignore_unused = []
+
+# Ignore missing dependencies (e.g., if they're installed globally)
+ignore_missing = []
+
+# Extend default exclude patterns
+extend_exclude = [
+    "scripts/",
+]
