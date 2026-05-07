@@ -10,6 +10,8 @@ dependencies = [
     "beautifulsoup4",    # bs4 - add explicitly
     "python-dateutil",   # dateutil - add explicitly
     "urllib3",           # transitive error
+    "seaborn",           # plotting
+    "matplotlib",        # seaborn backend
 ]
 
 
