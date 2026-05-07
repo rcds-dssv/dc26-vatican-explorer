@@ -5,22 +5,24 @@ description = "---TODO---"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "requests",          # runtime dependency; also listed in scrape group
-    "pandas",            # runtime dependency; also listed in data-manipulation group
-    "beautifulsoup4",    # bs4 - add explicitly
     "python-dateutil",   # dateutil - add explicitly
-    "urllib3",           # transitive error
 ]
-
 
 [dependency-groups]
 dev = [
     "deptry>=0.25.1",
     "ipykernel",
     "jupyter",
+    "pytest>=9.0.2",
 ]
-scrape = ["requests"]
-data-manipulation = ["pandas"]
+scrape = [
+    "requests",
+    "beautifulsoup4",
+    "urllib3",           # transitive error
+]
+data-manipulation = [
+    "pandas",
+]
 docs = [
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.0.0",
