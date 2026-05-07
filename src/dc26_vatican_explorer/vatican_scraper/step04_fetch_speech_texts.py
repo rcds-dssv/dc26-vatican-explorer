@@ -1,27 +1,22 @@
 # src/vatican_scraper/step04_fetch_speech_texts.py
 from __future__ import annotations
 
+import difflib
 import hashlib
-import json
+import os
 import random
 import re
-import sys
 import time
 import unicodedata
-import difflib
-import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
-from urllib.parse import urljoin, urldefrag
+from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
-
+from config import _DB_PATH, _PKG_DIR
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
 from vatican_scraper.argparser import get_scraper_args
-from config import _PKG_DIR, _DB_PATH
 from vatican_scraper.database_utils.database_helpers import speech_url_exists_in_db
 
 _SCRAPER_DIR = _PKG_DIR / "vatican_scraper"
@@ -34,18 +29,19 @@ except ImportError as e:
 
 
 from vatican_scraper.step01_list_popes import (
-    vatican_fetch_pope_directory_recent,
     papal_find_by_display_name,
+    vatican_fetch_pope_directory_recent,
 )
 from vatican_scraper.step02_list_pope_year_links import (
-    parse_years,
-    fetch_pope_main_html,
-    extract_year_links_from_main,
+    _sanitize_section,
     extract_available_years_from_main,
     extract_pope_metadata_from_main,
-    _sanitize_section,
+    extract_year_links_from_main,
+    fetch_pope_main_html,
+    parse_years,
 )
 from vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
+
 
 def _pause(min_s: float = 0.35, max_s: float = 1.1) -> None:
     time.sleep(random.uniform(min_s, max_s))
@@ -81,9 +77,7 @@ def _get_session() -> requests.Session:
 
 
 def fetch_html(url: str, *, timeout=(10, 120)) -> str:
-    """
-    timeout = (connect_timeout_seconds, read_timeout_seconds)
-    """
+    """Timeout = (connect_timeout_seconds, read_timeout_seconds)."""
     # light throttling to reduce timeouts / rate-limits
     time.sleep(random.uniform(0.3, 0.9))
 
@@ -93,9 +87,8 @@ def fetch_html(url: str, *, timeout=(10, 120)) -> str:
     r.encoding = r.apparent_encoding or "utf-8"
     return r.text
 
-def fetch_html_with_final_url(url: str, *, timeout=(10, 120)) -> Tuple[str, str]:
-    """
-    Like fetch_html, but also returns the final URL after redirects.
+def fetch_html_with_final_url(url: str, *, timeout=(10, 120)) -> tuple[str, str]:
+    """Like fetch_html, but also returns the final URL after redirects.
     This is critical for language handling because /it/ pages sometimes redirect to /en/.
     """
     time.sleep(random.uniform(0.3, 0.9))
@@ -106,7 +99,7 @@ def fetch_html_with_final_url(url: str, *, timeout=(10, 120)) -> Tuple[str, str]
     return (r.url, r.text)
 
 
-def _norm_text_for_compare(t: Optional[str]) -> str:
+def _norm_text_for_compare(t: str | None) -> str:
     if not t:
         return ""
     t = _maybe_fix_mojibake(t)
@@ -117,15 +110,14 @@ def _norm_text_for_compare(t: Optional[str]) -> str:
 
 DEBUG_LANG = os.getenv("VATICAN_DEBUG_LANG", "0") == "1"
 
-def _snippet(s: Optional[str], n: int = 220) -> str:
+def _snippet(s: str | None, n: int = 220) -> str:
     if not s:
         return ""
     s = re.sub(r"\s+", " ", s).strip()
     return (s[:n] + "…") if len(s) > n else s
 
-def _is_effectively_same_text(a: Optional[str], b: Optional[str]) -> bool:
-    """
-    Language-agnostic: if the 'translated' page is basically the same as the EN page,
+def _is_effectively_same_text(a: str | None, b: str | None) -> bool:
+    """Language-agnostic: if the 'translated' page is basically the same as the EN page,
     treat it as NOT translated.
     """
     aa = _norm_text_for_compare(a)
@@ -138,7 +130,7 @@ def _is_effectively_same_text(a: Optional[str], b: Optional[str]) -> bool:
     ratio = difflib.SequenceMatcher(None, aa, bb).ratio()
     return ratio >= 0.995
 
-def _maybe_fix_mojibake(s: Optional[str]) -> Optional[str]:
+def _maybe_fix_mojibake(s: str | None) -> str | None:
     if s is None:
         return None
     s = s.replace("\xa0", " ")
@@ -151,12 +143,12 @@ def _maybe_fix_mojibake(s: Optional[str]) -> Optional[str]:
             pass
     return s
 
-def _txt(el, sep: str = " ") -> Optional[str]:
+def _txt(el, sep: str = " ") -> str | None:
     return el.get_text(sep, strip=True) if el is not None else None
 
 _HAS_YEAR = re.compile(r"\b(19|20)\d{2}\b")
 
-def _split_lines_on_br(el) -> List[str]:
+def _split_lines_on_br(el) -> list[str]:
     if el is None:
         return []
     has_br = el.find("br") is not None
@@ -164,23 +156,21 @@ def _split_lines_on_br(el) -> List[str]:
     lines = [l.strip() for l in text.split("\n") if l.strip()]
     return lines if has_br else ([text] if text else [])
 
-def _clean(s: Optional[str]) -> Optional[str]:
+def _clean(s: str | None) -> str | None:
     if not s:
         return None
     s = _maybe_fix_mojibake(s).replace("\xa0", " ")
     s = re.sub(r"\s+", " ", s).strip(" ,;·:—–-")
     return s or None
 
-def _looks_reasonable_place(s: Optional[str]) -> bool:
+def _looks_reasonable_place(s: str | None) -> bool:
     if not s:
         return False
     if sum(ch.isalpha() for ch in s) < 3 or len(s) > 120:
         return False
-    if _HAS_YEAR.search(s):
-        return False
-    return True
+    return not _HAS_YEAR.search(s)
 
-def _find_location_in_abstract(soup: BeautifulSoup, debug: bool) -> Optional[str]:
+def _find_location_in_abstract(soup: BeautifulSoup, debug: bool) -> str | None:
     abstract = soup.select_one(".abstract")
     if not abstract:
         return None
@@ -194,7 +184,7 @@ def _find_location_in_abstract(soup: BeautifulSoup, debug: bool) -> Optional[str
                 return loc
     return None
 
-def _find_location_in_font_block(soup: BeautifulSoup, debug: bool) -> Optional[str]:
+def _find_location_in_font_block(soup: BeautifulSoup, debug: bool) -> str | None:
     for font in soup.select("div.text:nth-of-type(3) > font"):
         ps = font.find_all("p", recursive=False)
         for i, p in enumerate(ps):
@@ -209,7 +199,7 @@ def _find_location_in_font_block(soup: BeautifulSoup, debug: bool) -> Optional[s
                     return loc
     return None
 
-def _find_location_in_text_block(soup: BeautifulSoup, debug: bool) -> Optional[str]:
+def _find_location_in_text_block(soup: BeautifulSoup, debug: bool) -> str | None:
     block = soup.select_one("div.text:nth-of-type(3)")
     if not block:
         return None
@@ -226,14 +216,14 @@ def _find_location_in_text_block(soup: BeautifulSoup, debug: bool) -> Optional[s
                 return loc
     return None
 
-def _extract_location(soup: BeautifulSoup, debug: bool = False) -> Optional[str]:
+def _extract_location(soup: BeautifulSoup, debug: bool = False) -> str | None:
     for fn in (_find_location_in_abstract, _find_location_in_font_block, _find_location_in_text_block):
         loc = fn(soup, debug)
         if loc:
             return loc
     return None
 
-def _text_after_multimedia(text_el) -> Optional[str]:
+def _text_after_multimedia(text_el) -> str | None:
     if text_el is None:
         return None
     a = text_el.select_one('a[href*="/content/vaticanevents/"]')
@@ -244,7 +234,7 @@ def _text_after_multimedia(text_el) -> Optional[str]:
         node = node.parent
     if node is None or node.parent != text_el:
         return None
-    parts: List[str] = []
+    parts: list[str] = []
     for sib in node.next_siblings:
         if isinstance(sib, NavigableString):
             s = str(sib).strip()
@@ -257,12 +247,10 @@ def _text_after_multimedia(text_el) -> Optional[str]:
     out = "\n".join(p for p in parts if p).strip()
     return out or None
 
-def extract_links_from_container(container, base_url: str) -> List[str]:
-    """
-    Extract unique, normalized hrefs from <a> tags within the speech text container.
-    """
-    links: List[str] = []
-    seen: Set[str] = set()
+def extract_links_from_container(container, base_url: str) -> list[str]:
+    """Extract unique, normalized hrefs from <a> tags within the speech text container."""
+    links: list[str] = []
+    seen: set[str] = set()
 
     if container is None:
         return links
@@ -288,7 +276,7 @@ def extract_location_and_text(
     speech_html: str,
     speech_url: str,
     debug_loc: bool = False
-) -> Dict[str, Optional[object]]:
+) -> dict[str, object | None]:
     soup = BeautifulSoup(speech_html, "html.parser")
     location = _extract_location(soup, debug=debug_loc)
 
@@ -303,11 +291,11 @@ def extract_location_and_text(
 
 _LANG_IN_URL_RE = re.compile(r"/content/[^/]+/([a-z]{2})(?:/|$)", re.IGNORECASE)
 
-def _lang_from_url(url: str) -> Optional[str]:
+def _lang_from_url(url: str) -> str | None:
     m = _LANG_IN_URL_RE.search(url or "")
     return m.group(1).upper() if m else None
 
-def _lang_from_html(html: str) -> Optional[str]:
+def _lang_from_html(html: str) -> str | None:
     try:
         soup = BeautifulSoup(html, "html.parser")
         h = soup.find("html")
@@ -317,21 +305,19 @@ def _lang_from_html(html: str) -> Optional[str]:
         pass
     return None
 
-def _rewrite_lang_in_url(url: str, want_lang: str) -> Optional[str]:
-    """
-    Turn .../content/<slug>/en/... into .../content/<slug>/<want>/...
+def _rewrite_lang_in_url(url: str, want_lang: str) -> str | None:
+    """Turn .../content/<slug>/en/... into .../content/<slug>/<want>/...
     Only rewrites if it matches the Vatican /content/<slug>/<lang>/ pattern.
     """
     want = want_lang.strip().lower()
     m = re.search(r"(/content/[^/]+/)([a-z]{2})(/)", url, flags=re.IGNORECASE)
     if not m:
         return None
-    prefix, _cur, slash = m.group(1), m.group(2), m.group(3)
+    _prefix, _cur, _slash = m.group(1), m.group(2), m.group(3)
     return re.sub(r"(/content/[^/]+/)([a-z]{2})(/)", rf"\1{want}\3", url, count=1, flags=re.IGNORECASE)
 
 def _looks_like_it(text: str) -> bool:
-    """
-    Crude heuristic: count common Italian function words in the first chunk of text.
+    """Crude heuristic: count common Italian function words in the first chunk of text.
     Avoid external dependencies.
     """
     if not text:
@@ -345,7 +331,7 @@ def _looks_like_it(text: str) -> bool:
     # require a minimal signal and that IT beats EN
     return it_score >= 8 and it_score > en_score
 
-def find_translation_url(speech_html: str, speech_url: str, want_lang: str) -> Optional[str]:
+def find_translation_url(speech_html: str, speech_url: str, want_lang: str) -> str | None:
     soup = BeautifulSoup(speech_html, "html.parser")
     want = want_lang.strip().upper()
 
@@ -379,7 +365,7 @@ _MONTHS_EN = {
     "January": "01","February": "02","March": "03","April": "04","May": "05","June": "06",
     "July": "07","August": "08","September": "09","October": "10","November": "11","December": "12",
 }
-def _normalize_date_yyyymmdd(date_text: Optional[str]) -> str:
+def _normalize_date_yyyymmdd(date_text: str | None) -> str:
     if not date_text:
         return "unknown"
     m = _DATE_RE.search(date_text)
@@ -395,7 +381,7 @@ def _slugify(text: str, maxlen: int = 40) -> str:
     text = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
     return (text or "untitled")[:maxlen].rstrip("-")
 
-def make_speech_id(pope_slug: str, section: str, date_text: Optional[str], title: Optional[str], url: str) -> str:
+def make_speech_id(pope_slug: str, section: str, date_text: str | None, title: str | None, url: str) -> str:
     ymd = _normalize_date_yyyymmdd(date_text)
     title_slug = _slugify(title or "")
     short = hashlib.sha1(url.encode("utf-8")).hexdigest()[:8]
@@ -408,11 +394,11 @@ def fetch_speeches_to_feather(
     years_spec: str,
     lang: str = "EN",
     section: str = "angelus",
-    out: Optional[str] = None,
+    out: str | None = None,
     debug_loc: bool = False,
-    max_n_speeches: int = None,
+    max_n_speeches: int | None = None,
     save_to_file: bool = False,
-) -> Tuple[Optional[Path], List[Dict[str, Optional[object]]]]:
+) -> tuple[Path | None, list[dict[str, object | None]]]:
 
     want_lang = lang.strip().upper()
     if not (len(want_lang) == 2 and want_lang.isalpha()):
@@ -442,7 +428,7 @@ def fetch_speeches_to_feather(
             f"Available on page: {avail_str}."
         )
 
-    rows: List[Dict[str, Optional[object]]] = []
+    rows: list[dict[str, object | None]] = []
     for row in year_rows:
         year = row["year"]
         idx_url = row["url"]
@@ -499,7 +485,7 @@ def fetch_speeches_to_feather(
                 # 1) Try explicit translation links from the base HTML
                 tr_url = find_translation_url(base_html, base_final_url, want_lang)
 
-                candidates: List[str] = []
+                candidates: list[str] = []
                 if tr_url:
                     candidates.append(tr_url)
 
@@ -509,7 +495,7 @@ def fetch_speeches_to_feather(
                     candidates.append(guessed)
 
                 # de-dup while preserving order
-                seen_c: Set[str] = set()
+                seen_c: set[str] = set()
                 candidates = [u for u in candidates if not (u in seen_c or seen_c.add(u))]
 
                 for cand_url in candidates:
@@ -608,7 +594,7 @@ def fetch_speeches_to_feather(
 
 
 def main() -> None:
-    p, args = get_scraper_args()
+    _p, args = get_scraper_args()
 
     # note that this will only take the first pope, since pope is now a list
     fetch_speeches_to_feather(

@@ -1,5 +1,4 @@
-"""
-Pytest configuration file.
+"""Pytest configuration file.
 
 This file configures pytest to properly find modules in the src directory.
 """

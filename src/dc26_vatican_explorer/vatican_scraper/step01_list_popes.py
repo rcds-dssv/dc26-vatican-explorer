@@ -2,17 +2,13 @@
 from __future__ import annotations
 
 import random
-import time
 import re
-from typing import List, Dict, Optional
+import time
 from urllib.parse import urljoin, urlparse
-
-from config import _BASE, _POPE_INDEX_RECENT_URL
 
 import requests
 from bs4 import BeautifulSoup
-
-
+from config import _BASE, _POPE_INDEX_RECENT_URL
 
 # -------------------- tiny courtesy pause --------------------
 
@@ -36,8 +32,7 @@ def papal_normalize_display_name(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").strip())
 
 def _looks_like_pope_display(name: str) -> bool:
-    """
-    Accept:
+    """Accept:
       - Single Title-case word (e.g., 'Francis')
       - N>=2 words where the last word is a Roman numeral
         and all preceding words are Title-case (e.g., 'John Paul II', 'Paul VI', 'John XXIII', 'Leo XIII').
@@ -56,11 +51,10 @@ def _looks_like_pope_display(name: str) -> bool:
     # all preceding tokens must be Title-case words
     return all(_is_titlecase_word(p) for p in parts[:-1])
 
-def papal_extract_slug_from_content_url(url: str) -> Optional[str]:
-    """
-    From URLs like:
-      https://www.vatican.va/content/francesco/en.html -> 'francesco'
-      https://www.vatican.va/content/john-paul-i/en.htm -> 'john-paul-i'
+def papal_extract_slug_from_content_url(url: str) -> str | None:
+    """From URLs like:
+    https://www.vatican.va/content/francesco/en.html -> 'francesco'
+    https://www.vatican.va/content/john-paul-i/en.htm -> 'john-paul-i'.
     """
     try:
         parts = urlparse(url).path.strip("/").split("/")
@@ -72,13 +66,12 @@ def papal_extract_slug_from_content_url(url: str) -> Optional[str]:
 
 # -------------------- core scraping --------------------
 
-def _papal_collect_english_content_links(soup: BeautifulSoup) -> List[Dict[str, str]]:
-    """
-    Find anchors pointing to /content/<slug>/(en.html|en.htm),
+def _papal_collect_english_content_links(soup: BeautifulSoup) -> list[dict[str, str]]:
+    """Find anchors pointing to /content/<slug>/(en.html|en.htm),
     keep only those whose visible text looks like a papal name.
     Return [{'display_name','slug','url'}, ...].
     """
-    items: List[Dict[str, str]] = []
+    items: list[dict[str, str]] = []
 
     # More targeted selection within the main content area if present
     candidates = soup.select(
@@ -118,9 +111,8 @@ def _papal_collect_english_content_links(soup: BeautifulSoup) -> List[Dict[str, 
 
 # -------------------- public helpers (task-specific names) --------------------
 
-def vatican_fetch_pope_directory_recent() -> List[Dict[str, str]]:
-    """
-    Scrape recent/current popes from https://www.vatican.va/holy_father/index.htm.
+def vatican_fetch_pope_directory_recent() -> list[dict[str, str]]:
+    """Scrape recent/current popes from https://www.vatican.va/holy_father/index.htm.
     Returns dicts: {'display_name', 'slug', 'url'} where 'url' is the English landing page
     (e.g., https://www.vatican.va/content/francesco/en.html).
     """
@@ -133,10 +125,9 @@ def vatican_fetch_pope_directory_recent() -> List[Dict[str, str]]:
     results = _papal_collect_english_content_links(soup)
     return results
 
-def papal_find_by_display_name(popes: List[Dict[str, str]], name: str) -> Optional[Dict[str, str]]:
-    """
-    Case-insensitive exact match on display_name.
-    Example: papal_find_by_display_name(popes, "Leo XIV") -> {...}
+def papal_find_by_display_name(popes: list[dict[str, str]], name: str) -> dict[str, str] | None:
+    """Case-insensitive exact match on display_name.
+    Example: papal_find_by_display_name(popes, "Leo XIV") -> {...}.
     """
     key = papal_normalize_display_name(name).lower()
     for p in popes:

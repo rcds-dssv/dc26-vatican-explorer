@@ -1,27 +1,30 @@
 # src/vatican_scraper/step03_list_speeches.py
 from __future__ import annotations
 
-import argparse, random, re, sys, time
-from typing import Callable, Dict, List, Optional, Set
+import argparse
+import random
+import re
+import sys
+import time
+from collections.abc import Callable
 from urllib.parse import urljoin
-
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 import requests
 from bs4 import BeautifulSoup
-
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from vatican_scraper.step01_list_popes import (
-    vatican_fetch_pope_directory_recent,
     papal_find_by_display_name,
+    vatican_fetch_pope_directory_recent,
 )
 from vatican_scraper.step02_list_pope_year_links import (
-    parse_years,
-    fetch_pope_main_html,
-    extract_year_links_from_main,
-    extract_available_years_from_main,
     _sanitize_section,  # reuse validation
+    extract_available_years_from_main,
+    extract_year_links_from_main,
+    fetch_pope_main_html,
+    parse_years,
 )
+
 
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
@@ -56,9 +59,7 @@ def _get_session() -> requests.Session:
     return s
 
 def fetch_html(url: str, *, timeout=(10, 120)) -> str:
-    """
-    timeout = (connect_timeout_seconds, read_timeout_seconds)
-    """
+    """Timeout = (connect_timeout_seconds, read_timeout_seconds)."""
     # light throttling to reduce timeouts / rate-limits
     time.sleep(random.uniform(0.3, 0.9))
 
@@ -73,15 +74,14 @@ def extract_speeches_from_year_index(
         year_index_url: str,
         pope_slug: str,
         section: str,
-) -> List[Dict[str, Optional[str]]]:
-    """
-    Pull individual speech links under the .documento ... h2 > a structure.
-    Emits: {'title': str, 'url': str, 'date': Optional[str]}
+) -> list[dict[str, str | None]]:
+    """Pull individual speech links under the .documento ... h2 > a structure.
+    Emits: {'title': str, 'url': str, 'date': Optional[str]}.
     """
     sec = _sanitize_section(section)
     soup = BeautifulSoup(year_index_html, "html.parser")
-    items: List[Dict[str, Optional[str]]] = []
-    seen: Set[str] = set()
+    items: list[dict[str, str | None]] = []
+    seen: set[str] = set()
 
     for li in soup.select(".documento ul li"):
         a = li.select_one("h2 a[href]")
@@ -120,9 +120,8 @@ def extract_month_links_for_speeches(
     year_url: str,
     pope_slug: str,
     year: str,
-) -> List[str]:
-    """
-    Find month pages like:
+) -> list[str]:
+    """Find month pages like:
       /content/<slug>/en/speeches/<year>/<month>.html
       /content/<slug>/en/speeches/<year>/<month>.index.html
     Returns absolute URLs in (page) order, de-duplicated.
@@ -133,8 +132,8 @@ def extract_month_links_for_speeches(
         re.IGNORECASE,
     )
 
-    out: List[str] = []
-    seen: Set[str] = set()
+    out: list[str] = []
+    seen: set[str] = set()
     for a in soup.find_all("a", href=True):
         href = a["href"]
         if not pat.search(href):
@@ -153,9 +152,8 @@ def collect_speeches_for_year_index(
     section: str,
     year: str,
     fetcher: Callable[[str], str] = fetch_html,
-) -> List[Dict[str, Optional[str]]]:
-    """
-    Returns list of {'title': str, 'url': str, 'date': Optional[str]}.
+) -> list[dict[str, str | None]]:
+    """Returns list of {'title': str, 'url': str, 'date': Optional[str]}.
     Handles the speeches-specific year->month traversal.
     """
     speeches = extract_speeches_from_year_index(idx_html, idx_url, pope_slug, section)

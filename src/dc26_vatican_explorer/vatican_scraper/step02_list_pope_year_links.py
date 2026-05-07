@@ -1,30 +1,29 @@
 # src/vatican_scraper/step02_list_pope_year_links.py
 from __future__ import annotations
 
-import sys
-from urllib.parse import urljoin
-import re
-import time
-import random
 import argparse
 import json
-from typing import List, Dict, Optional, Set, Pattern
+import random
+import re
+import sys
+import time
+from re import Pattern
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-
 from config import _BASE
-
 from vatican_scraper.step01_list_popes import (
-    vatican_fetch_pope_directory_recent,
     papal_find_by_display_name,
+    vatican_fetch_pope_directory_recent,
 )
+
 
 def _pause(min_s: float = 0.4, max_s: float = 1.2) -> None:
     time.sleep(random.uniform(min_s, max_s))
 
-def parse_years(spec: str) -> List[int]:
-    years: Set[int] = set()
+def parse_years(spec: str) -> list[int]:
+    years: set[int] = set()
     for part in (p.strip() for p in spec.split(",")):
         if not part:
             continue
@@ -46,7 +45,7 @@ def fetch_pope_main_html(pope_url: str) -> str:
     _pause()
     return r.text
 
-def _txt(el) -> Optional[str]:
+def _txt(el) -> str | None:
     return el.get_text(" ", strip=True) if el else None
 
 def _sanitize_section(section: str) -> str:
@@ -70,10 +69,10 @@ def _norm_label(s: str) -> str:
     s = re.sub(r"\s+", " ", s)
     return s
 
-def extract_pope_metadata_from_main(html: str) -> Dict[str, Optional[str]]:
+def extract_pope_metadata_from_main(html: str) -> dict[str, str | None]:
     soup = BeautifulSoup(html, "html.parser")
 
-    meta: Dict[str, Optional[str]] = {
+    meta: dict[str, str | None] = {
         "pope_number": None,
         "pontificate_begin": None,
         "pontificate_end": None,
@@ -130,10 +129,10 @@ def _candidate_anchors(soup: BeautifulSoup):
         ".open a[href*='/content/'][href$='.index.htm']"
     ) or soup.find_all("a", href=True)
 
-def extract_available_years_from_main(html: str, pope_slug: str, section: str) -> List[int]:
+def extract_available_years_from_main(html: str, pope_slug: str, section: str) -> list[int]:
     soup = BeautifulSoup(html, "html.parser")
     HREF_YEAR_RE = _make_year_href_re(section)
-    years: Set[int] = set()
+    years: set[int] = set()
     for a in _candidate_anchors(soup):
         href = a.get("href", "")
         m = HREF_YEAR_RE.search(href)
@@ -145,10 +144,10 @@ def extract_available_years_from_main(html: str, pope_slug: str, section: str) -
         years.add(int(year_str))
     return sorted(years)
 
-def extract_year_links_from_main(html: str, pope_slug: str, years: Set[int], section: str) -> List[Dict[str, str]]:
+def extract_year_links_from_main(html: str, pope_slug: str, years: set[int], section: str) -> list[dict[str, str]]:
     soup = BeautifulSoup(html, "html.parser")
     HREF_YEAR_RE = _make_year_href_re(section)
-    found: Dict[int, str] = {}
+    found: dict[int, str] = {}
     for a in _candidate_anchors(soup):
         href = a.get("href", "")
         m = HREF_YEAR_RE.search(href)

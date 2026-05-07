@@ -1,6 +1,4 @@
-'''
-Something or other here
-'''
+"""Something or other here."""
 
 # imports
 from dataclasses import dataclass

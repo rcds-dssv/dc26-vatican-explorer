@@ -4,14 +4,13 @@
 # from the root directory
 # $ python -m vatican_scraper.step05_add_to_database
 
-from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
-from vatican_scraper.argparser import get_scraper_args
-from config import _DB_PATH
-
 import sqlite3
-from datetime import datetime, timezone
-from typing import Dict, Optional, Tuple
+from datetime import UTC, datetime
 from pathlib import Path
+
+from config import _DB_PATH
+from vatican_scraper.argparser import get_scraper_args
+from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 
 DEFAULT_TABLE_SCHEMA = """
 
@@ -52,14 +51,14 @@ CREATE TABLE IF NOT EXISTS texts (
 
 
 def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA) -> None:
-    """
-    Create the sqlite database if it doesn't exist.
-    
+    """Create the sqlite database if it doesn't exist.
+
     Args:
         db_path: path to sqlite file (creates file if doesn't exist)
         table_schema: SQL schema
 
     Does not return content
+
     """
     conn = sqlite3.connect(str(db_path))
     try:
@@ -69,9 +68,8 @@ def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA)
     finally:
         conn.close()
 
-def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: bool = False) -> Tuple[int, int]:
-    """
-    Add a text record (dict) to the SQLite DB. Creates DB if needed.
+def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: bool = False) -> tuple[int, int]:
+    """Add a text record (dict) to the SQLite DB. Creates DB if needed.
     Update the popes database if needed.
 
     Args:
@@ -82,8 +80,8 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
 
     Returns:
         row id of inserted/updated (text, pope), or 0 if ignored.
-    """
 
+    """
     ensure_db_and_table(db_path)
 
     # canonicalize keys and provide defaults
@@ -102,7 +100,7 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
     language = record.get("lang_available") or record.get("lang_requested") or record.get("language")
     text = record.get("text")
     url = record.get("url")
-    entry_creation_date = datetime.now(timezone.utc).isoformat()  # store UTC timestamp
+    entry_creation_date = datetime.now(UTC).isoformat()  # store UTC timestamp
 
 
     conn = sqlite3.connect(str(db_path))
@@ -124,7 +122,7 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
         cur.execute(sql_pope, (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date))
         conn.commit()
         _pope_id = cur.lastrowid or 0
-        
+
         # retrieve the pope_id (whether newly inserted or existing)
         cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
         row = cur.fetchone()
@@ -148,13 +146,11 @@ def add_content_to_db(db_path: Path, record: Dict[str, Optional[str]], replace: 
         conn.close()
 
 def main() -> None:
-    """
-    Example of how to add a single text to the database.  This is not intended to be run on its own.
+    """Example of how to add a single text to the database.  This is not intended to be run on its own.
     Instead, the code above should be run as part of the overall scraping pipeline, as in step06_run_scraping_pipeline.py.
     """
+    _p, args = get_scraper_args()
 
-    p, args = get_scraper_args()
-        
     _, rows = fetch_speeches_to_feather(
         pope=args.pope,
         years_spec=args.years,
@@ -183,4 +179,4 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-    
+

@@ -1,20 +1,17 @@
 # src/vatican_scraper/step06_run_scraping_pipeline.py
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
-from typing import List, Tuple
 
+from config import _DB_PATH
 from vatican_scraper.argparser import get_scraper_args
 from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 from vatican_scraper.step05_add_to_database import add_content_to_db
-from config import _DB_PATH
-
 
 
 def main() -> None:
     p, args = get_scraper_args()
-    popes: List[str] = []
+    popes: list[str] = []
 
     # Support --pope (string or list, depending on argparser)
     pope_arg = getattr(args, "pope", None)
@@ -35,7 +32,7 @@ def main() -> None:
     # de-dup while preserving order
     seen = set()
     popes = [p for p in popes if not (p in seen or seen.add(p))]
-    
+
 
     if not popes:
         p.error("Provide at least one pope via --pope (repeatable) or --popes (comma-separated).")
@@ -45,8 +42,8 @@ def main() -> None:
     if multi and args.out:
         print("[info] Multiple popes provided; ignoring --out and using per-pope auto filenames.")
 
-    successes: List[Tuple[str, Path]] = []
-    failures: List[Tuple[str, str]] = []
+    successes: list[tuple[str, Path]] = []
+    failures: list[tuple[str, str]] = []
 
     for pope in popes:
 

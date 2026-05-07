@@ -1,5 +1,4 @@
-"""
-Unit tests for pope name and URL utility functions.
+"""Unit tests for pope name and URL utility functions.
 
 This module tests the utility functions from vatican_scraper.step01_list_popes
 that handle pope name normalization, validation, and URL parsing.
@@ -7,9 +6,9 @@ that handle pope name normalization, validation, and URL parsing.
 
 import pytest
 from vatican_scraper.step01_list_popes import (
-    papal_normalize_display_name,
     papal_extract_slug_from_content_url,
     papal_find_by_display_name,
+    papal_normalize_display_name,
 )
 
 
