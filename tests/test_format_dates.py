@@ -2,7 +2,7 @@
 # :: IMPORTS ::
 # ----------------------
 import pytest
-from src.dc26_vatican_explorer.data_cleaning.format_dates import (
+from dc26_vatican_explorer.data_cleaning.format_dates import (
     format_pontificate_date,
     format_date_to_iso,
     extract_date_from_title
