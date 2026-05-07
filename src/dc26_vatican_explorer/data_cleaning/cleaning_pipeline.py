@@ -95,19 +95,6 @@ def get_clean_speech_metadata(db_path: str | Path) -> dict:
     pope_speech_metadata = rearrange_pope_data(pope_speech_metadata)
     return pope_speech_metadata
 
-def write_dates(popes_data, file_path):
-    # create a file with all dates for easy debugging
-    with open(file_path, 'w') as f:
-        for pontiff, pontiff_data in popes_data.items():
-            f.write(f"<<{pontiff}>>:\n\n")
-            for text in pontiff_data['texts']:
-                if text['date']:
-                    f.write(text['date'] + '\n')
-                else:
-                    f.write('NONE FOUND\n')
-            f.write('\n\n\n')
-    return
-
 # ----------------------
 # :: MAIN ENTRYPOINT ::
 # ----------------------

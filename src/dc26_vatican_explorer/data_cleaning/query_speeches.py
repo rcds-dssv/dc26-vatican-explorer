@@ -3,8 +3,6 @@ Database interaction layer for fetching Vatican speech metadata.
 
 This module handles connection management and raw data retrieval from the 
 SQLite database containing Pope and Text records.
-
-TODO: Decide if I want to turn the dictionary into a dataclass instead, this may make it easy for dependents
 """
 
 # ----------------------
