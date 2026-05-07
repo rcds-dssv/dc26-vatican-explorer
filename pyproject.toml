@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "---TODO---"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "python-dateutil",
+]
 
 [dependency-groups]
 dev = [
@@ -15,7 +17,6 @@ dev = [
 scrape = ["requests"]
 data-manipulation = [
     "pandas",
-    "python-dateutil",
 ]
 
 [project.scripts]
