@@ -11,7 +11,7 @@ dependencies = [
     "python-dateutil",   # dateutil - add explicitly
     "urllib3",           # transitive error
     "matplotlib",
-    "seaborn",
+    "seaborn"
 ]
 
 

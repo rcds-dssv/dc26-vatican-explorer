@@ -24,6 +24,7 @@ dc26-vatican-explorer/
 │   ├── database_utils/         # SQLite helpers
 │   ├── data_cleaning/          # date normalization, speech metadata cleaning
 │   ├── search/                 # biblical citation search
+│   ├── plotting_tools/         # reusable plotting functions + example analyses
 │   └── pope_comparison/        # analysis notebooks + dataclasses
 ├── tests/                      # pytest tests
 └── analyses/                   # Jupyter notebooks
@@ -125,6 +126,7 @@ Key functions:
 - `connect_to_database()` → `(Connection, Cursor)` — connects to `_DB_PATH`, enables foreign keys
 - `register_regexp_function(conn)` — registers Python `re.search` as SQLite `REGEXP`
 - `fetch_rows_by_regexp(cursor, query, pattern)` — runs a REGEXP query
+- `get_column_names_in_table(cursor, table_name)` → `list[str]` — returns column names for a table
 - `table_exists(cursor, table_name)` → `bool`
 - `column_exists_in_table(cursor, table_name, column_name)` → `bool`
 - `check_texts_table_schema(cursor)` → `bool` — validates exact column order
@@ -147,7 +149,9 @@ Default regex: `r'\b(?:[1-3]\s+)?[A-Za-z]{2,4}\s+\d{1,3}:\d{1,3}(?:[-.]\d{1,3})?
 
 - Matches: `Jn 8:32`, `1 Cor 13:6`, `Mt 9:10-13`, `1 Jn 4:8.16`
 - `search_biblical_citations(text, context=100, pattern=None)` → `list[tuple[citation, surrounding_text]]`
-- `search_biblical_citations_db(pattern=None, query=None)` → `list[tuple[db_row, citations]]`
+- `search_biblical_citations_db(pattern=None, query=None, search_field="text_content")` → `list[tuple[db_row, citations]]`
+  - `search_field` selects which texts table column to match against (default `"text_content"`, also supports `"title"` or any valid column)
+  - `search_field` is validated against actual DB column names at runtime
   - `db_row` is a tuple with columns in schema order; `text_content` is at index 9
 
 ---
@@ -176,6 +180,61 @@ Date cleaning notes:
 
 ---
 
+## Plotting Tools (`plotting_tools/`)
+
+### `plotting_functions.py` — Generic reusable chart functions
+
+```python
+from dc26_vatican_explorer.plotting_tools.plotting_functions import (
+    create_bar_chart,   # returns (fig, ax)
+    save_figure,        # saves fig to disk, returns resolved Path
+)
+```
+
+- Uses `matplotlib.use("Agg")` (non-interactive backend, safe for scripts/agents)
+- `create_bar_chart(values, labels, title, xlabel, ylabel, color, palette, figsize, x_rotation, hue, legend_title, orient="v")` → `(Figure, Axes)`
+  - `orient="v"` (default) — vertical bars; `orient="h"` — horizontal bars
+  - When `palette` is used without explicit `hue`, passes `hue=<axis_data>` and `legend=False` internally (seaborn ≥0.14 FutureWarning fix)
+- `save_figure(fig, filename, fmt="png", dpi=150)` → `Path` — creates parent dirs, appends extension if missing
+
+### `create_example_plots.py` — Domain-specific analysis plots
+
+Run from repo root:
+```bash
+python -m dc26_vatican_explorer.plotting_tools.create_example_plots
+```
+
+Public functions (all return `(Figure, Axes, Path)`):
+
+| Function | Description |
+|----------|-------------|
+| `plot_speech_count_per_pope(language, out_path, title, palette, figsize)` | Bar chart of speech count per pope for a given language |
+| `plot_word_count_per_pope(word, language, search_field, out_path, title, palette, figsize)` | Bar chart of word occurrences per pope |
+| `plot_word_rate_per_pope(word, language, search_field, out_path, title, palette, figsize)` | Bar chart of word occurrences per speech (count ÷ speech count) |
+
+Key parameters:
+- `language`: two-letter code (e.g. `"EN"`, `"IT"`), default `"EN"`
+- `search_field`: which texts column to search — `"text_content"` (default) or `"title"`
+- Figures are saved to `plotting_tools/example_plots/<name>.png` by default
+- All three functions call `_print_content_diagnostic()` which prints `total/null/empty_string/has_content` counts per pope per language (all languages) to stdout
+
+Private helpers:
+- `_print_content_diagnostic()` — diagnostic query: text_content status per pope per language
+- `_fetch_word_counts(word, language, search_field)` → `dict[pope_name, (count, begin, end)]`
+- `_fetch_speech_counts(language)` → `dict[pope_name, (count, begin, end)]`
+- `_extract_year(date_str)` — extracts 4-digit year from Vatican date strings
+- `_format_pope_label(pope_name, begin, end)` → `"Name (YYYY – YYYY)"` or `"Name (YYYY – present)"`
+
+Column index constants (for JOIN query results):
+```python
+_TEXT_CONTENT_COL = 9   # texts schema index
+_POPE_NAME_COL = 11     # appended by JOIN
+_PONTIFICATE_BEGIN_COL = 12
+_PONTIFICATE_END_COL = 13
+```
+
+---
+
 ## Testing
 
 ```bash
@@ -189,6 +248,7 @@ Test files:
 - `test_database_helpers.py` — unit tests for all DB helper functions using in-memory SQLite and `monkeypatch`
 - `test_search_biblical_citation.py` — parametrized tests for citation regex matching; DB search tests with mocked dependencies
 - `test_pope_utilities.py` — tests for pope name normalization, slug extraction, and name lookup
+- `test_plotting_functions.py` — tests for `create_bar_chart` (vertical/horizontal, hue, labels, validation errors) and `save_figure` (creates file, resolves path, auto-extension, PDF magic bytes, missing dirs)
 
 ---
 
@@ -211,6 +271,9 @@ python -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline --p
 
 # Add birthplaces to DB
 python -m dc26_vatican_explorer.data_cleaning.adding_birthplace
+
+# Run example plots (saves PNGs to plotting_tools/example_plots/)
+python -m dc26_vatican_explorer.plotting_tools.create_example_plots
 
 # Run tests
 pytest tests/

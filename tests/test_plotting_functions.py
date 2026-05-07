@@ -9,6 +9,7 @@ matplotlib_cache_path = Path(gettempdir()) / "dc26-vatican-explorer-matplotlib"
 matplotlib_cache_path.mkdir(exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(matplotlib_cache_path))
 
+import matplotlib
 import matplotlib.pyplot as plt  # noqa: E402
 import pytest  # noqa: E402
 from matplotlib.axes import Axes  # noqa: E402
@@ -16,7 +17,11 @@ from matplotlib.figure import Figure  # noqa: E402
 
 from dc26_vatican_explorer.plotting_tools.plotting_functions import (  # noqa: E402
     create_scatterplot,
+    create_bar_chart,
+    save_figure
 )
+
+matplotlib.use("Agg")  # non-interactive backend; must be set before importing pyplot
 
 
 @pytest.fixture(autouse=True)
