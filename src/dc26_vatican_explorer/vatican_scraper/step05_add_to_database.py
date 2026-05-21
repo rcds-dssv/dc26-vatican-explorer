@@ -123,6 +123,16 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
         conn.commit()
         _pope_id = cur.lastrowid or 0
 
+        # If the pope already existed, back-fill place_of_birth if the stored value is missing.
+        if _pope_id == 0 and place_of_birth and place_of_birth.strip():
+            cur.execute(
+                "UPDATE popes SET place_of_birth = ? "
+                "WHERE pope_name = ? AND pope_number = ? "
+                "AND (place_of_birth IS NULL OR TRIM(place_of_birth) = '')",
+                (place_of_birth, pope_name, pope_number)
+            )
+            conn.commit()
+
         # retrieve the pope_id (whether newly inserted or existing)
         cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
         row = cur.fetchone()
@@ -152,6 +162,17 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
             if cur.rowcount:
                 r = cur.execute("SELECT _texts_id FROM texts WHERE url = ?", (url,)).fetchone()
                 _text_id = r[0] if r else 0
+
+        # Back-fill date and location on existing records when those fields are missing.
+        if _text_id == 0:
+            for col, val in (("date", date), ("location", location)):
+                if val and str(val).strip():
+                    cur.execute(
+                        f"UPDATE texts SET {col} = ? "
+                        f"WHERE url = ? AND ({col} IS NULL OR TRIM({col}) = '')",
+                        (val, url)
+                    )
+            conn.commit()
 
         # _text_id > 0: row was inserted or updated; 0: row already existed with content (ignored).
         return _text_id, _pope_id

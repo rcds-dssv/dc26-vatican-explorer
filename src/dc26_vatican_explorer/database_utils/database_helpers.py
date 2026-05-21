@@ -296,7 +296,119 @@ def query_texts(
         return [dict(r) for r in cur.fetchall()]
 
 
-def main() -> None:
+# Columns that can be checked for missing values, mapped to their table.
+_TEXTS_FIELDS = {"text_content", "date", "location", "title", "language"}
+_POPES_FIELDS = {"place_of_birth", "secular_name", "pontificate_begin", "pontificate_end"}
+_ALL_CHECKABLE_FIELDS = _TEXTS_FIELDS | _POPES_FIELDS
+
+
+def query_missing_fields(
+    db_path: Path = _DB_PATH,
+    fields: list[str] | None = None,
+    pope_name: str | None = None,
+    section: str | None = None,
+    years: str | None = None,
+    language: str | None = None,
+) -> dict[str, list[dict]]:
+    """Return rows that have NULL or empty values for the requested fields.
+
+    Args:
+        db_path: Path to the SQLite database file.
+        fields: List of column names to check. Defaults to
+            ``["text_content", "date", "location", "place_of_birth"]``.
+            Valid values: ``text_content``, ``date``, ``location``, ``title``,
+            ``language`` (from ``texts``), and ``place_of_birth``,
+            ``secular_name``, ``pontificate_begin``, ``pontificate_end``
+            (from ``popes``).
+        pope_name: Optional filter by pope display name.
+        section: Optional filter by section.
+        years: Optional year or range string, e.g. ``"1977-1978"``.
+        language: Optional two-letter language code.
+
+    Returns:
+        A dict mapping each requested field name to a list of row dicts that
+        are missing that field.  Rows from ``popes`` checks include only pope
+        columns; rows from ``texts`` checks include all columns plus
+        ``pope_name``.
+
+    Example::
+
+        missing = query_missing_fields(fields=["text_content", "date", "place_of_birth"])
+        for field, rows in missing.items():
+            print(f"{field}: {len(rows)} records missing")
+
+    """
+    if fields is None:
+        fields = ["text_content", "date", "location", "place_of_birth"]
+
+    unknown = [f for f in fields if f not in _ALL_CHECKABLE_FIELDS]
+    if unknown:
+        raise ValueError(f"Unknown field(s): {unknown}. Valid: {sorted(_ALL_CHECKABLE_FIELDS)}")
+
+    # Parse years into a list of year strings
+    year_list: list[str] = []
+    if years:
+        for part in (p.strip() for p in years.split(",")):
+            if not part:
+                continue
+            if "-" in part:
+                a, b = part.split("-", 1)
+                if a.isdigit() and b.isdigit():
+                    year_list.extend(str(y) for y in range(int(a), int(b) + 1))
+            elif part.isdigit():
+                year_list.append(part)
+
+    results: dict[str, list[dict]] = {}
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        for field in fields:
+            if field in _TEXTS_FIELDS:
+                conds = [f"(t.{field} IS NULL OR TRIM(t.{field}) = '')"]
+                params: list = []
+                if pope_name:
+                    conds.append("p.pope_name = ?")
+                    params.append(pope_name)
+                if section:
+                    conds.append("t.section = ?")
+                    params.append(section)
+                if year_list:
+                    conds.append(f"t.year IN ({','.join('?' * len(year_list))})")
+                    params.extend(year_list)
+                if language:
+                    conds.append("t.language = ?")
+                    params.append(language)
+                sql = (
+                    "SELECT t._texts_id, p.pope_name, t.section, t.year, t.date, "
+                    "t.location, t.title, t.language, t.url, t.text_content, "
+                    "t.entry_creation_date "
+                    "FROM texts t JOIN popes p ON t.pope_id = p._pope_id "
+                    f"WHERE {' AND '.join(conds)} ORDER BY t.year, t.date"
+                )
+                cur.execute(sql, params)
+            else:  # popes field
+                conds = [f"(p.{field} IS NULL OR TRIM(p.{field}) = '')"]
+                params = []
+                if pope_name:
+                    conds.append("p.pope_name = ?")
+                    params.append(pope_name)
+                sql = (
+                    "SELECT p._pope_id, p.pope_name, p.pope_slug, p.pope_number, "
+                    "p.secular_name, p.place_of_birth, p.pontificate_begin, "
+                    "p.pontificate_end, p.entry_creation_date "
+                    "FROM popes p "
+                    f"WHERE {' AND '.join(conds)} ORDER BY p.pope_name"
+                )
+                cur.execute(sql, params)
+
+            results[field] = [dict(r) for r in cur.fetchall()]
+
+    return results
+
+
+
     p = argparse.ArgumentParser(description="Query speech texts from the Vatican database.")
     p.add_argument("--pope", default=None, help='Pope display name, e.g. "John Paul II"')
     p.add_argument("--section", default=None, help='Section, e.g. "homilies"')
