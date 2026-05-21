@@ -180,5 +180,3 @@ nav:
   - Getting Started: using-vatican-explorer.md
   - Data Sources:
       - Vatican Library: https://www.vatican.va/content/francesco/en/speeches.htmlsite_name: Vatican Explorer
-theme:
-  name: material
