@@ -1,9 +1,9 @@
 This directory contains code for scraping the Vatican website and generating the sqlite database. 
 
-To retrieve the first 20 speeches from the default pope and year, run the code from the `src` directory with:
+To retrieve the first 20 speeches from the default pope and year, run the code from the repo root with:
 
 ```
-python -m vatican_scraper.step06_run_scraping_pipeline --max_n_speeches 20
+uv run -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline --max_n_speeches 20
 ```
 
 You can also use the `--help` flag to see all the other options.
@@ -16,16 +16,15 @@ You can also use the `--help` flag to see all the other options.
 From repo root:
 
 ```bash
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate
-python -m pip install -U pip
-python -m pip install requests beautifulsoup4 pandas pyarrow
+uv pip install -e ".[scrape,data-manipulation]"
 
-PYTHONPATH=src python3 -c "from config import _DB_PATH; from vatican_scraper.step05_add_to_database import ensure_db_and_table; ensure_db_and_table(_DB_PATH); print('DB initialized at', _DB_PATH)"
+uv run -c "from dc26_vatican_explorer.config import _DB_PATH; from dc26_vatican_explorer.vatican_scraper.step05_add_to_database import ensure_db_and_table; ensure_db_and_table(_DB_PATH); print('DB initialized at', _DB_PATH)"
 
 # Optionally start from a clean data base:
 rm -f data/vatican_texts.db
-PYTHONPATH=src python3 -c "from config import _DB_PATH; from vatican_scraper.step05_add_to_database import ensure_db_and_table; ensure_db_and_table(_DB_PATH); print('DB initialized at', _DB_PATH)"
+uv run -c "from dc26_vatican_explorer.config import _DB_PATH; from dc26_vatican_explorer.vatican_scraper.step05_add_to_database import ensure_db_and_table; ensure_db_and_table(_DB_PATH); print('DB initialized at', _DB_PATH)"
 
 popes="Paul VI,John Paul I,John Paul II,Benedict XVI,Francis,Leo XIV"
 years="1963-2026"
@@ -35,7 +34,7 @@ years="1963-2026"
 for lang in EN IT; do
   for section in homilies audiences speeches; do
     echo "=== RUN: lang=$lang section=$section ==="
-    PYTHONPATH=src PYTHONUNBUFFERED=1 python3 -u -m vatican_scraper.step06_run_scraping_pipeline \
+    uv run -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline \
       --popes "$popes" \
       --section "$section" \
       --years "$years" \

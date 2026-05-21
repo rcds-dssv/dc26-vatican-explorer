@@ -13,11 +13,11 @@ from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
-from config import _DB_PATH, _PKG_DIR
+from dc26_vatican_explorer.config import _DB_PATH, _PKG_DIR
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from vatican_scraper.argparser import get_scraper_args
-from vatican_scraper.database_utils.database_helpers import speech_url_exists_in_db
+from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
+from dc26_vatican_explorer.database_utils.database_helpers import speech_url_exists_in_db
 
 _SCRAPER_DIR = _PKG_DIR / "vatican_scraper"
 
@@ -28,11 +28,11 @@ except ImportError as e:
 
 
 
-from vatican_scraper.step01_list_popes import (
+from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_find_by_display_name,
     vatican_fetch_pope_directory_recent,
 )
-from vatican_scraper.step02_list_pope_year_links import (
+from dc26_vatican_explorer.vatican_scraper.step02_list_pope_year_links import (
     _sanitize_section,
     extract_available_years_from_main,
     extract_pope_metadata_from_main,
@@ -40,7 +40,7 @@ from vatican_scraper.step02_list_pope_year_links import (
     fetch_pope_main_html,
     parse_years,
 )
-from vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
+from dc26_vatican_explorer.vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
 
 
 def _pause(min_s: float = 0.35, max_s: float = 1.1) -> None:
