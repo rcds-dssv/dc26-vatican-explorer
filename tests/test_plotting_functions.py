@@ -4,9 +4,16 @@ import os
 from pathlib import Path
 from tempfile import gettempdir
 
+# Use Matplotlib's non-interactive Agg backend by default so plots can be rendered
+# in headless environments like CI or test runs without opening a GUI window.
 os.environ.setdefault("MPLBACKEND", "Agg")
+
+# Create a project-specific temporary directory for Matplotlib's config/cache files.
 matplotlib_cache_path = Path(gettempdir()) / "dc26-vatican-explorer-matplotlib"
 matplotlib_cache_path.mkdir(exist_ok=True)
+
+# Point Matplotlib at that writable temp config directory unless the caller already
+# provided MPLCONFIGDIR, avoiding permission issues in locked-down environments.
 os.environ.setdefault("MPLCONFIGDIR", str(matplotlib_cache_path))
 
 import matplotlib
@@ -20,9 +27,6 @@ from dc26_vatican_explorer.plotting_tools.plotting_functions import (  # noqa: E
     create_bar_chart,
     save_figure
 )
-
-matplotlib.use("Agg")  # non-interactive backend; must be set before importing pyplot
-
 
 @pytest.fixture(autouse=True)
 def close_figures():

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
+
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -134,7 +136,6 @@ def create_bar_chart(
     fig, ax = plt.subplots(figsize=figsize)
 
     if hue is not None:
-        import pandas as pd
 
         df = pd.DataFrame({"x": x_data, "y": y_data, "hue": hue})
         sns.barplot(
