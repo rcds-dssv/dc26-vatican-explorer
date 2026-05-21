@@ -23,6 +23,17 @@ scrape = [
 data-manipulation = [
     "pandas",
 ]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocs-material[imaging]>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+    "mkdocs-jupyter>=0.24.0",
+    "pymdown-extensions>=10.0",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
+    "mkdocs-minify-plugin>=0.8.0",
+    "mkdocs-git-committers-plugin-2>=2.5.0",
+]
 
 [project.scripts]
 vatican = "dc26_vatican_explorer.__main__:main"
@@ -56,35 +67,3 @@ ignore = [
 ]
 fixable = ["ALL"]
 
-[tool.deptry]
-
-# Declare first-party modules
-known_first_party = [
-    "dc26_vatican_explorer", 
-    "vatican_scraper", 
-    "config"
-]
-
-# Use per-rule ignores to skip DEP001 for specific modules
-[tool.deptry.per_rule_ignores]
-DEP001 = ["config", "vatican_scraper"]
-
-# Exclude directories
-exclude = [
-    "tests/",
-    "docs/",
-    ".venv/",
-    "venv/",
-    "__pycache__/",
-]
-
-# Ignore known unused dependencies
-ignore_unused = []
-
-# Ignore missing dependencies (e.g., if they're installed globally)
-ignore_missing = []
-
-# Extend default exclude patterns
-extend_exclude = [
-    "scripts/",
-]
