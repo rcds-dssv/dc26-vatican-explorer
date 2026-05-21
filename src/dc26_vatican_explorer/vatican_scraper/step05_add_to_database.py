@@ -140,7 +140,20 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
         conn.commit()
         _text_id = cur.lastrowid or 0
 
-        # If row was ignored, lastrowid will be 0; if replaced/inserted, lastrowid is the row id.
+        # If the row was ignored (URL already exists) but the stored text is empty,
+        # update it when the incoming text is non-empty.
+        if _text_id == 0 and text and text.strip():
+            cur.execute(
+                "UPDATE texts SET text_content = ?, entry_creation_date = ? "
+                "WHERE url = ? AND (text_content IS NULL OR TRIM(text_content) = '')",
+                (text, entry_creation_date, url)
+            )
+            conn.commit()
+            if cur.rowcount:
+                r = cur.execute("SELECT _texts_id FROM texts WHERE url = ?", (url,)).fetchone()
+                _text_id = r[0] if r else 0
+
+        # _text_id > 0: row was inserted or updated; 0: row already existed with content (ignored).
         return _text_id, _pope_id
     finally:
         conn.close()
@@ -167,9 +180,9 @@ def main() -> None:
         _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
         if _text_id:
-            print("Inserted text into database with id:", _text_id)
+            print("Inserted/updated text in database with id:", _text_id)
         else:
-            print("Text record already exists (ignored).")
+            print("Text record already exists with content (ignored).")
         if _pope_id:
             print("Inserted pope into database with id:", _pope_id)
         else:

@@ -2,6 +2,7 @@
 
 ################################## IMPORT LIBRARIES ##################################
 
+import argparse
 import re
 import sqlite3
 from pathlib import Path
@@ -176,7 +177,7 @@ def sanitize_table_name(table_name: str) -> str:
 def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     """Checks whether a speech with the given URL exists in the database.
 
-    This function queries the `speeches` table in the SQLite database located
+    This function queries the `texts` table in the SQLite database located
     at `db_path` and determines whether at least one record exists with the
     specified URL.
 
@@ -192,7 +193,106 @@ def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     try:
         with sqlite3.connect(db_path) as conn:
             cur = conn.cursor()
-            cur.execute("SELECT 1 FROM speeches WHERE url = ? LIMIT 1", (url,))
+            cur.execute("SELECT 1 FROM texts WHERE url = ? LIMIT 1", (url,))
             return cur.fetchone() is not None
     except Exception:
         return False
+
+
+def query_texts(
+    db_path: Path = _DB_PATH,
+    pope_name: str | None = None,
+    section: str | None = None,
+    years: str | None = None,
+    language: str | None = None,
+) -> list[dict]:
+    """Query the texts table by any combination of pope name, section, year range, and language.
+
+    Args:
+        db_path: Path to the SQLite database file.
+        pope_name: Pope display name, e.g. ``"John Paul II"``.
+        section: Content section, e.g. ``"homilies"``.
+        years: Year or year range string, e.g. ``"1977"``, ``"1977-1978"``,
+            or ``"1977,1979-1981"``.
+        language: Two-letter language code, e.g. ``"EN"``.
+
+    Returns:
+        A list of dicts, one per matching row, with keys matching the
+        ``texts`` table columns joined with ``pope_name`` from ``popes``.
+
+    Example::
+
+        rows = query_texts(_DB_PATH, pope_name="John Paul II",
+                           section="homilies", years="1977-1978", language="EN")
+        for r in rows:
+            print(r["date"], r["title"], r["url"])
+
+    """
+    # Parse years spec into a flat list of year strings
+    year_list: list[str] = []
+    if years:
+        for part in (p.strip() for p in years.split(",")):
+            if not part:
+                continue
+            if "-" in part:
+                a, b = part.split("-", 1)
+                if a.isdigit() and b.isdigit():
+                    year_list.extend(str(y) for y in range(int(a), int(b) + 1))
+            elif part.isdigit():
+                year_list.append(part)
+
+    conditions: list[str] = []
+    params: list = []
+
+    if pope_name:
+        conditions.append("p.pope_name = ?")
+        params.append(pope_name)
+    if section:
+        conditions.append("t.section = ?")
+        params.append(section)
+    if year_list:
+        placeholders = ",".join("?" * len(year_list))
+        conditions.append(f"t.year IN ({placeholders})")
+        params.extend(year_list)
+    if language:
+        conditions.append("t.language = ?")
+        params.append(language)
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+    sql = f"""
+        SELECT t._texts_id, p.pope_name, t.section, t.year, t.date,
+               t.location, t.title, t.language, t.url, t.text_content,
+               t.entry_creation_date
+        FROM texts t
+        JOIN popes p ON t.pope_id = p._pope_id
+        {where}
+        ORDER BY t.year, t.date
+    """
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        return [dict(r) for r in cur.fetchall()]
+
+
+def main() -> None:
+    p = argparse.ArgumentParser(description="Query speech texts from the Vatican database.")
+    p.add_argument("--pope", default=None, help='Pope display name, e.g. "John Paul II"')
+    p.add_argument("--section", default=None, help='Section, e.g. "homilies"')
+    p.add_argument("--years", default=None, help='Year or range, e.g. "1977-1978"')
+    p.add_argument("--lang", default=None, help='Two-letter language code, e.g. "EN"')
+    p.add_argument("--field", default="text_content", help='Row field to print (default: text_content)')
+    p.add_argument("--first", action="store_true", help="Print only the first result")
+    args = p.parse_args()
+
+    rows = query_texts(pope_name=args.pope, section=args.section, years=args.years, language=args.lang)
+    if not rows:
+        print("No results found.")
+        return
+    target = rows[:1] if args.first else rows
+    for row in target:
+        print(row.get(args.field, f"(field '{args.field}' not found)"))
+
+
+if __name__ == "__main__":
+    main()

@@ -66,9 +66,9 @@ def main() -> None:
                 _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
                 if _text_id:
-                    print("Inserted text into database with id:", _text_id)
+                    print("Inserted/updated text in database with id:", _text_id)
                 else:
-                    print("Text record already exists (ignored).")
+                    print("Text record already exists with content (ignored.)")
                 if _pope_id:
                     print("Inserted pope into database with id:", _pope_id)
                 else:
