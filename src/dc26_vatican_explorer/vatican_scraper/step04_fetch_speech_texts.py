@@ -82,7 +82,11 @@ def fetch_html(url: str, *, timeout=(10, 120)) -> str:
     time.sleep(random.uniform(0.3, 0.9))
 
     s = _get_session()
+    print(f"[fetch] GET {url}")
+    t0 = time.monotonic()
     r = s.get(url, timeout=timeout)
+    elapsed = time.monotonic() - t0
+    print(f"[fetch] {r.status_code} in {elapsed:.1f}s  final={r.url}")
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
     return r.text
@@ -93,7 +97,11 @@ def fetch_html_with_final_url(url: str, *, timeout=(10, 120)) -> tuple[str, str]
     """
     time.sleep(random.uniform(0.3, 0.9))
     s = _get_session()
+    print(f"[fetch] GET {url}")
+    t0 = time.monotonic()
     r = s.get(url, timeout=timeout, allow_redirects=True)
+    elapsed = time.monotonic() - t0
+    print(f"[fetch] {r.status_code} in {elapsed:.1f}s  final={r.url}")
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
     return (r.url, r.text)
