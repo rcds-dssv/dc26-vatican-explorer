@@ -11,8 +11,6 @@ You can also use the `--help` flag to see all the other options.
 
 ## Running the Vatican scraper pipeline
 
-### Setup
-
 From repo root:
 
 ```bash
