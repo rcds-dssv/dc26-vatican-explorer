@@ -16,6 +16,7 @@ You can also use the `--help` flag to see all the other options.
 From repo root:
 
 ```bash
+# initial setup
 uv venv
 source .venv/bin/activate
 uv pip install -e ".[scrape,data-manipulation]"
