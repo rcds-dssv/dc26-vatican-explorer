@@ -408,8 +408,14 @@ def query_missing_fields(
     return results
 
 
-def print_content_diagnostic() -> None:
-    """Print text_content availability per pope per language per section (all languages and sections)."""
+def print_content_diagnostic(show_missing_urls: bool = False) -> None:
+    """Print text_content availability per pope per language per section (all languages and sections).
+
+    Args:
+        show_missing_urls: When True, also print the URLs of records with
+            NULL or empty text_content under each summary line.
+
+    """
     print("\n[DIAGNOSTIC] text_content status per pope per language per section (all languages and sections)...")
     conn, cursor = connect_to_database()
     try:
@@ -429,11 +435,29 @@ def print_content_diagnostic() -> None:
             ORDER BY p.pontificate_begin, t.language, t.section
             """
         )
-        for row in cursor.fetchall():
+        rows = cursor.fetchall()
+        for row in rows:
+            pope_name, language, section, total, null_c, empty_c, has_c = row
             print(
-                f"  {row[0]} [{row[1]}, {row[2]}]: total={row[3]}, "
-                f"null={row[4]}, empty_string={row[5]}, has_content={row[6]}"
+                f"  {pope_name} [{language}, {section}]: total={total}, "
+                f"null={null_c}, empty_string={empty_c}, has_content={has_c}"
             )
+            if show_missing_urls and (null_c or empty_c):
+                cursor.execute(
+                    """
+                    SELECT t.url
+                    FROM texts t
+                    JOIN popes p ON t.pope_id = p._pope_id
+                    WHERE p.pope_name = ?
+                      AND t.language = ?
+                      AND t.section = ?
+                      AND (t.text_content IS NULL OR TRIM(t.text_content) = '')
+                    ORDER BY t.year, t.date
+                    """,
+                    (pope_name, language, section),
+                )
+                for (url,) in cursor.fetchall():
+                    print(f"    [missing] {url}")
     finally:
         conn.close()
 
