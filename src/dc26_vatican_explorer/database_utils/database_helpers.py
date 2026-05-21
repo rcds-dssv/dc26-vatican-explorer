@@ -174,7 +174,7 @@ def sanitize_table_name(table_name: str) -> str:
     """Sanitize a table name for safe use in SQL statements."""
     return table_name.replace('"', '""')
 
-def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
+def speech_url_exists_in_db(db_path: Path, url: str, require_content: bool = False) -> bool:
     """Checks whether a speech with the given URL exists in the database.
 
     This function queries the `texts` table in the SQLite database located
@@ -184,19 +184,40 @@ def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
     Args:
         db_path (Path): Path to the SQLite database file.
         url (str): The URL of the speech to look up.
+        require_content (bool): If True, only return True when the row exists
+            AND has non-empty text_content. Defaults to False.
 
     Returns:
-        bool: True if a speech with the given URL exists in the database;
-        False otherwise, including when an error occurs during the query.
+        bool: True if a matching speech record is found; False otherwise,
+        including when an error occurs during the query.
 
     """
     try:
         with sqlite3.connect(db_path) as conn:
             cur = conn.cursor()
-            cur.execute("SELECT 1 FROM texts WHERE url = ? LIMIT 1", (url,))
+            if require_content:
+                cur.execute(
+                    "SELECT 1 FROM texts WHERE url = ? "
+                    "AND text_content IS NOT NULL AND TRIM(text_content) != '' LIMIT 1",
+                    (url,)
+                )
+            else:
+                cur.execute("SELECT 1 FROM texts WHERE url = ? LIMIT 1", (url,))
             return cur.fetchone() is not None
     except Exception:
         return False
+
+
+def get_speech_text_by_url(db_path: Path, url: str) -> str | None:
+    """Return the stored text_content for a given URL, or None if not found."""
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT text_content FROM texts WHERE url = ? LIMIT 1", (url,))
+            row = cur.fetchone()
+            return row[0] if row is not None else None
+    except Exception:
+        return None
 
 
 def query_texts(

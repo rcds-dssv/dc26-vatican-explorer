@@ -63,12 +63,18 @@ def main() -> None:
             print("\n======= Adding content to database ...")
             for row in rows:
                 print(row["url"])
+
+                if not (row.get("text") or "").strip():
+                    print("[WARNING] Scraper returned empty text for this record.")
+
                 _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
                 if _text_id:
                     print("Inserted/updated text in database with id:", _text_id)
+                elif (row.get("text") or "").strip():
+                    print("Text record already has content (skipped).")
                 else:
-                    print("Text record already exists with content (ignored.)")
+                    print("Text record exists but content is still empty (scraper returned nothing).")
                 if _pope_id:
                     print("Inserted pope into database with id:", _pope_id)
                 else:
