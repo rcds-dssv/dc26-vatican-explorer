@@ -408,24 +408,36 @@ def query_missing_fields(
     return results
 
 
+def print_content_diagnostic() -> None:
+    """Print text_content availability per pope per language per section (all languages and sections)."""
+    print("\n[DIAGNOSTIC] text_content status per pope per language per section (all languages and sections)...")
+    conn, cursor = connect_to_database()
+    try:
+        cursor.execute(
+            """
+            SELECT p.pope_name,
+                   t.language,
+                   t.section,
+                   COUNT(t._texts_id) AS total_texts,
+                   SUM(CASE WHEN t.text_content IS NULL   THEN 1 ELSE 0 END) AS null_content,
+                   SUM(CASE WHEN t.text_content = ''      THEN 1 ELSE 0 END) AS empty_content,
+                   SUM(CASE WHEN t.text_content IS NOT NULL
+                             AND t.text_content != ''     THEN 1 ELSE 0 END) AS texts_with_content
+            FROM popes p
+            LEFT JOIN texts t ON p._pope_id = t.pope_id
+            GROUP BY p._pope_id, p.pope_name, t.language, t.section
+            ORDER BY p.pontificate_begin, t.language, t.section
+            """
+        )
+        for row in cursor.fetchall():
+            print(
+                f"  {row[0]} [{row[1]}, {row[2]}]: total={row[3]}, "
+                f"null={row[4]}, empty_string={row[5]}, has_content={row[6]}"
+            )
+    finally:
+        conn.close()
 
-    p = argparse.ArgumentParser(description="Query speech texts from the Vatican database.")
-    p.add_argument("--pope", default=None, help='Pope display name, e.g. "John Paul II"')
-    p.add_argument("--section", default=None, help='Section, e.g. "homilies"')
-    p.add_argument("--years", default=None, help='Year or range, e.g. "1977-1978"')
-    p.add_argument("--lang", default=None, help='Two-letter language code, e.g. "EN"')
-    p.add_argument("--field", default="text_content", help='Row field to print (default: text_content)')
-    p.add_argument("--first", action="store_true", help="Print only the first result")
-    args = p.parse_args()
-
-    rows = query_texts(pope_name=args.pope, section=args.section, years=args.years, language=args.lang)
-    if not rows:
-        print("No results found.")
-        return
-    target = rows[:1] if args.first else rows
-    for row in target:
-        print(row.get(args.field, f"(field '{args.field}' not found)"))
 
 
 if __name__ == "__main__":
-    main()
+    print("database helper functions")
