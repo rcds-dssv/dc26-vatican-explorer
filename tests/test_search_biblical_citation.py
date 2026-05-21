@@ -214,7 +214,7 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     # Ensure citations were extracted from text_content at index 9
     assert len(results) == 1
     row_id, citations = results[0]
-    assert row_id == 1
+    assert row_id[0] == 1
     citation_strings = [c[0] for c in citations]
     assert citation_strings == ["Jn 3:16", "1 Cor 13:6"]
 
