@@ -2,8 +2,13 @@
 # :: IMPORTS ::
 # ----------------------
 import pytest
-from dc26_vatican_explorer.data_cleaning.cleaning_pipeline import clean_dates, rearrange_pope_data
+
+from dc26_vatican_explorer.data_cleaning.cleaning_pipeline import (
+    clean_dates,
+    rearrange_pope_data,
+)
 from dc26_vatican_explorer.data_cleaning.data_objects import Pope, Speech
+
 
 # ----------------------
 # :: TESTS ::
@@ -47,7 +52,7 @@ def test_clean_dates_logic(sample_raw_data):
     # Verify Structure
     assert "Francis" in result
     assert "Benedict XVI" in result
-    
+
     # Verify Date Extraction from Title
     francis_texts = result["Francis"].texts
     # The one with None date should now have "2020-01-10"
@@ -72,9 +77,9 @@ def test_rearrange_pope_data_sorting():
             ]
         )
     }
-    
+
     sorted_data = rearrange_pope_data(unsorted)
     dates = [t.date for t in sorted_data["Francis"].texts]
-    
+
     # Expected order: Oldest first, Nones at the end
     assert dates == ["2020-01-01", "2023-01-01", None]
