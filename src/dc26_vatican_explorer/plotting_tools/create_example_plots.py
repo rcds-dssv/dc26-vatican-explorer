@@ -2,7 +2,7 @@
 # Example analysis functions that query the database and produce figures.
 #
 # Run from the repo root:
-#   python -m dc26_vatican_explorer.plotting_tools.create_example_plots
+#   uv run -m dc26_vatican_explorer.plotting_tools.create_example_plots
 
 from __future__ import annotations
 
