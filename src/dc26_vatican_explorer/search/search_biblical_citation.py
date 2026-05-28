@@ -2,11 +2,13 @@
 
 ######################################### IMPORT LIBRARIES #########################################
 from re import finditer
+from typing import Any
 
 from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
     connect_to_database,
     fetch_rows_by_regexp,
+    get_column_names_in_table,
     register_regexp_function,
     table_exists,
 )
@@ -83,28 +85,33 @@ def search_biblical_citations(text: str, context: int=100, pattern: str | None =
 
 def search_biblical_citations_db(
     pattern: str | None = None,
-    query: str | None = None
+    query: str | None = None,
+    search_field: str = "text_content",
 ) -> list[tuple[tuple[Any, ...], list[tuple[str, str]]]]:
     """Search database texts for biblical citations using a regex pattern.
 
-    This function queries the `texts` table for rows whose `text_content`
+    This function queries the `texts` table for rows whose `search_field`
     column matches a regular expression. For each matching row, it extracts
-    biblical citations from the text content.
+    biblical citations from the specified field.
 
     Args:
         pattern (str | None):
-            Regular expression used to search the `text_content` column.
-            If None, the default biblical citation regex from
-            `default_regex_pattern()` is used.
+            Regular expression used to search the column. If None, the
+            default biblical citation regex from `default_regex_pattern()` is
+            used.
 
         query (str | None):
             Optional SQL query override. If not provided, the function uses
-            a default query that searches `text_content` using a REGEXP clause.
+            a default query that searches `search_field` using a REGEXP clause.
 
             The query must:
             - Contain exactly one positional placeholder (?) for the regex.
-            - Return all columns from the `texts` table in the same order
-              defined in the schema.
+            - Return all columns from the `texts` table **first**, in the same
+              order defined in the schema (additional columns may follow).
+
+        search_field (str):
+            The column in the ``texts`` table to search. Defaults to
+            ``"text_content"``. Must be a valid column name in the table.
 
     Returns:
         list[tuple[tuple, list[tuple[str, str]]]]:
@@ -141,8 +148,17 @@ def search_biblical_citations_db(
                 "The 'texts' table schema does not match the expected format."
             )
 
-        # Define the default SQL query used to search the text content
-        default_query = """SELECT * FROM texts WHERE text_content REGEXP ?"""
+        # Validate search_field and resolve its column index
+        col_names = get_column_names_in_table(cursor, "texts")
+        if search_field not in col_names:
+            raise ValueError(
+                f"'{search_field}' is not a column in the texts table. "
+                f"Valid columns: {col_names}"
+            )
+        field_index = col_names.index(search_field)
+
+        # Define the default SQL query used to search the specified field
+        default_query = f"""SELECT * FROM texts WHERE {search_field} REGEXP ?"""
 
         # Use the user-supplied query if provided, otherwise use the default
         sql = query or default_query
@@ -160,17 +176,17 @@ def search_biblical_citations_db(
         # Iterate through each returned row from the database
         for row in rows:
 
-            # Extract the text_content column (index 9 based on schema)
-            text_content = row[9]
+            # Extract the field to search from the resolved column index
+            field_value = row[field_index]
 
-            # If the text content is not a string, no citations can be extracted
-            if not isinstance(text_content, str):
+            # If the field value is not a string, no citations can be extracted
+            if not isinstance(field_value, str):
                 citations = []
 
-            # Otherwise, search the text for biblical citations
+            # Otherwise, search the field for biblical citations
             else:
                 citations = search_biblical_citations(
-                    text_content,
+                    field_value,
                     pattern=pattern
                 )
 

@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "python-dateutil",   # dateutil - add explicitly
+    "urllib3",           # transitive error
+    "matplotlib",
+    "seaborn"
 ]
 
 [dependency-groups]
@@ -67,3 +70,35 @@ ignore = [
 ]
 fixable = ["ALL"]
 
+[tool.deptry]
+
+# Declare first-party modules
+known_first_party = [
+    "dc26_vatican_explorer", 
+    "vatican_scraper", 
+    "config"
+]
+
+# Use per-rule ignores to skip DEP001 for specific modules
+[tool.deptry.per_rule_ignores]
+DEP001 = ["config", "vatican_scraper"]
+
+# Exclude directories
+exclude = [
+    "tests/",
+    "docs/",
+    ".venv/",
+    "venv/",
+    "__pycache__/",
+]
+
+# Ignore known unused dependencies
+ignore_unused = []
+
+# Ignore missing dependencies (e.g., if they're installed globally)
+ignore_missing = []
+
+# Extend default exclude patterns
+extend_exclude = [
+    "scripts/",
+]

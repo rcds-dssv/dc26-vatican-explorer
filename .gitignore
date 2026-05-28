@@ -225,4 +225,6 @@ src/vatican_scraper/scrape_result/
 # data
 src/data/*.db
 data/*.db
+
+# plots
 src/dc26_vatican_explorer/plotting_tools/example_plots/*
