@@ -25,6 +25,11 @@ from matplotlib.figure import Figure  # noqa: E402
 
 from dc26_vatican_explorer.plotting_tools.plotting_functions import (  # noqa: E402
     create_bar_chart,
+    create_box_plot,
+    create_heatmap,
+    create_histogram,
+    create_line_chart,
+    create_ranked_bar_chart,
     create_scatterplot,
     save_figure,
 )
@@ -178,6 +183,249 @@ def test_create_bar_chart_rejects_invalid_inputs(kwargs, error_match):
     """Confirm invalid bar chart inputs raise clear errors."""
     with pytest.raises(ValueError, match=error_match):
         create_bar_chart(**kwargs)
+
+
+def test_create_line_chart_returns_matplotlib_objects():
+    """Confirm the line chart helper returns the figure and axes objects."""
+    fig, ax = create_line_chart([2024, 2025], [10, 15])
+
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
+
+
+def test_create_line_chart_plots_values_and_titles():
+    """Confirm line coordinates, labels, and tick rotation are applied."""
+    _, ax = create_line_chart(
+        [2024, 2025, 2026],
+        [10, 15, 12],
+        title="Speech Trend",
+        xlabel="Year",
+        ylabel="Speeches",
+        x_rotation=45,
+    )
+
+    line = ax.lines[0]
+    tick_rotations = [tick.get_rotation() for tick in ax.get_xticklabels()]
+
+    assert line.get_xdata().tolist() == [2024, 2025, 2026]
+    assert line.get_ydata().tolist() == [10, 15, 12]
+    assert ax.get_title() == "Speech Trend"
+    assert ax.get_xlabel() == "Year"
+    assert ax.get_ylabel() == "Speeches"
+    assert all(rotation == 45 for rotation in tick_rotations)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"x_values": [], "y_values": []}, "at least one"),
+        ({"x_values": [1, 2], "y_values": [3]}, "must match"),
+    ],
+)
+def test_create_line_chart_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid line chart inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_line_chart(**kwargs)
+
+
+def test_create_histogram_returns_matplotlib_objects():
+    """Confirm the histogram helper returns the figure and axes objects."""
+    fig, ax = create_histogram([1, 2, 3])
+
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
+
+
+def test_create_histogram_plots_requested_number_of_bins():
+    """Confirm histogram bins and optional labels are applied."""
+    _, ax = create_histogram(
+        [1, 2, 3, 4],
+        bins=2,
+        title="Speech Lengths",
+        xlabel="Words",
+        ylabel="Frequency",
+    )
+
+    assert len(ax.patches) == 2
+    assert ax.get_title() == "Speech Lengths"
+    assert ax.get_xlabel() == "Words"
+    assert ax.get_ylabel() == "Frequency"
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"values": []}, "at least one"),
+        ({"values": [1, 2], "bins": 0}, "positive"),
+    ],
+)
+def test_create_histogram_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid histogram inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_histogram(**kwargs)
+
+
+def test_create_box_plot_returns_matplotlib_objects():
+    """Confirm the box plot helper returns the figure and axes objects."""
+    fig, ax = create_box_plot({"Francis": [1, 2], "Leo": [3, 4]})
+
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
+
+
+def test_create_box_plot_plots_group_labels_and_titles():
+    """Confirm grouped data labels, titles, and tick rotation are applied."""
+    _, ax = create_box_plot(
+        {"Francis": [1, 2, 3], "Leo": [4, 5, 6]},
+        title="Speech Length Distribution",
+        xlabel="Pope",
+        ylabel="Words",
+        x_rotation=20,
+    )
+
+    tick_labels = [tick.get_text() for tick in ax.get_xticklabels()]
+    tick_rotations = [tick.get_rotation() for tick in ax.get_xticklabels()]
+
+    assert tick_labels == ["Francis", "Leo"]
+    assert tick_rotations == [20, 20]
+    assert ax.get_title() == "Speech Length Distribution"
+    assert ax.get_xlabel() == "Pope"
+    assert ax.get_ylabel() == "Words"
+
+
+def test_create_box_plot_plots_horizontal_groups():
+    """Confirm horizontal orientation puts group labels on the y-axis."""
+    _, ax = create_box_plot(
+        {"Homilies": [1, 2], "Audiences": [3, 4]},
+        xlabel="Citation Count",
+        ylabel="Section",
+        orient="h",
+    )
+
+    tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+
+    assert tick_labels == ["Homilies", "Audiences"]
+    assert ax.get_xlabel() == "Citation Count"
+    assert ax.get_ylabel() == "Section"
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"values_by_group": {}}, "at least one group"),
+        ({"values_by_group": {"Francis": []}}, "at least one value"),
+        ({"values_by_group": {"Francis": [1]}, "orient": "diagonal"}, "'orient'"),
+    ],
+)
+def test_create_box_plot_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid box plot inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_box_plot(**kwargs)
+
+
+def test_create_heatmap_returns_matplotlib_objects():
+    """Confirm the heatmap helper returns the figure and axes objects."""
+    fig, ax = create_heatmap([[1, 2], [3, 4]], ["Love", "Hope"], ["Francis", "Leo"])
+
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
+
+
+def test_create_heatmap_plots_matrix_labels_and_titles():
+    """Confirm heatmap dimensions, labels, titles, and annotations are applied."""
+    _, ax = create_heatmap(
+        [[1, 2], [3, 4]],
+        x_labels=["Love", "Hope"],
+        y_labels=["Francis", "Leo"],
+        title="Theme Mentions",
+        xlabel="Theme",
+        ylabel="Pope",
+    )
+
+    heatmap_values = ax.collections[0].get_array()
+    x_tick_labels = [tick.get_text() for tick in ax.get_xticklabels()]
+    y_tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+
+    assert heatmap_values.shape == (2, 2)
+    assert x_tick_labels == ["Love", "Hope"]
+    assert y_tick_labels == ["Francis", "Leo"]
+    assert len(ax.texts) == 4
+    assert ax.get_title() == "Theme Mentions"
+    assert ax.get_xlabel() == "Theme"
+    assert ax.get_ylabel() == "Pope"
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"matrix": [], "x_labels": [], "y_labels": []}, "at least one row"),
+        ({"matrix": [[1]], "x_labels": ["Love"], "y_labels": []}, "'y_labels'"),
+        ({"matrix": [[]], "x_labels": [], "y_labels": ["Francis"]}, "row 0"),
+        ({"matrix": [[1, 2]], "x_labels": ["Love"], "y_labels": ["Francis"]}, "'x_labels'"),
+    ],
+)
+def test_create_heatmap_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid heatmap inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_heatmap(**kwargs)
+
+
+def test_create_ranked_bar_chart_returns_matplotlib_objects():
+    """Confirm the ranked bar chart helper returns the figure and axes objects."""
+    fig, ax = create_ranked_bar_chart([1, 3, 2], ["A", "B", "C"])
+
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
+
+
+def test_create_ranked_bar_chart_sorts_and_limits_horizontal_bars():
+    """Confirm ranked bars are sorted, limited, and plotted horizontally."""
+    _, ax = create_ranked_bar_chart(
+        [5, 9, 7],
+        labels=["Francis", "Leo", "Benedict"],
+        top_n=2,
+        xlabel="Mentions",
+        ylabel="Pope",
+    )
+
+    bar_widths = [patch.get_width() for patch in ax.patches]
+    tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+
+    assert bar_widths == [9, 7]
+    assert tick_labels == ["Leo", "Benedict"]
+    assert ax.get_xlabel() == "Mentions"
+    assert ax.get_ylabel() == "Pope"
+
+
+def test_create_ranked_bar_chart_can_sort_ascending_vertically():
+    """Confirm ascending ranked bars can be plotted vertically."""
+    _, ax = create_ranked_bar_chart(
+        [5, 9, 7],
+        labels=["Francis", "Leo", "Benedict"],
+        descending=False,
+        orient="v",
+    )
+
+    bar_heights = [patch.get_height() for patch in ax.patches]
+    tick_labels = [tick.get_text() for tick in ax.get_xticklabels()]
+
+    assert bar_heights == [5, 7, 9]
+    assert tick_labels == ["Francis", "Benedict", "Leo"]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"values": [], "labels": []}, "at least one"),
+        ({"values": [1, 2], "labels": ["Only one"]}, "'labels' length"),
+        ({"values": [1, 2], "labels": ["A", "B"], "top_n": 0}, "positive"),
+        ({"values": [1], "labels": ["A"], "orient": "diagonal"}, "'orient'"),
+    ],
+)
+def test_create_ranked_bar_chart_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid ranked bar chart inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_ranked_bar_chart(**kwargs)
 
 
 def test_save_figure_appends_format_suffix_and_creates_parent_directory(tmp_path):
