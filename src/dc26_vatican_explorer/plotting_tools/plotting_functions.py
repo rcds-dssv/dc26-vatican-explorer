@@ -7,12 +7,11 @@ from pathlib import Path
 import pandas as pd
 
 import matplotlib
+matplotlib.use("Agg")  # non-interactive backend; must be set before pyplot import
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import seaborn as sns
-
-matplotlib.use("Agg")  # non-interactive backend; safe for agent/script use
 
 
 def _set_optional_labels(
