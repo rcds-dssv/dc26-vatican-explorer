@@ -321,7 +321,7 @@ def create_bar_chart(
     hue: list[str] | None = None,
     legend_title: str | None = None,
     orient: str = "v",
-) -> tuple[plt.Figure, plt.Axes]:
+) -> tuple[Figure, Axes]:
     """Create a bar chart from a list of values using seaborn.
 
     Args:
@@ -436,7 +436,7 @@ def create_ranked_bar_chart(
     figsize: tuple[float, float] = (8, 5),
     x_rotation: float = 0,
     orient: str = "h",
-) -> tuple[plt.Figure, plt.Axes]:
+) -> tuple[Figure, Axes]:
     """Create a sorted bar chart for ranked comparisons.
 
     Args:
