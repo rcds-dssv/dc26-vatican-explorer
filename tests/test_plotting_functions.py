@@ -1,4 +1,5 @@
 """Tests for plotting helper functions."""
+# ruff: noqa: E402
 
 import os
 from pathlib import Path
@@ -16,14 +17,14 @@ matplotlib_cache_path.mkdir(exist_ok=True)
 # provided MPLCONFIGDIR, avoiding permission issues in locked-down environments.
 os.environ.setdefault("MPLCONFIGDIR", str(matplotlib_cache_path))
 
-import matplotlib
-import matplotlib.pyplot as plt  # noqa: E402
-import pytest  # noqa: E402
-from matplotlib.axes import Axes  # noqa: E402
-from matplotlib.colors import to_rgba  # noqa: E402
-from matplotlib.figure import Figure  # noqa: E402
+import matplotlib.pyplot as plt
+import pytest
+from matplotlib.axes import Axes
+from matplotlib.colors import to_rgba
+from matplotlib.figure import Figure
 
-from dc26_vatican_explorer.plotting_tools.plotting_functions import (  # noqa: E402
+from dc26_vatican_explorer.plotting_tools import create_bar_chart as exported_bar_chart
+from dc26_vatican_explorer.plotting_tools.plotting_functions import (
     create_bar_chart,
     create_box_plot,
     create_heatmap,
@@ -33,6 +34,7 @@ from dc26_vatican_explorer.plotting_tools.plotting_functions import (  # noqa: E
     create_scatterplot,
     save_figure,
 )
+
 
 @pytest.fixture(autouse=True)
 def close_figures():
@@ -63,9 +65,9 @@ def test_create_scatterplot_sets_optional_titles():
     _, ax = create_scatterplot(
         [1, 2],
         [3, 4],
-        plot_title="Speech Lengths",
-        x_axis_title="Speech Number",
-        y_axis_title="Word Count",
+        title="Speech Lengths",
+        xlabel="Speech Number",
+        ylabel="Word Count",
     )
 
     assert ax.get_title() == "Speech Lengths"
@@ -73,10 +75,17 @@ def test_create_scatterplot_sets_optional_titles():
     assert ax.get_ylabel() == "Word Count"
 
 
-def test_create_scatterplot_rejects_mismatched_list_lengths():
-    """Confirm mismatched input lengths raise a clear error."""
-    with pytest.raises(ValueError, match="same length"):
-        create_scatterplot([1, 2], [3])
+@pytest.mark.parametrize(
+    ("kwargs", "error_match"),
+    [
+        ({"x_values": [], "y_values": []}, "at least one"),
+        ({"x_values": [1, 2], "y_values": [3]}, "must match"),
+    ],
+)
+def test_create_scatterplot_rejects_invalid_inputs(kwargs, error_match):
+    """Confirm invalid scatterplot inputs raise clear errors."""
+    with pytest.raises(ValueError, match=error_match):
+        create_scatterplot(**kwargs)
 
 
 def test_create_bar_chart_returns_matplotlib_objects():
@@ -176,6 +185,7 @@ def test_create_bar_chart_adds_hue_legend_title():
         ({"values": []}, "at least one"),
         ({"values": [1, 2], "labels": ["Only one"]}, "'labels' length"),
         ({"values": [1, 2], "hue": ["Only one"]}, "'hue' length"),
+        ({"values": [1, 2], "color": ["red"]}, "'color' length"),
         ({"values": [1, 2], "orient": "diagonal"}, "'orient' must be"),
     ],
 )
@@ -458,3 +468,8 @@ def test_save_figure_rejects_empty_format(tmp_path):
 
     with pytest.raises(ValueError, match="non-empty"):
         save_figure(fig, tmp_path / "plot", fmt="")
+
+
+def test_plotting_tools_exports_public_helpers():
+    """Confirm the package exposes the agent-facing plotting helpers."""
+    assert exported_bar_chart is create_bar_chart
