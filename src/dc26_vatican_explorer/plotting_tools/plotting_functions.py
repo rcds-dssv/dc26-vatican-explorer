@@ -1,4 +1,5 @@
 """Reusable plotting helpers for Vatican Explorer analyses."""
+# ruff: noqa: I001
 
 from __future__ import annotations
 
@@ -7,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 import matplotlib
+
 matplotlib.use("Agg")  # non-interactive backend; must be set before pyplot import
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -32,53 +34,46 @@ def _set_optional_labels(
 def create_scatterplot(
     x_values: list[float],
     y_values: list[float],
-    plot_title: str | None = None,
-    x_axis_title: str | None = None,
-    y_axis_title: str | None = None,
+    title: str | None = None,
+    xlabel: str | None = None,
+    ylabel: str | None = None,
+    color: str | None = None,
+    figsize: tuple[float, float] = (8, 5),
 ) -> tuple[Figure, Axes]:
     """Create a scatterplot from x and y values.
 
     Args:
         x_values: Values to plot along the x-axis.
         y_values: Values to plot along the y-axis.
-        plot_title: Optional title to display above the plot.
-        x_axis_title: Optional title to display below the x-axis.
-        y_axis_title: Optional title to display beside the y-axis.
+        title: Chart title. If None, no title is added.
+        xlabel: Label for the x-axis. If None, no label is added.
+        ylabel: Label for the y-axis. If None, no label is added.
+        color: Optional point color.
+        figsize: ``(width, height)`` in inches for the figure.
 
     Returns:
-        A tuple containing the matplotlib figure and axes objects.
+        tuple[Figure, Axes]: The matplotlib Figure and Axes objects.
 
     Raises:
-        ValueError: If x_values and y_values do not contain the same number of
-            values.
+        ValueError: If ``x_values``/``y_values`` are empty or have different
+            lengths.
+
     """
-    # Check that each x value has a matching y value.
+    if len(x_values) == 0:
+        raise ValueError("'x_values' must contain at least one element.")
+
     if len(x_values) != len(y_values):
-        # Raise a clear error when the two input lists cannot form coordinate pairs.
-        raise ValueError("x_values and y_values must have the same length.")
+        raise ValueError(
+            f"'x_values' length ({len(x_values)}) must match "
+            f"'y_values' length ({len(y_values)})."
+        )
 
-    # Create a matplotlib figure and axes for the scatterplot.
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
+    sns.scatterplot(x=x_values, y=y_values, color=color, ax=ax)
 
-    # Draw the x and y values as points on the axes using seaborn.
-    sns.scatterplot(x=x_values, y=y_values, ax=ax)
+    _set_optional_labels(ax, title=title, xlabel=xlabel, ylabel=ylabel)
+    fig.tight_layout()
 
-    # Check whether the caller provided a plot title.
-    if plot_title is not None:
-        # Add the plot title above the axes.
-        ax.set_title(plot_title)
-
-    # Check whether the caller provided an x-axis title.
-    if x_axis_title is not None:
-        # Add the x-axis title below the axes.
-        ax.set_xlabel(x_axis_title)
-
-    # Check whether the caller provided a y-axis title.
-    if y_axis_title is not None:
-        # Add the y-axis title beside the axes.
-        ax.set_ylabel(y_axis_title)
-
-    # Return both matplotlib objects so another function can render or save them.
     return fig, ax
 
 
@@ -363,20 +358,24 @@ def create_bar_chart(
             f"'hue' length ({len(hue)}) must match 'values' length ({len(values)})."
         )
 
+    if isinstance(color, list) and len(color) != len(values):
+        raise ValueError(
+            f"'color' length ({len(color)}) must match 'values' length ({len(values)})."
+        )
+
     if orient not in ("h", "v"):
         raise ValueError(f"'orient' must be 'h' or 'v', got {orient!r}.")
 
     cats = labels if labels is not None else list(range(len(values)))
     horizontal = orient == "h"
 
-    # seaborn barplot: for horizontal, numeric values → x, categories → y
+    # For horizontal bars, numeric values go on x and categories go on y.
     x_data = values if horizontal else cats
     y_data = cats if horizontal else values
 
     fig, ax = plt.subplots(figsize=figsize)
 
     if hue is not None:
-
         df = pd.DataFrame({"x": x_data, "y": y_data, "hue": hue})
         sns.barplot(
             data=df,
@@ -391,30 +390,25 @@ def create_bar_chart(
             ax.legend(title=legend_title)
     else:
         bar_color = color if color is not None else None
+        palette_hue = None
+        if palette is not None and bar_color is None:
+            palette_hue = y_data if horizontal else x_data
+
         sns.barplot(
             x=x_data,
             y=y_data,
-            hue=y_data if (palette is not None and bar_color is None and horizontal) else (
-                x_data if (palette is not None and bar_color is None) else None
-            ),
+            hue=palette_hue,
             palette=palette if bar_color is None else None,
             color=bar_color if isinstance(bar_color, str) else None,
             orient=orient,
             legend=False,
             ax=ax,
         )
-        # Apply per-bar colors when a list is supplied
         if isinstance(color, list):
-            for bar, c in zip(ax.patches, color):
+            for bar, c in zip(ax.patches, color, strict=False):
                 bar.set_facecolor(c)
 
-    if title is not None:
-        ax.set_title(title)
-    if xlabel is not None:
-        ax.set_xlabel(xlabel)
-    if ylabel is not None:
-        ax.set_ylabel(ylabel)
-
+    _set_optional_labels(ax, title=title, xlabel=xlabel, ylabel=ylabel)
     ax.tick_params(axis="x", rotation=x_rotation)
 
     fig.tight_layout()
