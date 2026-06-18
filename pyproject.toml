@@ -21,6 +21,7 @@ dev = [
     "ipykernel",
     "jupyter",
     "pytest",
+    "ruff",
 ]
 scrape = ["requests"]
 data-manipulation = ["pandas"]
