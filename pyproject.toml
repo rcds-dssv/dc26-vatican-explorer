@@ -13,6 +13,9 @@ dev = [
     "deptry>=0.25.1",
     "ipykernel",
     "jupyter",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.4",
     "pytest>=9.0.2",
 ]
 scrape = [
@@ -37,7 +40,6 @@ docs = [
 
 [project.scripts]
 vatican = "dc26_vatican_explorer.__main__:main"
-
 
 [build-system]
 requires = ["uv_build>=0.10.2,<0.11.0"]
@@ -66,4 +68,3 @@ ignore = [
 
 ]
 fixable = ["ALL"]
-
