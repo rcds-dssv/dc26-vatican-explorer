@@ -13,9 +13,9 @@ dev = [
     "deptry>=0.25.1",
     "ipykernel",
     "jupyter",
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.7.6",
-    "mkdocstrings[python]>=1.0.4",
+    "mkdocs=1.6.1",
+    "mkdocs-material=9.7.6",
+    "mkdocstrings[python]=1.0.4",
     "pytest>=9.0.2",
 ]
 scrape = [
@@ -27,15 +27,15 @@ data-manipulation = [
     "pandas",
 ]
 docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocs-material[imaging]>=9.0.0",
-    "mkdocstrings[python]>=0.24.0",
-    "mkdocs-jupyter>=0.24.0",
-    "pymdown-extensions>=10.0",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
-    "mkdocs-minify-plugin>=0.8.0",
-    "mkdocs-git-committers-plugin-2>=2.5.0",
+    "mkdocs=1.5.0",
+    "mkdocs-material=9.0.0",
+    "mkdocs-material[imaging]=9.0.0",
+    "mkdocstrings[python]=0.24.0",
+    "mkdocs-jupyter=0.24.0",
+    "pymdown-extensions=10.0",
+    "mkdocs-git-revision-date-localized-plugin=1.4.7",
+    "mkdocs-minify-plugin=0.8.0",
+    "mkdocs-git-committers-plugin-2=2.5.0",
 ]
 
 [project.scripts]
