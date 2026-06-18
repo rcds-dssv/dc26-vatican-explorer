@@ -50,7 +50,9 @@ CREATE TABLE IF NOT EXISTS texts (
 """
 
 
-def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA) -> None:
+def ensure_db_and_table(
+    db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA
+) -> None:
     """Create the sqlite database if it doesn't exist.
 
     Args:
@@ -68,7 +70,10 @@ def ensure_db_and_table(db_path: Path, table_schema: str = DEFAULT_TABLE_SCHEMA)
     finally:
         conn.close()
 
-def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: bool = False) -> tuple[int, int]:
+
+def add_content_to_db(
+    db_path: Path, record: dict[str, str | None], replace: bool = False
+) -> tuple[int, int]:
     """Add a text record (dict) to the SQLite DB. Creates DB if needed.
     Update the popes database if needed.
 
@@ -97,11 +102,14 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
     date = record.get("date")
     location = record.get("location")
     title = record.get("title")
-    language = record.get("lang_available") or record.get("lang_requested") or record.get("language")
+    language = (
+        record.get("lang_available")
+        or record.get("lang_requested")
+        or record.get("language")
+    )
     text = record.get("text")
     url = record.get("url")
     entry_creation_date = datetime.now(UTC).isoformat()  # store UTC timestamp
-
 
     conn = sqlite3.connect(str(db_path))
     conn.execute("PRAGMA foreign_keys = ON;")
@@ -114,29 +122,66 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
             sql_starter = "INSERT OR REPLACE INTO"
 
         # update pope database
-        sql_pope = sql_starter + """
+        sql_pope = (
+            sql_starter
+            + """
             popes
                 (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
-        cur.execute(sql_pope, (pope_name, pope_slug, pope_number, secular_name, place_of_birth, pontificate_begin, pontificate_end, entry_creation_date))
+        )
+        cur.execute(
+            sql_pope,
+            (
+                pope_name,
+                pope_slug,
+                pope_number,
+                secular_name,
+                place_of_birth,
+                pontificate_begin,
+                pontificate_end,
+                entry_creation_date,
+            ),
+        )
         conn.commit()
         _pope_id = cur.lastrowid or 0
 
         # retrieve the pope_id (whether newly inserted or existing)
-        cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
+        cur.execute(
+            "SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?",
+            (pope_name, pope_number),
+        )
         row = cur.fetchone()
         if row is None:
-            raise ValueError(f"Pope {pope_name} (#{pope_number}) not found in database.")
+            raise ValueError(
+                f"Pope {pope_name} (#{pope_number}) not found in database."
+            )
         pope_id = row[0]
 
         # update texts database
-        sql_text = sql_starter + """
+        sql_text = (
+            sql_starter
+            + """
             texts
                 (pope_id, section, year, date, location, title, language, url, text_content, entry_creation_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        cur.execute(sql_text, (pope_id, section, year, date, location, title, language, url, text, entry_creation_date))
+        )
+        cur.execute(
+            sql_text,
+            (
+                pope_id,
+                section,
+                year,
+                date,
+                location,
+                title,
+                language,
+                url,
+                text,
+                entry_creation_date,
+            ),
+        )
         conn.commit()
         _text_id = cur.lastrowid or 0
 
@@ -144,6 +189,7 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
         return _text_id, _pope_id
     finally:
         conn.close()
+
 
 def main() -> None:
     """Example of how to add a single text to the database.  This is not intended to be run on its own.
@@ -158,9 +204,8 @@ def main() -> None:
         section=args.section,
         out=args.out,
         debug_loc=args.debug_loc,
-        max_n_speeches=1
+        max_n_speeches=1,
     )
-
 
     for row in rows:
         print(row["url"])
@@ -178,5 +223,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

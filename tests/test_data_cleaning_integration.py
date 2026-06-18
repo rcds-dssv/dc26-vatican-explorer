@@ -2,9 +2,10 @@
 # :: IMPORTS ::
 # ----------------------
 import pytest
+
 from dc26_vatican_explorer.data_cleaning.format_dates import (
-    extract_date_from_title, 
-    format_date_to_iso
+    extract_date_from_title,
+    format_date_to_iso,
 )
 
 # ----------------------
@@ -16,14 +17,14 @@ from dc26_vatican_explorer.data_cleaning.format_dates import (
 def test_speech_metadata_to_iso_pipeline():
     # Simulate a raw title from your SQL query
     raw_title = "Homily of His Holiness (Rome, 15 Ottobre 2023)"
-    
+
     # Step 1: Extract
     extracted = extract_date_from_title(raw_title)
     assert extracted == "15 Ottobre 2023"
-    
+
     # Step 2: Convert
     iso_date = format_date_to_iso(extracted)
-    
+
     # Final assertion
     assert iso_date == "2023-10-15"
 

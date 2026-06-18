@@ -2,6 +2,7 @@
 
 ######################################### IMPORT LIBRARIES #########################################
 from re import finditer
+from typing import Any
 
 from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
@@ -13,6 +14,7 @@ from dc26_vatican_explorer.database_utils.database_helpers import (
 
 ######################################### DEFINE FUNCTIONS #########################################
 
+
 def default_regex_pattern() -> str:
     """Function to return the default regex pattern for biblical citations.
 
@@ -23,9 +25,12 @@ def default_regex_pattern() -> str:
         str: The default regex pattern for biblical citations.
 
     """
-    return r'\b(?:[1-3]\s+)?[A-Za-z]{2,4}\s+\d{1,3}:\d{1,3}(?:[-.]\d{1,3})?\b'
+    return r"\b(?:[1-3]\s+)?[A-Za-z]{2,4}\s+\d{1,3}:\d{1,3}(?:[-.]\d{1,3})?\b"
 
-def search_biblical_citations(text: str, context: int=100, pattern: str | None = None) -> list[tuple[str, str]]:
+
+def search_biblical_citations(
+    text: str, context: int = 100, pattern: str | None = None
+) -> list[tuple[str, str]]:
     """Function to search for biblical citations in a given text.
 
     Args:
@@ -61,7 +66,6 @@ def search_biblical_citations(text: str, context: int=100, pattern: str | None =
 
     # Iterate over matches
     for match in matches:
-
         # Extract citation
         citation = match.group()
 
@@ -81,9 +85,9 @@ def search_biblical_citations(text: str, context: int=100, pattern: str | None =
     # Return results
     return results
 
+
 def search_biblical_citations_db(
-    pattern: str | None = None,
-    query: str | None = None
+    pattern: str | None = None, query: str | None = None
 ) -> list[tuple[tuple[Any, ...], list[tuple[str, str]]]]:
     """Search database texts for biblical citations using a regex pattern.
 
@@ -159,7 +163,6 @@ def search_biblical_citations_db(
 
         # Iterate through each returned row from the database
         for row in rows:
-
             # Extract the text_content column (index 9 based on schema)
             text_content = row[9]
 
@@ -169,10 +172,7 @@ def search_biblical_citations_db(
 
             # Otherwise, search the text for biblical citations
             else:
-                citations = search_biblical_citations(
-                    text_content,
-                    pattern=pattern
-                )
+                citations = search_biblical_citations(text_content, pattern=pattern)
 
             # Store the full row along with the extracted citations
             results.append((row, citations))

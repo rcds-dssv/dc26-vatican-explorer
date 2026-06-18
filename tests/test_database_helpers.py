@@ -3,8 +3,9 @@
 import sqlite3
 
 import pytest
-import src.database_utils.database_helpers as db_module
-from src.database_utils.database_helpers import (
+
+import dc26_vatican_explorer.database_utils.database_helpers as db_module
+from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
     column_exists_in_table,
     connect_to_database,
@@ -20,6 +21,7 @@ from src.database_utils.database_helpers import (
 #########################################
 # BASIC CONNECTION TEST
 #########################################
+
 
 def test_connect_to_database_returns_connection_and_cursor(tmp_path, monkeypatch):
     """Test that connect_to_database returns a valid SQLite connection and cursor."""
@@ -43,9 +45,11 @@ def test_connect_to_database_returns_connection_and_cursor(tmp_path, monkeypatch
     finally:
         conn.close()
 
+
 #########################################
 # get_tables_in_database
 #########################################
+
 
 def test_get_tables_in_database_returns_all_user_tables():
     """Test that get_tables_in_database returns the names of created tables."""
@@ -62,6 +66,7 @@ def test_get_tables_in_database_returns_all_user_tables():
     finally:
         conn.close()
 
+
 def test_get_tables_in_database_on_empty_database_returns_empty_list():
     """Test that get_tables_in_database returns an empty list in a new database."""
     conn = sqlite3.connect(":memory:")
@@ -73,9 +78,11 @@ def test_get_tables_in_database_on_empty_database_returns_empty_list():
     finally:
         conn.close()
 
+
 #########################################
 # get_column_names_in_table
 #########################################
+
 
 def test_get_column_names_in_table_returns_all_columns_in_order():
     """Test that get_column_names_in_table returns column names in defined order."""
@@ -91,30 +98,37 @@ def test_get_column_names_in_table_returns_all_columns_in_order():
     finally:
         conn.close()
 
+
 #########################################
 # regexp
 #########################################
+
 
 def test_regexp_returns_1_when_pattern_matches_text():
     """Test that regexp returns 1 when the regex matches."""
     assert regexp(r"foo", "foobar") == 1
 
+
 def test_regexp_returns_0_when_pattern_does_not_match_text():
     """Test that regexp returns 0 when the regex does not match."""
     assert regexp(r"foo", "bar") == 0
 
+
 def test_regexp_returns_0_when_text_is_none():
     """Test that regexp safely handles None input."""
     assert regexp(r"foo", None) == 0
+
 
 def test_regexp_raises_on_invalid_pattern():
     """Test that regexp raises a ValueError when given an invalid regex pattern."""
     with pytest.raises(ValueError, match="Invalid regex pattern"):
         regexp(r"[", "foo")
 
+
 #########################################
 # register_regexp_function
 #########################################
+
 
 def test_register_regexp_function_makes_regexp_available_in_sql():
     """Test that register_regexp_function registers REGEXP as a usable SQL function."""
@@ -134,9 +148,11 @@ def test_register_regexp_function_makes_regexp_available_in_sql():
     finally:
         conn.close()
 
+
 #########################################
 # table_exists
 #########################################
+
 
 def test_table_exists_identifies_existing_and_nonexisting_tables():
     """Test that table_exists correctly identifies whether a table exists."""
@@ -152,9 +168,11 @@ def test_table_exists_identifies_existing_and_nonexisting_tables():
     finally:
         conn.close()
 
+
 #########################################
 # column_exists_in_table
 #########################################
+
 
 def test_column_exists_in_table_checks_correctly():
     """Test that column_exists_in_table detects existing and missing columns."""
@@ -162,9 +180,7 @@ def test_column_exists_in_table_checks_correctly():
     cursor = conn.cursor()
 
     try:
-        cursor.execute(
-            "CREATE TABLE users (id INTEGER, username TEXT, email TEXT);"
-        )
+        cursor.execute("CREATE TABLE users (id INTEGER, username TEXT, email TEXT);")
         conn.commit()
 
         assert column_exists_in_table(cursor, "users", "id")
@@ -173,6 +189,7 @@ def test_column_exists_in_table_checks_correctly():
         assert not column_exists_in_table(cursor, "users", "age")
     finally:
         conn.close()
+
 
 def test_column_exists_in_table_returns_false_when_table_does_not_exist():
     """Test that column_exists_in_table returns False if the table does not exist."""
@@ -183,6 +200,7 @@ def test_column_exists_in_table_returns_false_when_table_does_not_exist():
         assert not column_exists_in_table(cursor, "no_table", "col")
     finally:
         conn.close()
+
 
 #########################################
 # check_texts_table_schema
@@ -202,10 +220,12 @@ EXPECTED_COLUMNS = [
     "entry_creation_date",
 ]
 
+
 def create_texts_table(cursor, columns):
     """Create the 'texts' table with the specified column names (all TEXT type)."""
     col_defs = ", ".join(f"{col} TEXT" for col in columns)
     cursor.execute(f"CREATE TABLE texts ({col_defs});")
+
 
 def test_check_texts_table_schema_returns_true_for_correct_schema():
     """Test that check_texts_table_schema returns True when the 'texts' table
@@ -222,6 +242,7 @@ def test_check_texts_table_schema_returns_true_for_correct_schema():
     finally:
         conn.close()
 
+
 def test_check_texts_table_schema_returns_false_when_columns_out_of_order():
     """Test that check_texts_table_schema returns False when the columns exist
     but are not in the expected order.
@@ -231,7 +252,10 @@ def test_check_texts_table_schema_returns_false_when_columns_out_of_order():
 
     try:
         wrong_order = EXPECTED_COLUMNS.copy()
-        wrong_order[0], wrong_order[1] = wrong_order[1], wrong_order[0]  # swap first two
+        wrong_order[0], wrong_order[1] = (
+            wrong_order[1],
+            wrong_order[0],
+        )  # swap first two
 
         create_texts_table(cursor, wrong_order)
         conn.commit()
@@ -239,6 +263,7 @@ def test_check_texts_table_schema_returns_false_when_columns_out_of_order():
         assert check_texts_table_schema(cursor) is False
     finally:
         conn.close()
+
 
 def test_check_texts_table_schema_returns_false_when_column_missing():
     """Test that check_texts_table_schema returns False when one or more expected
@@ -257,6 +282,7 @@ def test_check_texts_table_schema_returns_false_when_column_missing():
     finally:
         conn.close()
 
+
 def test_check_texts_table_schema_returns_false_when_extra_column_present():
     """Test that check_texts_table_schema returns False when the table contains
     all expected columns but also includes additional unwanted columns.
@@ -274,6 +300,7 @@ def test_check_texts_table_schema_returns_false_when_extra_column_present():
     finally:
         conn.close()
 
+
 def test_check_texts_table_schema_returns_false_when_table_missing():
     """Test that check_texts_table_schema returns False when the 'texts' table
     does not exist in the database.
@@ -287,9 +314,11 @@ def test_check_texts_table_schema_returns_false_when_table_missing():
     finally:
         conn.close()
 
+
 #########################################
 # fetch_rows_by_regexp
 #########################################
+
 
 def test_fetch_rows_by_regexp_returns_matching_rows():
     """Test that fetch_rows_by_regexp returns rows whose column values match
@@ -325,6 +354,7 @@ def test_fetch_rows_by_regexp_returns_matching_rows():
     finally:
         conn.close()
 
+
 def test_fetch_rows_by_regexp_returns_empty_list_when_no_rows_match():
     """Test that fetch_rows_by_regexp returns an empty list when no rows
     match the provided regular-expression pattern.
@@ -354,6 +384,7 @@ def test_fetch_rows_by_regexp_returns_empty_list_when_no_rows_match():
         assert rows == []
     finally:
         conn.close()
+
 
 def test_fetch_rows_by_regexp_handles_multiple_column_selection():
     """Test that fetch_rows_by_regexp correctly returns full rows when the query
@@ -391,18 +422,20 @@ def test_fetch_rows_by_regexp_handles_multiple_column_selection():
     finally:
         conn.close()
 
+
 #########################################
 # sanitize_table_name
 #########################################
 
+
 @pytest.mark.parametrize(
     "raw, expected",
     [
-        ("users", "users"),                         # no quotes
-        ('user"s', 'user""s'),                     # single quote
-        ('"users"', '""users""'),                 # quotes at both ends
+        ("users", "users"),  # no quotes
+        ('user"s', 'user""s'),  # single quote
+        ('"users"', '""users""'),  # quotes at both ends
         ('user"name"with"quotes', 'user""name""with""quotes'),  # multiple quotes
-        ("", ""),                                  # empty string
+        ("", ""),  # empty string
     ],
 )
 def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> None:
@@ -417,9 +450,11 @@ def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> 
     """
     assert sanitize_table_name(raw) == expected
 
+
 #########################################
 # speech_url_exists_in_db
 #########################################
+
 
 def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
     """Test that speech_url_exists_in_db returns True when the given URL
@@ -440,9 +475,13 @@ def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
         )
         conn.commit()
 
-        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1") is True
+        assert (
+            db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1")
+            is True
+        )
     finally:
         conn.close()
+
 
 def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
     """Test that speech_url_exists_in_db returns False when the given URL
@@ -462,9 +501,15 @@ def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
         )
         conn.commit()
 
-        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/not-there") is False
+        assert (
+            db_module.speech_url_exists_in_db(
+                test_db_path, "https://example.com/not-there"
+            )
+            is False
+        )
     finally:
         conn.close()
+
 
 def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_path):
     """Test that speech_url_exists_in_db returns False when the speeches table
@@ -479,9 +524,13 @@ def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_p
         cursor.execute("CREATE TABLE other_table (id INTEGER PRIMARY KEY, url TEXT);")
         conn.commit()
 
-        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1") is False
+        assert (
+            db_module.speech_url_exists_in_db(test_db_path, "https://example.com/s1")
+            is False
+        )
     finally:
         conn.close()
+
 
 def test_speech_url_exists_in_db_returns_false_when_db_path_does_not_exist(tmp_path):
     """Test that speech_url_exists_in_db returns False when the database file
@@ -490,7 +539,11 @@ def test_speech_url_exists_in_db_returns_false_when_db_path_does_not_exist(tmp_p
     missing_db_path = tmp_path / "does_not_exist.db"
     assert missing_db_path.exists() is False
 
-    assert db_module.speech_url_exists_in_db(missing_db_path, "https://example.com/s1") is False
+    assert (
+        db_module.speech_url_exists_in_db(missing_db_path, "https://example.com/s1")
+        is False
+    )
+
 
 def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
     """Test that speech_url_exists_in_db returns True even if multiple rows share
@@ -511,9 +564,13 @@ def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
         )
         conn.commit()
 
-        assert db_module.speech_url_exists_in_db(test_db_path, "https://example.com/dup") is True
+        assert (
+            db_module.speech_url_exists_in_db(test_db_path, "https://example.com/dup")
+            is True
+        )
     finally:
         conn.close()
+
 
 def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
     """Test that speech_url_exists_in_db returns False when url is None.
@@ -525,7 +582,9 @@ def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
 
     try:
         cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
-        cursor.execute("INSERT INTO speeches (url) VALUES (?);", ("https://example.com/s1",))
+        cursor.execute(
+            "INSERT INTO speeches (url) VALUES (?);", ("https://example.com/s1",)
+        )
         conn.commit()
 
         assert db_module.speech_url_exists_in_db(test_db_path, None) is False

@@ -33,20 +33,22 @@ def main() -> None:
     seen = set()
     popes = [p for p in popes if not (p in seen or seen.add(p))]
 
-
     if not popes:
-        p.error("Provide at least one pope via --pope (repeatable) or --popes (comma-separated).")
+        p.error(
+            "Provide at least one pope via --pope (repeatable) or --popes (comma-separated)."
+        )
 
     # If more than one pope, ignore --out (each run auto-names its own file).
     multi = len(popes) > 1
     if multi and args.out:
-        print("[info] Multiple popes provided; ignoring --out and using per-pope auto filenames.")
+        print(
+            "[info] Multiple popes provided; ignoring --out and using per-pope auto filenames."
+        )
 
     successes: list[tuple[str, Path]] = []
     failures: list[tuple[str, str]] = []
 
     for pope in popes:
-
         try:
             print("======= Fetching content...")
             out_path, rows = fetch_speeches_to_feather(
@@ -56,7 +58,7 @@ def main() -> None:
                 section=args.section,
                 out=(None if multi else args.out),
                 debug_loc=args.debug_loc,
-                max_n_speeches=args.max_n_speeches
+                max_n_speeches=args.max_n_speeches,
             )
 
             print("\n======= Adding content to database ...")
@@ -73,7 +75,6 @@ def main() -> None:
                 else:
                     print("Pope record already exists (ignored).")
                 print("")
-
 
             successes.append((pope, out_path))
 
@@ -99,7 +100,6 @@ def main() -> None:
 
     print("\n======= Pipeline complete.")
 
+
 if __name__ == "__main__":
     main()
-
-

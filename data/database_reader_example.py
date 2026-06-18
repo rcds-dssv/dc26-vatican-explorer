@@ -20,14 +20,18 @@ def get_tables_in_database(cursor) -> list:
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
 
-    return [t[0] for t in tables] # flatten the list, since the default is to return a list of tuples (rows)
+    return [
+        t[0] for t in tables
+    ]  # flatten the list, since the default is to return a list of tuples (rows)
+
 
 def get_column_names_in_table(cursor, table_name: str) -> list:
     """Get a list of the columns in a given table of the database."""
     cursor.execute(f"PRAGMA table_info({table_name})")
     columns = cursor.fetchall()
 
-    return [c[1] for c in columns] # select only the column names
+    return [c[1] for c in columns]  # select only the column names
+
 
 def get_row_count_in_table(cursor, table_name: str) -> int:
     """Get the number of rows in a given table."""
@@ -35,21 +39,25 @@ def get_row_count_in_table(cursor, table_name: str) -> int:
     count = int(cursor.fetchone()[0])
     return count
 
+
 def get_first_n_rows_as_df(conn, table_name: str, n: int = 10) -> pd.DataFrame:
     """Get the first n rows of the given table and return as a pandas DataFrame."""
     df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT {n}", conn)
 
     return df
 
-def get_first_n_entries_in_column(cursor, table_name: str, column_name: str, n: int = 10) -> list:
+
+def get_first_n_entries_in_column(
+    cursor, table_name: str, column_name: str, n: int = 10
+) -> list:
     """Get the first n rows of the given table and return as a pandas DataFrame."""
     cursor.execute(f"SELECT {column_name} FROM {table_name} LIMIT {n};")
     values = cursor.fetchall()
 
     return values
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     print("Database path:", _DB_PATH)
     conn, cursor = connect_to_database()
 
@@ -66,7 +74,7 @@ if __name__ == "__main__":
 
     # print the available columns in each table
     for table in tables:
-        columns = get_column_names_in_table(cursor,table)
+        columns = get_column_names_in_table(cursor, table)
         print(f"Columns in the '{table}' table:", columns)
         print("")
 
@@ -86,7 +94,3 @@ if __name__ == "__main__":
     for s in sp:
         print(s)
         print("")
-
-
-
-
