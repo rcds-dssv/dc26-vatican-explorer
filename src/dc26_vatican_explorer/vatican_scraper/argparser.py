@@ -13,8 +13,8 @@ def scraper_parser():
     p.add_argument("--popes", help='Comma-separated list. e.g., "Francis,Benedict XVI,John Paul II"')
 
     p.add_argument("--years", default="2025", help='e.g., "2020", "2019,2021-2023", "2021-2023"')
-    p.add_argument("--section", default="angelus", help="Type of content: e.g., angelus, audiences, speeches")
-    p.add_argument("--lang", default="EN", help="Two-letter language code (EN, FR, ES, ...). Default: EN")
+    p.add_argument("--section", default="angelus", help="Comma-separated content sections, e.g. \"homilies,audiences,speeches\"")
+    p.add_argument("--lang", default="EN", help="Comma-separated language codes, e.g. \"EN,IT\". Default: EN")
 
     # Note: Step 4 always saves under vatican_scraper/scrape_result/.
     # If you pass --out here with multiple popes, it’s ambiguous, so we ignore it.
@@ -70,5 +70,9 @@ def get_scraper_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
 
     # only return the first pope here if a list is given
     args.pope = popes[0]
+
+    # Parse comma-separated sections and languages into lists
+    args.sections = [s.strip() for s in args.section.split(",") if s.strip()]
+    args.langs = [l.strip().upper() for l in args.lang.split(",") if l.strip()]
 
     return (p, args)
