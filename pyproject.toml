@@ -3,7 +3,7 @@ name = "dc26-vatican-explorer"
 version = "0.1.0"
 description = "---TODO---"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "python-dateutil",   # dateutil - add explicitly
 ]
@@ -15,7 +15,7 @@ dev = [
     "jupyter",
     "mkdocs>=1.6,<2.0",
     "mkdocs-material>=9.0.0",
-    "mkdocstrings[python]>=1.16,<2.0",
+    "mkdocstrings[python]>=1.0.4,<2.0",
     "pytest>=9.0.2",
 ]
 scrape = [
@@ -30,7 +30,7 @@ docs = [
     "mkdocs>=1.6,<2.0",
     "mkdocs-material>=9.0.0",
     "mkdocs-material[imaging]>=9.0.0",
-    "mkdocstrings[python]>=1.16,<2.0",
+    "mkdocstrings[python]>=1.0.4,<2.0",
     "mkdocs-jupyter>=0.24.0",
     "pymdown-extensions>=10.0",
     "mkdocs-git-revision-date-localized-plugin>=1.4.7",
