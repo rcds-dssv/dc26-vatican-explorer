@@ -102,12 +102,18 @@ def _print_content_diagnostic() -> None:
 
 def _fetch_speech_counts(
     language: str,
+    search_field: str | None = None,
 ) -> dict[str, tuple[int, str | None, str | None]]:
     """Query speech counts per pope for a given language."""
+    field_filter = ""
+    if search_field is not None:
+        field = _validate_search_field(search_field)
+        field_filter = f"AND t.{field} IS NOT NULL AND t.{field} != ''"
+
     conn, cursor = connect_to_database()
     try:
         cursor.execute(
-            """
+            f"""
             SELECT p.pope_name,
                    COUNT(t._texts_id) AS speech_count,
                    p.pontificate_begin,
@@ -115,6 +121,7 @@ def _fetch_speech_counts(
             FROM popes p
             JOIN texts t ON p._pope_id = t.pope_id
             WHERE t.language = ?
+              {field_filter}
             GROUP BY p._pope_id, p.pope_name, p.pontificate_begin, p.pontificate_end
             """,
             (language,),
@@ -251,12 +258,27 @@ def plot_word_count_per_pope(
         )
 
     counts = _fetch_word_counts(word, language, field)
-    if not counts:
+    searchable_counts = _fetch_speech_counts(language, field)
+    if not searchable_counts:
+        raise ValueError(
+            f"No searchable {field} records found for language {language!r}."
+        )
+
+    if not any(count > 0 for count, _begin, _end in counts.values()):
         raise ValueError(
             f"No occurrences of {word!r} found in {field} for language {language!r}."
         )
 
-    labels, values = _sorted_labels_and_values(counts)
+    values_by_pope = {
+        pope_name: (
+            counts.get(pope_name, (0, begin, end))[0],
+            begin,
+            end,
+        )
+        for pope_name, (_speech_count, begin, end) in searchable_counts.items()
+    }
+
+    labels, values = _sorted_labels_and_values(values_by_pope)
     fig, ax = create_bar_chart(
         values=values,
         labels=labels,
@@ -295,17 +317,17 @@ def plot_word_rate_per_pope(
 
     metric: WordMetric = "matching_speeches" if mode == "fraction" else "occurrences"
     numerator_counts = _fetch_word_counts(word, language, field, metric=metric)
-    speech_counts = _fetch_speech_counts(language)
+    searchable_counts = _fetch_speech_counts(language, field)
 
     values_by_pope: dict[str, tuple[float, str | None, str | None]] = {}
-    for pope_name, (numerator, begin, end) in numerator_counts.items():
-        speech_count = speech_counts.get(pope_name, (0, None, None))[0]
+    for pope_name, (speech_count, begin, end) in searchable_counts.items():
         if speech_count > 0:
+            numerator = numerator_counts.get(pope_name, (0, begin, end))[0]
             values_by_pope[pope_name] = (numerator / speech_count, begin, end)
 
     if not values_by_pope:
         raise ValueError(
-            f"No {mode} data available for {word!r} in {field} "
+            f"No searchable {field} records available for {word!r} "
             f"for language {language!r}."
         )
 

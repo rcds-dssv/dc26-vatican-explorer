@@ -6,10 +6,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-
-import matplotlib
-
-matplotlib.use("Agg")  # non-interactive backend; must be set before pyplot import
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -503,9 +499,11 @@ def save_figure(
     Args:
         fig: The matplotlib Figure object to save.
         filename: Destination file path (with or without extension). If the
-            path has no suffix, ``fmt`` is appended automatically.
+            path has no suffix, ``fmt`` is appended automatically. If the path
+            already has a suffix, that suffix determines the saved format.
         fmt: Output format understood by matplotlib, e.g. ``"png"``,
-            ``"pdf"``, ``"svg"``, ``"jpg"``. Default is ``"png"``.
+            ``"pdf"``, ``"svg"``, ``"jpg"``. Used only when ``filename`` has
+            no suffix. Default is ``"png"``.
         dpi: Resolution in dots per inch. Default is 150.
 
     Returns:
@@ -521,7 +519,10 @@ def save_figure(
     out = Path(filename)
     if not out.suffix:
         out = out.with_suffix(f".{fmt}")
+        output_format = fmt
+    else:
+        output_format = out.suffix.removeprefix(".")
 
     out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, format=fmt, dpi=dpi, bbox_inches="tight")
+    fig.savefig(out, format=output_format, dpi=dpi, bbox_inches="tight")
     return out.resolve()

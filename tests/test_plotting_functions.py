@@ -24,6 +24,7 @@ from matplotlib.colors import to_rgba
 from matplotlib.figure import Figure
 
 from dc26_vatican_explorer.plotting_tools import create_bar_chart as exported_bar_chart
+from dc26_vatican_explorer.plotting_tools import create_example_plots
 from dc26_vatican_explorer.plotting_tools.plotting_functions import (
     create_bar_chart,
     create_box_plot,
@@ -462,12 +463,103 @@ def test_save_figure_preserves_existing_suffix(tmp_path):
     assert saved_path.read_text(encoding="utf-8").lstrip().startswith("<?xml")
 
 
+def test_save_figure_uses_existing_suffix_for_output_format(tmp_path):
+    """Confirm an existing suffix controls the serialized file type."""
+    fig, _ = create_bar_chart([1])
+    output_file = tmp_path / "bar.svg"
+
+    saved_path = save_figure(fig, output_file)
+
+    assert saved_path == output_file.resolve()
+    assert saved_path.read_text(encoding="utf-8").lstrip().startswith("<?xml")
+
+
 def test_save_figure_rejects_empty_format(tmp_path):
     """Confirm an empty output format raises a clear error."""
     fig, _ = create_scatterplot([1], [2])
 
     with pytest.raises(ValueError, match="non-empty"):
         save_figure(fig, tmp_path / "plot", fmt="")
+
+
+def test_plot_word_count_per_pope_includes_zero_match_popes(monkeypatch, tmp_path):
+    """Confirm word count examples include searchable popes with zero matches."""
+
+    def fake_fetch_word_counts(word, language, search_field, metric="occurrences"):
+        return {"Francis": (2, "2013-03-13", None)}
+
+    def fake_fetch_speech_counts(language, search_field=None):
+        assert search_field == "title"
+        return {
+            "Francis": (10, "2013-03-13", None),
+            "Leo XIV": (5, "2025-05-08", None),
+        }
+
+    monkeypatch.setattr(
+        create_example_plots,
+        "_fetch_word_counts",
+        fake_fetch_word_counts,
+    )
+    monkeypatch.setattr(
+        create_example_plots,
+        "_fetch_speech_counts",
+        fake_fetch_speech_counts,
+    )
+
+    fig, ax, _path = create_example_plots.plot_word_count_per_pope(
+        word="love",
+        language="EN",
+        search_field="title",
+        output_dir=tmp_path,
+    )
+
+    bar_widths = [patch.get_width() for patch in ax.patches]
+    tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+
+    assert bar_widths == [2, 0]
+    assert tick_labels == ["Francis (2013-present)", "Leo XIV (2025-present)"]
+    plt.close(fig)
+
+
+def test_plot_word_rate_per_pope_uses_searchable_denominator(monkeypatch, tmp_path):
+    """Confirm rates divide by searchable records and include zero-match popes."""
+
+    def fake_fetch_word_counts(word, language, search_field, metric="occurrences"):
+        assert metric == "matching_speeches"
+        return {"Francis": (2, "2013-03-13", None)}
+
+    def fake_fetch_speech_counts(language, search_field=None):
+        assert search_field == "text_content"
+        return {
+            "Francis": (4, "2013-03-13", None),
+            "Leo XIV": (5, "2025-05-08", None),
+        }
+
+    monkeypatch.setattr(
+        create_example_plots,
+        "_fetch_word_counts",
+        fake_fetch_word_counts,
+    )
+    monkeypatch.setattr(
+        create_example_plots,
+        "_fetch_speech_counts",
+        fake_fetch_speech_counts,
+    )
+
+    fig, ax, _path = create_example_plots.plot_word_rate_per_pope(
+        word="love",
+        language="EN",
+        search_field="text_content",
+        mode="fraction",
+        output_dir=tmp_path,
+    )
+
+    bar_widths = [patch.get_width() for patch in ax.patches]
+    tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+
+    assert bar_widths == [0.5, 0]
+    assert tick_labels == ["Francis (2013-present)", "Leo XIV (2025-present)"]
+    plt.close(fig)
 
 
 def test_plotting_tools_exports_public_helpers():
