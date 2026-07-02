@@ -8,7 +8,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from config import _BASE, _POPE_INDEX_RECENT_URL
+from dc26_vatican_explorer.config import _BASE, _POPE_INDEX_RECENT_URL
 
 # -------------------- tiny courtesy pause --------------------
 

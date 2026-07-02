@@ -8,9 +8,9 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-from config import _DB_PATH
-from vatican_scraper.argparser import get_scraper_args
-from vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
+from dc26_vatican_explorer.config import _DB_PATH
+from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
+from dc26_vatican_explorer.vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
 
 DEFAULT_TABLE_SCHEMA = """
 
@@ -123,6 +123,16 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
         conn.commit()
         _pope_id = cur.lastrowid or 0
 
+        # If the pope already existed, back-fill place_of_birth if the stored value is missing.
+        if _pope_id == 0 and place_of_birth and place_of_birth.strip():
+            cur.execute(
+                "UPDATE popes SET place_of_birth = ? "
+                "WHERE pope_name = ? AND pope_number = ? "
+                "AND (place_of_birth IS NULL OR TRIM(place_of_birth) = '')",
+                (place_of_birth, pope_name, pope_number)
+            )
+            conn.commit()
+
         # retrieve the pope_id (whether newly inserted or existing)
         cur.execute("SELECT _pope_id FROM popes WHERE pope_name = ? AND pope_number = ?", (pope_name, pope_number))
         row = cur.fetchone()
@@ -140,7 +150,31 @@ def add_content_to_db(db_path: Path, record: dict[str, str | None], replace: boo
         conn.commit()
         _text_id = cur.lastrowid or 0
 
-        # If row was ignored, lastrowid will be 0; if replaced/inserted, lastrowid is the row id.
+        # If the row was ignored (URL already exists) but the stored text is empty,
+        # update it when the incoming text is non-empty.
+        if _text_id == 0 and text and text.strip():
+            cur.execute(
+                "UPDATE texts SET text_content = ?, entry_creation_date = ? "
+                "WHERE url = ? AND (text_content IS NULL OR TRIM(text_content) = '')",
+                (text, entry_creation_date, url)
+            )
+            conn.commit()
+            if cur.rowcount:
+                r = cur.execute("SELECT _texts_id FROM texts WHERE url = ?", (url,)).fetchone()
+                _text_id = r[0] if r else 0
+
+        # Back-fill date and location on existing records when those fields are missing.
+        if _text_id == 0:
+            for col, val in (("date", date), ("location", location)):
+                if val and str(val).strip():
+                    cur.execute(
+                        f"UPDATE texts SET {col} = ? "
+                        f"WHERE url = ? AND ({col} IS NULL OR TRIM({col}) = '')",
+                        (val, url)
+                    )
+            conn.commit()
+
+        # _text_id > 0: row was inserted or updated; 0: row already existed with content (ignored).
         return _text_id, _pope_id
     finally:
         conn.close()
@@ -167,9 +201,9 @@ def main() -> None:
         _text_id, _pope_id = add_content_to_db(_DB_PATH, row)
 
         if _text_id:
-            print("Inserted text into database with id:", _text_id)
+            print("Inserted/updated text in database with id:", _text_id)
         else:
-            print("Text record already exists (ignored).")
+            print("Text record already exists with content (ignored).")
         if _pope_id:
             print("Inserted pope into database with id:", _pope_id)
         else:

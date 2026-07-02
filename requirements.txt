@@ -1,0 +1,7 @@
+beautifulsoup4==4.14.3
+pandas==3.0.1
+python_dateutil==2.9.0.post0
+Requests==2.33.0
+urllib3==2.6.3
+mkdocstrings[python]
+pymdown-extensions

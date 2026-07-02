@@ -15,13 +15,15 @@ tests/
 **Note**: The `conftest.py` file is automatically loaded by pytest and configures the Python path so that imports work correctly. You don't need to modify it when adding new tests.
 
 ## Getting Started
+**pytest** will be managed by **uv**. Because pytest is defined in the dev dependency group, you don't need to install it manually.
 
 ### Prerequisites
+Ensure you have [uv](https://docs.astral.sh/uv/) installed. You do not need to run pip directly.
 
-Install pytest if you haven't already:
+To sync your environment and ensure all development tools (including pytest) are available:
 
 ```bash
-pip install pytest
+uv sync
 ```
 
 ### Running Tests
