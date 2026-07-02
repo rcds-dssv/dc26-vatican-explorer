@@ -134,7 +134,7 @@ plugins:
       handlers:
         python:
           paths: [src]                   # tells mkdocstrings where to find your package source (path is realative to mkdocs.yml)
-          import:                        # cross-reference external libraries  downloads their objects.inv to resolve links
+          inventories:                   # cross-reference external libraries  downloads their objects.inv to resolve links
             - https://docs.python.org/3/objects.inv
             - https://docs.pydantic.dev/latest/objects.inv
           options:
