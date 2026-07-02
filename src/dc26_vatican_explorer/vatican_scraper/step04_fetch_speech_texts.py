@@ -13,11 +13,11 @@ from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
-from config import _DB_PATH, _PKG_DIR
+from dc26_vatican_explorer.config import _DB_PATH, _PKG_DIR
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from vatican_scraper.argparser import get_scraper_args
-from vatican_scraper.database_utils.database_helpers import speech_url_exists_in_db
+from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
+from dc26_vatican_explorer.database_utils.database_helpers import get_speech_text_by_url, speech_url_exists_in_db
 
 _SCRAPER_DIR = _PKG_DIR / "vatican_scraper"
 
@@ -28,11 +28,11 @@ except ImportError as e:
 
 
 
-from vatican_scraper.step01_list_popes import (
+from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_find_by_display_name,
     vatican_fetch_pope_directory_recent,
 )
-from vatican_scraper.step02_list_pope_year_links import (
+from dc26_vatican_explorer.vatican_scraper.step02_list_pope_year_links import (
     _sanitize_section,
     extract_available_years_from_main,
     extract_pope_metadata_from_main,
@@ -40,7 +40,7 @@ from vatican_scraper.step02_list_pope_year_links import (
     fetch_pope_main_html,
     parse_years,
 )
-from vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
+from dc26_vatican_explorer.vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
 
 
 def _pause(min_s: float = 0.35, max_s: float = 1.1) -> None:
@@ -82,7 +82,11 @@ def fetch_html(url: str, *, timeout=(10, 120)) -> str:
     time.sleep(random.uniform(0.3, 0.9))
 
     s = _get_session()
+    print(f"[fetch] GET {url}")
+    t0 = time.monotonic()
     r = s.get(url, timeout=timeout)
+    elapsed = time.monotonic() - t0
+    print(f"[fetch] {r.status_code} in {elapsed:.1f}s  final={r.url}")
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
     return r.text
@@ -93,7 +97,11 @@ def fetch_html_with_final_url(url: str, *, timeout=(10, 120)) -> tuple[str, str]
     """
     time.sleep(random.uniform(0.3, 0.9))
     s = _get_session()
+    print(f"[fetch] GET {url}")
+    t0 = time.monotonic()
     r = s.get(url, timeout=timeout, allow_redirects=True)
+    elapsed = time.monotonic() - t0
+    print(f"[fetch] {r.status_code} in {elapsed:.1f}s  final={r.url}")
     r.raise_for_status()
     r.encoding = r.apparent_encoding or "utf-8"
     return (r.url, r.text)
@@ -185,7 +193,14 @@ def _find_location_in_abstract(soup: BeautifulSoup, debug: bool) -> str | None:
     return None
 
 def _find_location_in_font_block(soup: BeautifulSoup, debug: bool) -> str | None:
-    for font in soup.select("div.text:nth-of-type(3) > font"):
+    text_el = (
+        soup.select_one("div.text.container")
+        or soup.select_one("div.testo")
+        or next((el for el in soup.select("div.text") if len(el.get_text(strip=True)) > 100), None)
+    )
+    if not text_el:
+        return None
+    for font in text_el.select("font"):
         ps = font.find_all("p", recursive=False)
         for i, p in enumerate(ps):
             if i == 0:
@@ -200,7 +215,11 @@ def _find_location_in_font_block(soup: BeautifulSoup, debug: bool) -> str | None
     return None
 
 def _find_location_in_text_block(soup: BeautifulSoup, debug: bool) -> str | None:
-    block = soup.select_one("div.text:nth-of-type(3)")
+    block = (
+        soup.select_one("div.text.container")
+        or soup.select_one("div.testo")
+        or next((el for el in soup.select("div.text") if len(el.get_text(strip=True)) > 100), None)
+    )
     if not block:
         return None
     ps = block.find_all("p", recursive=False)
@@ -280,7 +299,16 @@ def extract_location_and_text(
     soup = BeautifulSoup(speech_html, "html.parser")
     location = _extract_location(soup, debug=debug_loc)
 
-    text_el = soup.select_one("div.text:nth-of-type(3)") or soup.select_one("div.text")
+    text_el = (
+        # Modern Vatican structure: div.text that also has class "container"
+        soup.select_one("div.text.container")
+        # Older structure (e.g. John Paul II era): div.testo
+        or soup.select_one("div.testo")
+        # Fallback: first div.text with meaningful content (skips empty placeholder divs)
+        or next((el for el in soup.select("div.text") if len(el.get_text(strip=True)) > 100), None)
+        # Last resort: first div.text regardless
+        or soup.select_one("div.text")
+    )
 
     embedded_links = extract_links_from_container(text_el, base_url=speech_url)
 
@@ -454,13 +482,19 @@ def fetch_speeches_to_feather(
             # If we are scraping EN, base_url is the canonical URL.
             # If we are scraping IT, we *guess* the IT URL and skip only if that exists.
             if want_lang == "EN":
-                if speech_url_exists_in_db(_DB_PATH, base_url):
+                if speech_url_exists_in_db(_DB_PATH, base_url, require_content=True):
                     print(f"[skip] Already in DB (EN url): {base_url}")
+                    # DIAGNOSTIC: show stored text to verify it is non-empty
+                    _existing = get_speech_text_by_url(_DB_PATH, base_url)
+                    print(f"[diag] Stored text preview: {repr((_existing or '')[:120])}")
                     continue
             else:
                 guessed_it = _rewrite_lang_in_url(base_url, want_lang)
-                if guessed_it and speech_url_exists_in_db(_DB_PATH, guessed_it):
+                if guessed_it and speech_url_exists_in_db(_DB_PATH, guessed_it, require_content=True):
                     print(f"[skip] Already in DB ({want_lang} url): {guessed_it}")
+                    # DIAGNOSTIC: show stored text to verify it is non-empty
+                    _existing = get_speech_text_by_url(_DB_PATH, guessed_it)
+                    print(f"[diag] Stored text preview: {repr((_existing or '')[:120])}")
                     continue
 
             base_final_url, base_html = fetch_html_with_final_url(base_url)
