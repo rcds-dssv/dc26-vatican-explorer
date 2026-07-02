@@ -22,6 +22,7 @@ class Speech:
     title: str
     date: str | None
     category: str
+    text_content: str | None = None
 
 @dataclass
 class Pope:
