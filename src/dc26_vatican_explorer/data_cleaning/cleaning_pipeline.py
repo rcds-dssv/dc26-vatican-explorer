@@ -19,12 +19,13 @@ from pathlib import Path
 # ----------------------
 # :: FUNCTIONS ::
 # ----------------------
-def clean_dates(raw_data:list[dict]) -> dict[str, Pope]:
+def clean_dates(raw_data: list[dict], include_text: bool = False) -> dict[str, Pope]:
     """
     Groups speeches by Pope and applies date normalization and validation.
 
     Args:
         raw_data(list of dict): List of raw dictionaries fetched from the database.
+        include_text (bool): Whether the raw speech text content should be processed.
 
     Returns:
         A dictionary of Pope objects, containing cleaned Speech metadata.
@@ -61,7 +62,8 @@ def clean_dates(raw_data:list[dict]) -> dict[str, Pope]:
         speech = Speech(
             title=row['title'],
             date=clean_date,
-            category=row['section']
+            category=row['section'],
+            text_content=row.get('text_content') if include_text else None
         )
         current_pope.texts.append(speech)
     return popes_data
@@ -80,18 +82,34 @@ def rearrange_pope_data(popes_data:dict[str,Pope]) -> dict[str,Pope]:
         pdata.texts.sort(key=lambda x: (x.date is None, x.date))
     return popes_data
 
-def get_clean_speech_metadata(db_path: str | Path) -> dict:
+def get_clean_speech_metadata(
+    db_path: str | Path,
+    include_text: bool = False,
+    limit: int | None = None,
+    random_sample: bool = False,
+    pope_name: str | None = None
+) -> dict[str, Pope]:
     """
     Executes the full loading and cleaning pipeline.
 
     Args:
         db_path: Path to the SQLite database file.
+        include_text: Whether to include raw speech text content.
+        limit: Maximum number of speeches to retrieve.
+        random_sample: Whether to return a random sample of speeches.
+        pope_name: Name of a specific Pope to filter by.
 
     Returns:
         The fully processed and sorted pope metadata dictionary.
     """
-    raw_data = fetch_speech_metadata(db_path)
-    pope_speech_metadata = clean_dates(raw_data)
+    raw_data = fetch_speech_metadata(
+        db_path,
+        include_text=include_text,
+        limit=limit,
+        random_sample=random_sample,
+        pope_name=pope_name
+    )
+    pope_speech_metadata = clean_dates(raw_data, include_text=include_text)
     pope_speech_metadata = rearrange_pope_data(pope_speech_metadata)
     return pope_speech_metadata
 

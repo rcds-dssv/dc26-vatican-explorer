@@ -5,8 +5,11 @@ description = "---TODO---"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "python-dateutil",   # dateutil - add explicitly
+    "python-dateutil",
 ]
+
+[tool.uv]
+exclude-newer = "1 week"
 
 [dependency-groups]
 dev = [

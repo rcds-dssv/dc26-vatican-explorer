@@ -2,6 +2,7 @@
 
 ################################## IMPORT LIBRARIES ##################################
 
+import argparse
 import re
 import sqlite3
 from pathlib import Path
@@ -173,26 +174,294 @@ def sanitize_table_name(table_name: str) -> str:
     """Sanitize a table name for safe use in SQL statements."""
     return table_name.replace('"', '""')
 
-def speech_url_exists_in_db(db_path: Path, url: str) -> bool:
+def speech_url_exists_in_db(db_path: Path, url: str, require_content: bool = False) -> bool:
     """Checks whether a speech with the given URL exists in the database.
 
-    This function queries the `speeches` table in the SQLite database located
+    This function queries the `texts` table in the SQLite database located
     at `db_path` and determines whether at least one record exists with the
     specified URL.
 
     Args:
         db_path (Path): Path to the SQLite database file.
         url (str): The URL of the speech to look up.
+        require_content (bool): If True, only return True when the row exists
+            AND has non-empty text_content. Defaults to False.
 
     Returns:
-        bool: True if a speech with the given URL exists in the database;
-        False otherwise, including when an error occurs during the query.
+        bool: True if a matching speech record is found; False otherwise,
+        including when an error occurs during the query.
 
     """
     try:
         with sqlite3.connect(db_path) as conn:
             cur = conn.cursor()
-            cur.execute("SELECT 1 FROM speeches WHERE url = ? LIMIT 1", (url,))
+            if require_content:
+                cur.execute(
+                    "SELECT 1 FROM texts WHERE url = ? "
+                    "AND text_content IS NOT NULL AND TRIM(text_content) != '' LIMIT 1",
+                    (url,)
+                )
+            else:
+                cur.execute("SELECT 1 FROM texts WHERE url = ? LIMIT 1", (url,))
             return cur.fetchone() is not None
     except Exception:
         return False
+
+
+def get_speech_text_by_url(db_path: Path, url: str) -> str | None:
+    """Return the stored text_content for a given URL, or None if not found."""
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT text_content FROM texts WHERE url = ? LIMIT 1", (url,))
+            row = cur.fetchone()
+            return row[0] if row is not None else None
+    except Exception:
+        return None
+
+
+def query_texts(
+    db_path: Path = _DB_PATH,
+    pope_name: str | None = None,
+    section: str | None = None,
+    years: str | None = None,
+    language: str | None = None,
+) -> list[dict]:
+    """Query the texts table by any combination of pope name, section, year range, and language.
+
+    Args:
+        db_path: Path to the SQLite database file.
+        pope_name: Pope display name, e.g. ``"John Paul II"``.
+        section: Content section, e.g. ``"homilies"``.
+        years: Year or year range string, e.g. ``"1977"``, ``"1977-1978"``,
+            or ``"1977,1979-1981"``.
+        language: Two-letter language code, e.g. ``"EN"``.
+
+    Returns:
+        A list of dicts, one per matching row, with keys matching the
+        ``texts`` table columns joined with ``pope_name`` from ``popes``.
+
+    Example::
+
+        rows = query_texts(_DB_PATH, pope_name="John Paul II",
+                           section="homilies", years="1977-1978", language="EN")
+        for r in rows:
+            print(r["date"], r["title"], r["url"])
+
+    """
+    # Parse years spec into a flat list of year strings
+    year_list: list[str] = []
+    if years:
+        for part in (p.strip() for p in years.split(",")):
+            if not part:
+                continue
+            if "-" in part:
+                a, b = part.split("-", 1)
+                if a.isdigit() and b.isdigit():
+                    year_list.extend(str(y) for y in range(int(a), int(b) + 1))
+            elif part.isdigit():
+                year_list.append(part)
+
+    conditions: list[str] = []
+    params: list = []
+
+    if pope_name:
+        conditions.append("p.pope_name = ?")
+        params.append(pope_name)
+    if section:
+        conditions.append("t.section = ?")
+        params.append(section)
+    if year_list:
+        placeholders = ",".join("?" * len(year_list))
+        conditions.append(f"t.year IN ({placeholders})")
+        params.extend(year_list)
+    if language:
+        conditions.append("t.language = ?")
+        params.append(language)
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+    sql = f"""
+        SELECT t._texts_id, p.pope_name, t.section, t.year, t.date,
+               t.location, t.title, t.language, t.url, t.text_content,
+               t.entry_creation_date
+        FROM texts t
+        JOIN popes p ON t.pope_id = p._pope_id
+        {where}
+        ORDER BY t.year, t.date
+    """
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        return [dict(r) for r in cur.fetchall()]
+
+
+# Columns that can be checked for missing values, mapped to their table.
+_TEXTS_FIELDS = {"text_content", "date", "location", "title", "language"}
+_POPES_FIELDS = {"place_of_birth", "secular_name", "pontificate_begin", "pontificate_end"}
+_ALL_CHECKABLE_FIELDS = _TEXTS_FIELDS | _POPES_FIELDS
+
+
+def query_missing_fields(
+    db_path: Path = _DB_PATH,
+    fields: list[str] | None = None,
+    pope_name: str | None = None,
+    section: str | None = None,
+    years: str | None = None,
+    language: str | None = None,
+) -> dict[str, list[dict]]:
+    """Return rows that have NULL or empty values for the requested fields.
+
+    Args:
+        db_path: Path to the SQLite database file.
+        fields: List of column names to check. Defaults to
+            ``["text_content", "date", "location", "place_of_birth"]``.
+            Valid values: ``text_content``, ``date``, ``location``, ``title``,
+            ``language`` (from ``texts``), and ``place_of_birth``,
+            ``secular_name``, ``pontificate_begin``, ``pontificate_end``
+            (from ``popes``).
+        pope_name: Optional filter by pope display name.
+        section: Optional filter by section.
+        years: Optional year or range string, e.g. ``"1977-1978"``.
+        language: Optional two-letter language code.
+
+    Returns:
+        A dict mapping each requested field name to a list of row dicts that
+        are missing that field.  Rows from ``popes`` checks include only pope
+        columns; rows from ``texts`` checks include all columns plus
+        ``pope_name``.
+
+    Example::
+
+        missing = query_missing_fields(fields=["text_content", "date", "place_of_birth"])
+        for field, rows in missing.items():
+            print(f"{field}: {len(rows)} records missing")
+
+    """
+    if fields is None:
+        fields = ["text_content", "date", "location", "place_of_birth"]
+
+    unknown = [f for f in fields if f not in _ALL_CHECKABLE_FIELDS]
+    if unknown:
+        raise ValueError(f"Unknown field(s): {unknown}. Valid: {sorted(_ALL_CHECKABLE_FIELDS)}")
+
+    # Parse years into a list of year strings
+    year_list: list[str] = []
+    if years:
+        for part in (p.strip() for p in years.split(",")):
+            if not part:
+                continue
+            if "-" in part:
+                a, b = part.split("-", 1)
+                if a.isdigit() and b.isdigit():
+                    year_list.extend(str(y) for y in range(int(a), int(b) + 1))
+            elif part.isdigit():
+                year_list.append(part)
+
+    results: dict[str, list[dict]] = {}
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        for field in fields:
+            if field in _TEXTS_FIELDS:
+                conds = [f"(t.{field} IS NULL OR TRIM(t.{field}) = '')"]
+                params: list = []
+                if pope_name:
+                    conds.append("p.pope_name = ?")
+                    params.append(pope_name)
+                if section:
+                    conds.append("t.section = ?")
+                    params.append(section)
+                if year_list:
+                    conds.append(f"t.year IN ({','.join('?' * len(year_list))})")
+                    params.extend(year_list)
+                if language:
+                    conds.append("t.language = ?")
+                    params.append(language)
+                sql = (
+                    "SELECT t._texts_id, p.pope_name, t.section, t.year, t.date, "
+                    "t.location, t.title, t.language, t.url, t.text_content, "
+                    "t.entry_creation_date "
+                    "FROM texts t JOIN popes p ON t.pope_id = p._pope_id "
+                    f"WHERE {' AND '.join(conds)} ORDER BY t.year, t.date"
+                )
+                cur.execute(sql, params)
+            else:  # popes field
+                conds = [f"(p.{field} IS NULL OR TRIM(p.{field}) = '')"]
+                params = []
+                if pope_name:
+                    conds.append("p.pope_name = ?")
+                    params.append(pope_name)
+                sql = (
+                    "SELECT p._pope_id, p.pope_name, p.pope_slug, p.pope_number, "
+                    "p.secular_name, p.place_of_birth, p.pontificate_begin, "
+                    "p.pontificate_end, p.entry_creation_date "
+                    "FROM popes p "
+                    f"WHERE {' AND '.join(conds)} ORDER BY p.pope_name"
+                )
+                cur.execute(sql, params)
+
+            results[field] = [dict(r) for r in cur.fetchall()]
+
+    return results
+
+
+def print_content_diagnostic(show_missing_urls: bool = False) -> None:
+    """Print text_content availability per pope per language per section (all languages and sections).
+
+    Args:
+        show_missing_urls: When True, also print the URLs of records with
+            NULL or empty text_content under each summary line.
+
+    """
+    print("\n[DIAGNOSTIC] text_content status per pope per language per section (all languages and sections)...")
+    conn, cursor = connect_to_database()
+    try:
+        cursor.execute(
+            """
+            SELECT p.pope_name,
+                   t.language,
+                   t.section,
+                   COUNT(t._texts_id) AS total_texts,
+                   SUM(CASE WHEN t.text_content IS NULL   THEN 1 ELSE 0 END) AS null_content,
+                   SUM(CASE WHEN t.text_content = ''      THEN 1 ELSE 0 END) AS empty_content,
+                   SUM(CASE WHEN t.text_content IS NOT NULL
+                             AND t.text_content != ''     THEN 1 ELSE 0 END) AS texts_with_content
+            FROM popes p
+            LEFT JOIN texts t ON p._pope_id = t.pope_id
+            GROUP BY p._pope_id, p.pope_name, t.language, t.section
+            ORDER BY p.pontificate_begin, t.language, t.section
+            """
+        )
+        rows = cursor.fetchall()
+        for row in rows:
+            pope_name, language, section, total, null_c, empty_c, has_c = row
+            print(
+                f"  {pope_name} [{language}, {section}]: total={total}, "
+                f"null={null_c}, empty_string={empty_c}, has_content={has_c}"
+            )
+            if show_missing_urls and (null_c or empty_c):
+                cursor.execute(
+                    """
+                    SELECT t.url
+                    FROM texts t
+                    JOIN popes p ON t.pope_id = p._pope_id
+                    WHERE p.pope_name = ?
+                      AND t.language = ?
+                      AND t.section = ?
+                      AND (t.text_content IS NULL OR TRIM(t.text_content) = '')
+                    ORDER BY t.year, t.date
+                    """,
+                    (pope_name, language, section),
+                )
+                for (url,) in cursor.fetchall():
+                    print(f"    [missing] {url}")
+    finally:
+        conn.close()
+
+
+
+if __name__ == "__main__":
+    print("database helper functions")
