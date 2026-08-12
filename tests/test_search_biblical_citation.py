@@ -1,8 +1,8 @@
 # Module with tests for search_biblical_citation.py
 
 import pytest
-import src.search.search_biblical_citation as search_module
-from src.search.search_biblical_citation import (
+import dc26_vatican_explorer.search.search_biblical_citation as search_module
+from dc26_vatican_explorer.search.search_biblical_citation import (
     default_regex_pattern,
     search_biblical_citations,
     search_biblical_citations_db,
@@ -177,10 +177,12 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     """
     assert captured["sql"].strip() == expected_default_query.strip()
 
-    # Ensure citations were extracted from text_content at index 9
+    # Ensure citations were extracted from text_content at index 9.
+    # Each result pairs the *whole* row with its citations, so callers can read
+    # pope_id, year, etc. off the row.
     assert len(results) == 1
-    row_id, citations = results[0]
-    assert row_id == 1
+    row, citations = results[0]
+    assert row[0] == 1
     citation_strings = [c[0] for c in citations]
     assert citation_strings == ["Jn 3:16", "1 Cor 13:6"]
 

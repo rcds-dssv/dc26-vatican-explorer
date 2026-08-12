@@ -3,8 +3,8 @@
 import sqlite3
 
 import pytest
-import src.database_utils.database_helpers as db_module
-from src.database_utils.database_helpers import (
+import dc26_vatican_explorer.database_utils.database_helpers as db_module
+from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
     column_exists_in_table,
     connect_to_database,
@@ -430,9 +430,9 @@ def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/s1",),
                 ("https://example.com/s2",),
@@ -453,9 +453,9 @@ def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/s1",),
             ],
@@ -501,9 +501,9 @@ def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/dup",),
                 ("https://example.com/dup",),
@@ -524,8 +524,8 @@ def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
-        cursor.execute("INSERT INTO speeches (url) VALUES (?);", ("https://example.com/s1",))
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("INSERT INTO texts (url) VALUES (?);", ("https://example.com/s1",))
         conn.commit()
 
         assert db_module.speech_url_exists_in_db(test_db_path, None) is False

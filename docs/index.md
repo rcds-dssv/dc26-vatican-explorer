@@ -16,7 +16,12 @@ The project covers the full data pipeline:
 
 ## Example Analyses
 
-Below are representative figures generated from the `plotting_tools` module. Each plot compares how different popes use specific words or phrases across their speeches.
+Below are representative figures generated from the `plotting_tools` module. Each plot compares how different popes use specific words or phrases across their speeches. More detail in [Analyses](analyses/index.md).
+
+!!! note "Read the rates, not the totals"
+    Raw counts are dominated by how long a pope reigned and how much of his
+    output has been digitised. The *rate* plots, normalised by total speech
+    length, are the ones that support a comparison.
 
 ### Speech Volume by Pope
 
@@ -54,17 +59,20 @@ Total word count of "Jesus" per pope in English texts:
 
 The toolkit can also search for specific biblical references across all speeches. For example, counting mentions of **1 John 4** by year and by pope reveals how different pontiffs engage with particular scriptural passages.
 
+See the full notebook: [Analysis of 1 John 4](analyses/first_john_4.ipynb).
+
 ## Getting Started
 
 ```bash
-# Install dependencies
-uv sync
+# Install dependencies (scraping and dataframe support are opt-in groups)
+uv sync --group scrape --group data-manipulation
 
 # Run the full scraping pipeline
-uv run python -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline \
-    --popes Benedict_XVI,Francis \
-    --sections homilies,addresses,angelus \
-    --langs Italian,English
+uv run -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline \
+    --popes "Francis,Benedict XVI" \
+    --years "2013-2026" \
+    --section "angelus,homilies,speeches" \
+    --lang "EN,IT"
 
 # Clean and query speech metadata
 uv run python -c "
@@ -73,6 +81,9 @@ data = get_clean_speech_metadata()
 print(data)
 "
 ```
+
+See [The Pipeline](pipeline.md) for the full flag reference and a description
+of each stage.
 
 ## Project Structure
 
@@ -83,13 +94,16 @@ print(data)
 | `src/dc26_vatican_explorer/database_utils/` | SQLite helpers, schema checks, query utilities |
 | `src/dc26_vatican_explorer/search/` | Biblical citation search with regex patterns |
 | `src/dc26_vatican_explorer/pope_comparison/` | Speech quantification and pope profiling |
-| `analyses/` | Jupyter notebooks for exploratory analysis |
+| `docs/analyses/` | Jupyter notebooks for exploratory analysis, published on this site |
+| `data/` | Reference data (`bible_books.csv`) and the local, gitignored `vatican_texts.db` |
 | `tests/` | Unit and integration tests |
 
 ## Documentation
 
-- [Using Vatican Explorer](using-vatican-explorer.md) — How to set up and run the toolkit
-- [Core API Reference](core-api.md) — Full function and class documentation
+- [The Pipeline](pipeline.md) — How speeches get from vatican.va into the database
+- [The Data](data.md) — Schema, coverage, and how to query it
+- [Analyses](analyses/index.md) — Notebooks and findings
+- [API Reference](using-vatican-explorer.md) — Full function and class documentation
 
 ## Resources
 

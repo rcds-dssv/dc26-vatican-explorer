@@ -28,6 +28,8 @@ scrape = [
 ]
 data-manipulation = [
     "pandas",
+    "pyarrow",           # required by pandas .to_feather() in step04
+    "matplotlib",        # analyses notebooks + plotting_tools
 ]
 docs = [
     "mkdocs>=1.6,<2.0",

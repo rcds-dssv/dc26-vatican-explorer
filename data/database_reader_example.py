@@ -3,7 +3,7 @@
 import sqlite3
 
 import pandas as pd
-from src.config import _DB_PATH
+from dc26_vatican_explorer.config import _DB_PATH
 
 
 def connect_to_database():

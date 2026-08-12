@@ -10,6 +10,7 @@ from dc26_vatican_explorer.data_cleaning.cleaning_pipeline import (
 )
 from dc26_vatican_explorer.data_cleaning.query_speeches import fetch_speech_metadata
 from dc26_vatican_explorer.data_cleaning.data_objects import Pope, Speech
+from dc26_vatican_explorer.data_cleaning.adding_birthplace import add_birthplace_to_db
 
 # ----------------------
 # :: TESTS ::
@@ -174,3 +175,32 @@ def test_clean_dates_without_text_inclusion(sample_raw_data):
 #     assert "Benedict XVI" in pipeline_res
 #     assert pipeline_res["Francis"].texts[0].text_content == "Text of Francis Speech 1"
 #     return
+
+# ----------------------
+# :: BIRTHPLACE ENRICHMENT ::
+# ----------------------
+def test_add_birthplace_matches_on_name_not_autoincrement_id(tmp_path):
+    """Birthplaces must be matched by pope_name, not by _pope_id.
+
+    _pope_id is assigned in whatever order popes happen to be scraped, so a
+    hardcoded id makes the UPDATE silently match zero rows. Here Francis is
+    deliberately given an id that does not match his position in BIRTH_MAPS.
+    """
+    db_path = tmp_path / "birthplace.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE popes (_pope_id INTEGER PRIMARY KEY, pope_name TEXT, place_of_birth TEXT)"
+    )
+    conn.execute("INSERT INTO popes (_pope_id, pope_name) VALUES (?, ?)", (97, "Francis"))
+    conn.execute("INSERT INTO popes (_pope_id, pope_name) VALUES (?, ?)", (98, "Leo XIV"))
+    conn.commit()
+    conn.close()
+
+    add_birthplace_to_db(db_path)
+
+    conn = sqlite3.connect(db_path)
+    rows = dict(conn.execute("SELECT pope_name, place_of_birth FROM popes").fetchall())
+    conn.close()
+
+    assert rows["Francis"] == "Buenos Aires, Argentina"
+    assert rows["Leo XIV"].startswith("Chicago")

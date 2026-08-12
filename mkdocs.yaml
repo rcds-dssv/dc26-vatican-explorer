@@ -128,6 +128,10 @@ markdown_extensions:
 plugins:
   - search:                              # built-in full-text search (required for the search feature flags above to work)
       lang: en
+  - mkdocs-jupyter:                      # renders .ipynb files in the nav as regular pages
+      execute: false                     # use the outputs stored in the notebook; the DB is not available at build time
+      include_source: true               # adds a "Download notebook" link to the original .ipynb
+      ignore_h1_titles: true             # use the nav title instead of the notebook's first H1
   - mkdocstrings:                          # generates API documentation from docstrings in your code
       enabled: true
       default_handler: python
@@ -177,6 +181,14 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: using-vatican-explorer.md
-  - Data Sources:
+  - The Pipeline: pipeline.md
+  - The Data: data.md
+  - Analyses:
+      - Overview: analyses/index.md
+      - 1 John 4: analyses/first_john_4.ipynb
+  - API Reference: using-vatican-explorer.md
+  - Resources:
+      - Overview: resources/index.md
+      - Bible Text Sources: resources/bible_text.md
+      - Data Use & Legal: resources/communication_dicastery.md
       - Vatican Library: https://www.vatican.va/content/francesco/en/speeches.html
