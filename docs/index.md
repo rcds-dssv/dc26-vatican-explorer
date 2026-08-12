@@ -14,50 +14,39 @@ The project covers the full data pipeline:
 4. **Search** — Finds biblical citations within speech texts using regex patterns.
 5. **Analysis** — Quantifies word-frequency themes (e.g., "love," "amore," "Jesus") per pope, compares speech volumes, and produces publication-ready visualizations.
 
-## Example Analyses
+## What the data shows
 
-Below are representative figures generated from the `plotting_tools` module. Each plot compares how different popes use specific words or phrases across their speeches. More detail in [Analyses](analyses/index.md).
+Four results from the current build, each regenerated from the database with a
+single command. The full write-up, with caveats, is on the
+[Findings](findings.md) page.
 
-!!! note "Read the rates, not the totals"
-    Raw counts are dominated by how long a pope reigned and how much of his
-    output has been digitised. The *rate* plots, normalised by total speech
-    length, are the ones that support a comparison.
+### The audiences stopped; the Angelus did not
 
-### Speech Volume by Pope
+Between March and August 2020, Francis's speeches and homilies fell 89% (105 to
+12) while the Sunday Angelus went *up* by two. Audiences need a crowd; a window
+does not.
 
-How many English speeches did each pope deliver?
+![Monthly output through the pandemic](assets/covid_rupture.png)
 
-![Speech count per pope](assets/speech_count_EN_per_pope.png)
+### Both popes preach almost entirely from the New Testament
 
-### "Love" in English Speeches
+Around 7,200 resolved scripture citations across 64 books. 84% are New
+Testament, and the four Gospels account for over half of everything. Leo XIV
+cites more densely; Francis reaches for Mark nearly twice as often.
 
-Total word count of "love" per pope (text content):
+![Scripture citations per 100 documents](assets/scripture_heatmap.png)
 
-![Love text content per pope](assets/love_EN_text_content_per_pope.png)
+### Also on the Findings page
 
-Rate of "love" usage (normalized by total speech length):
-
-![Love rate per pope](assets/love_EN_text_content_rate_per_pope.png)
-
-### "Amore" in Italian Speeches
-
-Total word count of "amore" per pope in Italian-language texts:
-
-![Amore text content per pope](assets/amore_IT_text_content_per_pope.png)
-
-Rate of "amore" usage in Italian:
-
-![Amore rate per pope](assets/amore_IT_text_content_rate_per_pope.png)
-
-### "Jesus" in English Speeches
-
-Total word count of "Jesus" per pope in English texts:
-
-![Jesus text content per pope](assets/Jesus_EN_text_content_per_pope.png)
+- **[Leo XIV opened louder than Francis](findings.md#2-leo-xiv-opened-louder-than-francis)** — 370 English documents in the first twelve months against 258
+- **[A fixed form and a free one](findings.md#4-a-fixed-form-and-a-free-one)** — the Angelus never exceeds 1,641 words; an address ranges from 37 to 12,163
+- **[What the data could not say last week](findings.md#5-what-the-data-could-not-say-last-week)** — how a one-line scraper bug hid 30% of the corpus, Lent and Easter included
 
 ### Biblical Citation Analysis
 
-The toolkit can also search for specific biblical references across all speeches. For example, counting mentions of **1 John 4** by year and by pope reveals how different pontiffs engage with particular scriptural passages.
+The toolkit can also search for specific biblical references across all
+speeches. Counting mentions of **1 John 4** by year and by pope shows how
+different pontiffs engage with a particular passage.
 
 See the full notebook: [Analysis of 1 John 4](analyses/first_john_4.ipynb).
 

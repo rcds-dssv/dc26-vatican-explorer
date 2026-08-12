@@ -181,6 +181,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Findings: findings.md
   - The Pipeline: pipeline.md
   - The Data: data.md
   - Analyses:

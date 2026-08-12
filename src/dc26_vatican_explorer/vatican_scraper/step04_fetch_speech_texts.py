@@ -474,10 +474,14 @@ def fetch_speeches_to_feather(
         )
         if not speeches:
             continue
-        if (max_n_speeches is None):
-            max_n_speeches = len(speeches)
+        # ponytail: the cap is per-year and must not be remembered between years.
+        # Assigning to max_n_speeches here used to persist the first year's count
+        # for every later year, silently truncating the whole corpus to the size
+        # of the earliest year scraped. Months are traversed newest-first, so the
+        # truncation also removed the START of each year (Lent and Easter).
+        year_limit = len(speeches) if max_n_speeches is None else max_n_speeches
         for si, s in enumerate(speeches):
-            if (si >= max_n_speeches):
+            if si >= year_limit:
                 break
 
             base_url = s["url"]

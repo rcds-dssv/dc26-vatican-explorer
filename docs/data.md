@@ -63,18 +63,18 @@ language, per section, and how many are missing body text:
 uv run -m dc26_vatican_explorer.database_utils.print_database_diagnostics
 ```
 
-The reference build covers **6,011 speeches** across two pontificates, in
+The reference build covers **7,808 speeches** across two pontificates, in
 English and Italian. Every row has body text — text extraction currently fails
 on none of them.
 
 | Pope | Language | Section | Speeches | Missing text |
 |---|---|---:|---:|---:|
-| Francis | EN | angelus | 581 | 0 |
-| Francis | EN | homilies | 495 | 0 |
-| Francis | EN | speeches | 1440 | 0 |
-| Francis | IT | angelus | 581 | 0 |
-| Francis | IT | homilies | 494 | 0 |
-| Francis | IT | speeches | 1440 | 0 |
+| Francis | EN | angelus | 688 | 0 |
+| Francis | EN | homilies | 550 | 0 |
+| Francis | EN | speeches | 2177 | 0 |
+| Francis | IT | angelus | 688 | 0 |
+| Francis | IT | homilies | 549 | 0 |
+| Francis | IT | speeches | 2176 | 0 |
 | Leo XIV | EN | angelus | 71 | 0 |
 | Leo XIV | EN | homilies | 93 | 0 |
 | Leo XIV | EN | speeches | 326 | 0 |
@@ -82,10 +82,19 @@ on none of them.
 | Leo XIV | IT | homilies | 93 | 0 |
 | Leo XIV | IT | speeches | 326 | 0 |
 
-Francis spans 2013–2025 (5,031 speeches); Leo XIV spans 2025–2026 (980).
+Francis spans 2013–2025 (6,828 speeches); Leo XIV spans 2025–2026 (980).
+
+!!! danger "This corpus was 30% smaller until the per-year cap was fixed"
+    An earlier build stored exactly 47 angelus, 44 homilies and 126 speeches
+    for *every* Francis year, because `max_n_speeches` leaked across years in
+    `step04`. Month indexes are walked newest-first, so the truncation deleted
+    January–April from most years — Lent and Easter included. If you have a
+    database built before that fix, re-run the pipeline: existing rows are
+    kept and the missing documents are filled in. See
+    [Findings §5](findings.md#5-what-the-data-could-not-say-last-week).
 
 !!! info "The EN and IT counts are close but not identical"
-    Homilies differ by one — 495 English against 494 Italian. The two languages
+    Homilies differ by one — 550 English against 549 Italian. The two languages
     are scraped as separate passes over separate index pages, so a document
     published in one language and not the other shows up as exactly this kind
     of gap. Treat cross-language comparisons as approximate unless you join on

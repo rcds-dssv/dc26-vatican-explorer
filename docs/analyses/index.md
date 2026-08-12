@@ -5,18 +5,26 @@ notebook that can be re-run against your own copy of `vatican_texts.db`.
 
 | Analysis | Question | Result |
 |---|---|---|
-| [1 John 4](first_john_4.ipynb) | How often do popes cite the "God is love" passage, and does that change by year and by pontificate? | 43 citations across 41 speeches, 2013–2026 |
+| [1 John 4](first_john_4.ipynb) | How often do popes cite the "God is love" passage, and does that change by year and by pontificate? | 52 citations across 49 speeches, 2013–2026 |
+
+See also [Findings](../findings.md) for the corpus-wide results.
 
 ## What 1 John 4 shows
 
-Against the current [6,011-speech build](../data.md), the passage appears 43
-times in 41 speeches — 34 by Francis, 9 by Leo XIV.
+Against the current [7,808-speech build](../data.md), the passage appears 52
+times in 49 speeches — 43 by Francis, 9 by Leo XIV.
 
-That gap is smaller than it looks. Francis's 34 citations are spread over
-twelve years and 5,031 speeches; Leo XIV's 9 come from a single year and 980
+That gap is smaller than it looks. Francis's 43 citations are spread over
+twelve years and 6,828 speeches; Leo XIV's 9 come from a single year and 980
 speeches. Per speech, the newer pontificate cites the passage at several times
 the rate. One year is a thin basis for a claim about a papacy, so this is a
 hypothesis to revisit as the corpus grows, not a conclusion.
+
+!!! note "These numbers moved once already"
+    An earlier build reported 43 citations across 41 speeches. The difference
+    is not a change in method — it is the 1,797 documents recovered by fixing
+    the per-year scraper cap. Counts quoted here are only as complete as the
+    corpus underneath them.
 
 The notebooks are rendered here with their stored outputs — the build does not
 execute them, because the database is deliberately not committed to the
@@ -29,17 +37,27 @@ uv run jupyter lab docs/analyses/
 
 ## Word frequency comparisons
 
-The figures on the [home page](../index.md) compare word usage across popes —
-"love" and "Jesus" in English, "amore" in Italian — both as raw counts and as
-rates normalised by total speech length. Normalisation matters here: Francis
-and John Paul II have very different corpus sizes, so raw counts mostly measure
-how long someone was pope.
+`plotting_tools.create_example_plots` compares word usage across popes — "love"
+and "Jesus" in English, "amore" in Italian — as raw counts and as rates
+normalised by speech length:
 
-!!! note "Where the plotting code lives"
-    The `plotting_tools` module that produced those figures is on the
-    `agent-plotting-tools` branch and is not yet merged into `main`. The
-    committed PNGs are the output of
-    `dc26_vatican_explorer.plotting_tools.create_example_plots`.
+```bash
+uv run -m dc26_vatican_explorer.plotting_tools.create_example_plots
+```
+
+It writes to `outputs/example_plots/` (gitignored). These charts are not on the
+site, because with two pontificates in the corpus every one of them is a
+two-bar comparison, and the two bars are close: "love" appears 2.71 times per
+English document under Francis against 2.37 under Leo XIV. That difference is
+not worth a figure. The framing becomes useful once earlier pontificates are
+collected.
+
+!!! warning "Earlier versions of this site showed richer per-pope charts"
+    Those PNGs were generated from a corpus containing John Paul II, Benedict
+    XVI and Paul VI, none of which this build contains, so they could not be
+    reproduced from the shipped pipeline. They have been removed in favour of
+    the [Findings](../findings.md) figures, which regenerate from the current
+    database.
 
 ## Biblical citation search
 
