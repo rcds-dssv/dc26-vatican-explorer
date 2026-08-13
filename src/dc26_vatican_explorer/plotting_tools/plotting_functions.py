@@ -218,12 +218,17 @@ def create_box_plot(
     y_column = "group" if horizontal else "value"
 
     fig, ax = plt.subplots(figsize=figsize)
+    # seaborn >=0.13 deprecates `palette` without `hue`; mapping hue to the
+    # group axis with no legend keeps the old colouring behaviour.
+    group_column = "group"
     sns.boxplot(
         data=df,
         x=x_column,
         y=y_column,
         color=color if palette is None else None,
+        hue=group_column if palette is not None else None,
         palette=palette,
+        legend=False,
         orient=orient,
         ax=ax,
     )

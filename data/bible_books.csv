@@ -21,7 +21,7 @@ Esther,Historical,old,"Esth,Est, Es"
 1 Maccabees,Historical,old,"1 Macc, 1Mc, 1Ma"
 2 Maccabees,Historical,old,"2 Macc, 2Mc, 2Ma"
 Job,Poetic,old,"Job, Jb"
-Pslams,Poetic,old,"Ps, Pss"
+Psalms,Poetic,old,"Ps, Pss, Psalm"
 Proverbs,Poetic,old,"Prov, Prv, Pr"
 Ecclesiastes,Poetic,old,"Eccl, Eccles, Ec"
 Song of Songs,Poetic,old,"Song, SS, So, Sg"
@@ -50,23 +50,23 @@ Mark,Gospel,new,Mk
 Luke,Gospel,new,Lk
 John,Gospel,new,Jn
 Acts,Historical,new,Acts
-Romans,Pauline,new,Rom
+Romans,Pauline,new,"Rom, Rm"
 1 Corinthians,Pauline,new,1 Cor
 2 Corinthians,Pauline,new,2 Cor
 Galatians,Pauline,new,Gal
 Ephesians,Pauline,new,Eph
 Philippians,Pauline,new,Phil
 Colossians,Pauline,new,Col
-1 Thessalonians,Pauline,new,1 Thess
-2 Thessalonians,Pauline,new,2 Thess
-1 Timothy,Pauline,new,1 Tim
-2 Timothy,Pauline,new,2 Tim
-Titus,Pauline,new,Titus
+1 Thessalonians,Pauline,new,"1 Thess, 1 Th, 1 Thes"
+2 Thessalonians,Pauline,new,"2 Thess, 2 Th, 2 Thes"
+1 Timothy,Pauline,new,"1 Tim, 1 Tm"
+2 Timothy,Pauline,new,"2 Tim, 2 Tm"
+Titus,Pauline,new,"Titus, Tit"
 Philemon,Pauline,new,"Phlm, Philem, Phm"
 Hebrews,Hebrews,new,Heb
 James,NP Epistles,new,"Jas, Ja"
-1 Peter,NP Epistles,new,1 Pet
-2 Peter,NP Epistles,new,2 Pet
+1 Peter,NP Epistles,new,"1 Pet, 1 Pt"
+2 Peter,NP Epistles,new,"2 Pet, 2 Pt"
 1 John,NP Epistles,new,1 Jn
 2 John,NP Epistles,new,2 Jn
 3 John,NP Epistles,new,3 Jn

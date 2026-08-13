@@ -13,6 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
 from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_find_by_display_name,
     vatican_fetch_pope_directory_recent,
@@ -58,8 +59,11 @@ def _get_session() -> requests.Session:
     _SESSION = s
     return s
 
-def fetch_html(url: str, *, timeout=(10, 120)) -> str:
+def fetch_html(url: str, *, timeout=(10, 30)) -> str:
     """Timeout = (connect_timeout_seconds, read_timeout_seconds)."""
+    # ponytail: 30s read timeout, not 120s. These pages normally return in <1s;
+    # a long timeout only serves to sit on a wedged keep-alive connection.
+    # Retry(read=6) reconnects, so failing fast is strictly better here.
     # light throttling to reduce timeouts / rate-limits
     time.sleep(random.uniform(0.3, 0.9))
 

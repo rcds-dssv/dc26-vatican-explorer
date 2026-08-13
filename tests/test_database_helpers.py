@@ -431,9 +431,9 @@ def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/s1",),
                 ("https://example.com/s2",),
@@ -454,9 +454,9 @@ def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/s1",),
             ],
@@ -502,9 +502,9 @@ def test_speech_url_exists_in_db_handles_multiple_rows_same_url(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
         cursor.executemany(
-            "INSERT INTO speeches (url) VALUES (?);",
+            "INSERT INTO texts (url) VALUES (?);",
             [
                 ("https://example.com/dup",),
                 ("https://example.com/dup",),
@@ -525,8 +525,8 @@ def test_speech_url_exists_in_db_returns_false_when_url_is_none(tmp_path):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("CREATE TABLE speeches (id INTEGER PRIMARY KEY, url TEXT);")
-        cursor.execute("INSERT INTO speeches (url) VALUES (?);", ("https://example.com/s1",))
+        cursor.execute("CREATE TABLE texts (id INTEGER PRIMARY KEY, url TEXT);")
+        cursor.execute("INSERT INTO texts (url) VALUES (?);", ("https://example.com/s1",))
         conn.commit()
 
         assert db_module.speech_url_exists_in_db(test_db_path, None) is False
