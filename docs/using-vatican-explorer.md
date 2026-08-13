@@ -96,3 +96,26 @@ Helper functions for working with the Vatican SQLite database.
 
 ::: dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline.main
 
+## Plotting Tools
+
+### Generic Plotting Functions
+
+Reusable chart-building helpers, safe for scripts and agents to call in headless environments.
+
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_bar_chart
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_ranked_bar_chart
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_scatterplot
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_line_chart
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_histogram
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_box_plot
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.create_heatmap
+::: dc26_vatican_explorer.plotting_tools.plotting_functions.save_figure
+
+### Example Analyses
+
+Domain-specific plots built on the generic helpers above, querying the Vatican database directly.
+
+::: dc26_vatican_explorer.plotting_tools.create_example_plots.plot_speech_count_per_pope
+::: dc26_vatican_explorer.plotting_tools.create_example_plots.plot_word_count_per_pope
+::: dc26_vatican_explorer.plotting_tools.create_example_plots.plot_word_rate_per_pope
+
