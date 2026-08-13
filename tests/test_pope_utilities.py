@@ -5,6 +5,7 @@ that handle pope name normalization, validation, and URL parsing.
 """
 
 import pytest
+
 from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_extract_slug_from_content_url,
     papal_find_by_display_name,

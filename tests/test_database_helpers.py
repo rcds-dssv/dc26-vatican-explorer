@@ -3,6 +3,7 @@
 import sqlite3
 
 import pytest
+
 import dc26_vatican_explorer.database_utils.database_helpers as db_module
 from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
