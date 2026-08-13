@@ -3,8 +3,9 @@
 import sqlite3
 
 import pytest
-import src.database_utils.database_helpers as db_module
-from src.database_utils.database_helpers import (
+
+import dc26_vatican_explorer.database_utils.database_helpers as db_module
+from dc26_vatican_explorer.database_utils.database_helpers import (
     check_texts_table_schema,
     column_exists_in_table,
     connect_to_database,

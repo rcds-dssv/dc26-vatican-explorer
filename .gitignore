@@ -52,6 +52,9 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Generated example plots
+outputs/
+
 # Translations
 *.mo
 *.pot

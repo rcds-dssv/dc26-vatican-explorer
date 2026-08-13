@@ -1,8 +1,11 @@
 # Module with tests for search_biblical_citation.py
 
+import re
+
 import pytest
-import src.search.search_biblical_citation as search_module
-from src.search.search_biblical_citation import (
+
+import dc26_vatican_explorer.search.search_biblical_citation as search_module
+from dc26_vatican_explorer.search.search_biblical_citation import (
     default_regex_pattern,
     search_biblical_citations,
     search_biblical_citations_db,
@@ -106,7 +109,10 @@ def test_search_biblical_citations_db_missing_texts_table(monkeypatch):
     monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
     monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
 
-    with pytest.raises(ValueError, match="The 'texts' table does not exist in the database."):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The 'texts' table does not exist in the database."),
+    ):
         search_biblical_citations_db()
 
 def test_search_biblical_citations_db_invalid_schema(monkeypatch):
@@ -129,7 +135,10 @@ def test_search_biblical_citations_db_invalid_schema(monkeypatch):
     monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
     monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
 
-    with pytest.raises(ValueError, match="The 'texts' table schema does not match the expected format."):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The 'texts' table schema does not match the expected format."),
+    ):
         search_biblical_citations_db()
 
 def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
@@ -150,6 +159,21 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     def fake_check_texts_table_schema(cursor):
         return True
 
+    def fake_get_column_names_in_table(cursor, table_name):
+        return [
+            "_texts_id",
+            "pope_id",
+            "section",
+            "year",
+            "date",
+            "location",
+            "title",
+            "language",
+            "url",
+            "text_content",
+            "entry_creation_date",
+        ]
+
     def fake_fetch_rows_by_regexp(cursor, sql, pattern):
         captured["sql"] = sql
         captured["pattern"] = pattern
@@ -165,6 +189,7 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
     monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
     monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
+    monkeypatch.setattr(search_module, "get_column_names_in_table", fake_get_column_names_in_table)
     monkeypatch.setattr(search_module, "fetch_rows_by_regexp", fake_fetch_rows_by_regexp)
 
     results = search_biblical_citations_db()
@@ -179,8 +204,8 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
 
     # Ensure citations were extracted from text_content at index 9
     assert len(results) == 1
-    row_id, citations = results[0]
-    assert row_id == 1
+    row, citations = results[0]
+    assert row[0] == 1
     citation_strings = [c[0] for c in citations]
     assert citation_strings == ["Jn 3:16", "1 Cor 13:6"]
 
@@ -202,6 +227,21 @@ def test_search_biblical_citations_db_custom_query_and_pattern(monkeypatch):
     def fake_check_texts_table_schema(cursor):
         return True
 
+    def fake_get_column_names_in_table(cursor, table_name):
+        return [
+            "_texts_id",
+            "pope_id",
+            "section",
+            "year",
+            "date",
+            "location",
+            "title",
+            "language",
+            "url",
+            "text_content",
+            "entry_creation_date",
+        ]
+
     def fake_fetch_rows_by_regexp(cursor, sql, pattern):
         captured["sql"] = sql
         captured["pattern"] = pattern
@@ -211,6 +251,7 @@ def test_search_biblical_citations_db_custom_query_and_pattern(monkeypatch):
     monkeypatch.setattr(search_module, "register_regexp_function", fake_register_regexp_function)
     monkeypatch.setattr(search_module, "table_exists", fake_table_exists)
     monkeypatch.setattr(search_module, "check_texts_table_schema", fake_check_texts_table_schema)
+    monkeypatch.setattr(search_module, "get_column_names_in_table", fake_get_column_names_in_table)
     monkeypatch.setattr(search_module, "fetch_rows_by_regexp", fake_fetch_rows_by_regexp)
 
     custom_pattern = r"CUSTOM_PATTERN"
