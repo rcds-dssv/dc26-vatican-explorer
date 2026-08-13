@@ -13,8 +13,9 @@ if [ -z "$STAGED" ]; then
   exit 0
 fi
 
-# Run ruff on only those files
-ruff check $STAGED
+# Run ruff on only those files (via uv, since ruff is a uv dev dependency,
+# not necessarily installed globally)
+uv run ruff check $STAGED
 
 if [ $? -ne 0 ]; then
   echo "ruff found issues. Fix them or use --no-verify to skip."
