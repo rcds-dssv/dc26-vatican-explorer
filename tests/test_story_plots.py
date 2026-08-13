@@ -10,7 +10,9 @@ from dc26_vatican_explorer.plotting_tools.story_plots import (
     BOOK_CITATION_PATTERN,
     load_bible_books,
 )
-from dc26_vatican_explorer.search.search_biblical_citation import search_biblical_citations
+from dc26_vatican_explorer.search.search_biblical_citation import (
+    search_biblical_citations,
+)
 
 
 def _resolve(text: str) -> list[str]:

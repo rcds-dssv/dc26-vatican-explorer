@@ -12,6 +12,7 @@ from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
+
 from dc26_vatican_explorer.config import _BASE
 from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_find_by_display_name,

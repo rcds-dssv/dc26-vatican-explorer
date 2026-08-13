@@ -3,6 +3,7 @@
 import sqlite3
 
 import pandas as pd
+
 from dc26_vatican_explorer.config import _DB_PATH
 
 

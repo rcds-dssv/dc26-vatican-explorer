@@ -1,13 +1,10 @@
-"""
-This module adds the place of birth for each pope, since missing from data.
-"""
+"""This module adds the place of birth for each pope, since missing from data."""
 # ----------------------
 # :: IMPORTS ::
 # ----------------------
 import sqlite3
 from contextlib import closing
 from pathlib import Path
-
 
 # ----------------------
 # :: CONSTANTS ::
@@ -38,20 +35,19 @@ def add_birthplace_to_db(db_path: str | Path) -> None:
         db_path: Path to the SQLite database.
 
     """
-    with closing(sqlite3.connect(db_path)) as connection:
-        with connection:
-            cursor = connection.cursor()
-            for name, place_of_birth in BIRTH_MAPS.items():
-                cursor.execute(
-                    '''
+    with closing(sqlite3.connect(db_path)) as connection, connection:
+        cursor = connection.cursor()
+        for name, place_of_birth in BIRTH_MAPS.items():
+            cursor.execute(
+                '''
                     UPDATE popes
                     SET place_of_birth = ?
                     WHERE pope_name = ?
                     ''',
-                    (place_of_birth, name)
-                )
-                if cursor.rowcount:
-                    print(f"Successfully updated {name}.")
+                (place_of_birth, name)
+            )
+            if cursor.rowcount:
+                print(f"Successfully updated {name}.")
     return
 
 # ----------------------

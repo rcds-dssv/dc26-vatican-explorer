@@ -13,6 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
 from dc26_vatican_explorer.vatican_scraper.step01_list_popes import (
     papal_find_by_display_name,
     vatican_fetch_pope_directory_recent,

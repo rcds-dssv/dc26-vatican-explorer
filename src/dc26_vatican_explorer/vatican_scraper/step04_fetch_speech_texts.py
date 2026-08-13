@@ -13,11 +13,15 @@ from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
-from dc26_vatican_explorer.config import _DB_PATH, _PKG_DIR
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+from dc26_vatican_explorer.config import _DB_PATH, _PKG_DIR
+from dc26_vatican_explorer.database_utils.database_helpers import (
+    get_speech_text_by_url,
+    speech_url_exists_in_db,
+)
 from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
-from dc26_vatican_explorer.database_utils.database_helpers import get_speech_text_by_url, speech_url_exists_in_db
 
 _SCRAPER_DIR = _PKG_DIR / "vatican_scraper"
 
@@ -40,7 +44,9 @@ from dc26_vatican_explorer.vatican_scraper.step02_list_pope_year_links import (
     fetch_pope_main_html,
     parse_years,
 )
-from dc26_vatican_explorer.vatican_scraper.step03_list_speeches import collect_speeches_for_year_index
+from dc26_vatican_explorer.vatican_scraper.step03_list_speeches import (
+    collect_speeches_for_year_index,
+)
 
 
 def _pause(min_s: float = 0.35, max_s: float = 1.1) -> None:
@@ -493,7 +499,7 @@ def fetch_speeches_to_feather(
                     print(f"[skip] Already in DB (EN url): {base_url}")
                     # DIAGNOSTIC: show stored text to verify it is non-empty
                     _existing = get_speech_text_by_url(_DB_PATH, base_url)
-                    print(f"[diag] Stored text preview: {repr((_existing or '')[:120])}")
+                    print(f"[diag] Stored text preview: {(_existing or '')[:120]!r}")
                     continue
             else:
                 guessed_it = _rewrite_lang_in_url(base_url, want_lang)
@@ -501,7 +507,7 @@ def fetch_speeches_to_feather(
                     print(f"[skip] Already in DB ({want_lang} url): {guessed_it}")
                     # DIAGNOSTIC: show stored text to verify it is non-empty
                     _existing = get_speech_text_by_url(_DB_PATH, guessed_it)
-                    print(f"[diag] Stored text preview: {repr((_existing or '')[:120])}")
+                    print(f"[diag] Stored text preview: {(_existing or '')[:120]!r}")
                     continue
 
             base_final_url, base_html = fetch_html_with_final_url(base_url)
