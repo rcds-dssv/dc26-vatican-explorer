@@ -36,6 +36,17 @@ cites more densely; Francis reaches for Mark nearly twice as often.
 
 ![Scripture citations per 100 documents](assets/scripture_heatmap.png)
 
+### Francis says "Jesus" more than his predecessors
+
+Across five pontificates back to Paul VI, Francis uses "Jesus" about 4.6 times
+per English document against 2.8 for both Benedict XVI and John Paul II. The
+English and Italian corpora, scraped independently, agree on the ordering.
+
+![Rate of "Jesus" per pope](assets/bar/Jesus_EN_text_content_rate_per_pope.png)
+
+Full set, including the raw counts and an honest negative result on titles:
+[Word Frequency](analyses/word-frequency.md).
+
 ### Also on the Findings page
 
 - **[Leo XIV opened louder than Francis](findings.md#2-leo-xiv-opened-louder-than-francis)** — 370 English documents in the first twelve months against 258

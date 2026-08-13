@@ -37,27 +37,24 @@ uv run jupyter lab docs/analyses/
 
 ## Word frequency comparisons
 
-`plotting_tools.create_example_plots` compares word usage across popes — "love"
-and "Jesus" in English, "amore" in Italian — as raw counts and as rates
-normalised by speech length:
+[Word Frequency](word-frequency.md) compares "love", "amore" and "Jesus" across
+**five** pontificates back to Paul VI, as raw counts and as rates normalised by
+document count. The headline: Francis says "Jesus" about 60% more often per
+document than Benedict XVI or John Paul II, while Benedict leads on "love" —
+and the English and Italian corpora, scraped independently, agree on the
+ordering.
+
+Those figures come from a wider corpus than the current build, which holds only
+Francis and Leo XIV. Run `create_example_plots` against the reference database
+today and you get the same charts with two bars:
 
 ```bash
 uv run -m dc26_vatican_explorer.plotting_tools.create_example_plots
 ```
 
-It writes to `outputs/example_plots/` (gitignored). These charts are not on the
-site, because with two pontificates in the corpus every one of them is a
-two-bar comparison, and the two bars are close: "love" appears 2.71 times per
-English document under Francis against 2.37 under Leo XIV. That difference is
-not worth a figure. The framing becomes useful once earlier pontificates are
-collected.
-
-!!! warning "Earlier versions of this site showed richer per-pope charts"
-    Those PNGs were generated from a corpus containing John Paul II, Benedict
-    XVI and Paul VI, none of which this build contains, so they could not be
-    reproduced from the shipped pipeline. They have been removed in favour of
-    the [Findings](../findings.md) figures, which regenerate from the current
-    database.
+With two pontificates the comparison is thin — "love" appears 2.71 times per
+English document under Francis against 2.37 under Leo XIV. Scraping the earlier
+popes restores the five-way version.
 
 ## Biblical citation search
 

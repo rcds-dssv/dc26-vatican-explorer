@@ -186,6 +186,7 @@ nav:
   - The Data: data.md
   - Analyses:
       - Overview: analyses/index.md
+      - Word Frequency: analyses/word-frequency.md
       - 1 John 4: analyses/first_john_4.ipynb
   - API Reference: using-vatican-explorer.md
   - Resources:
