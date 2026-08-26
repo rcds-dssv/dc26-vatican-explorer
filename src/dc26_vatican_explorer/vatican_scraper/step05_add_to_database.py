@@ -10,7 +10,9 @@ from pathlib import Path
 
 from dc26_vatican_explorer.config import _DB_PATH
 from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
-from dc26_vatican_explorer.vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
+from dc26_vatican_explorer.vatican_scraper.step04_fetch_speech_texts import (
+    fetch_speeches_to_feather,
+)
 
 DEFAULT_TABLE_SCHEMA = """
 

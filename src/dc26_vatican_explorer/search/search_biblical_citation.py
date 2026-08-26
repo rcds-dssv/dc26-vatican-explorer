@@ -18,9 +18,6 @@ from dc26_vatican_explorer.database_utils.database_helpers import (
 def default_regex_pattern() -> str:
     """Function to return the default regex pattern for biblical citations.
 
-    Args:
-        None
-
     Returns:
         str: The default regex pattern for biblical citations.
 

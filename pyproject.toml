@@ -29,6 +29,9 @@ scrape = [
 ]
 data-manipulation = [
     "pandas",
+    "pyarrow",           # required by pandas .to_feather() in step04
+    "matplotlib",        # analyses notebooks + plotting_tools
+    "seaborn",           # plotting_tools builds on seaborn
 ]
 docs = [
     "mkdocs>=1.6,<2.0",

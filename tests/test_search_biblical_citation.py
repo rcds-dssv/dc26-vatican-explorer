@@ -202,7 +202,9 @@ def test_search_biblical_citations_db_default_query_and_pattern(monkeypatch):
     """
     assert captured["sql"].strip() == expected_default_query.strip()
 
-    # Ensure citations were extracted from text_content at index 9
+    # Ensure citations were extracted from text_content at index 9.
+    # Each result pairs the *whole* row with its citations, so callers can read
+    # pope_id, year, etc. off the row.
     assert len(results) == 1
     row, citations = results[0]
     assert row[0] == 1

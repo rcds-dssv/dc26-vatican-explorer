@@ -231,3 +231,5 @@ data/*.db
 
 # plots
 src/dc26_vatican_explorer/plotting_tools/example_plots/*
+# Generated plot output from plotting_tools.create_example_plots
+outputs/

@@ -3,11 +3,15 @@ from __future__ import annotations
 
 import itertools
 from pathlib import Path
+
 from dc26_vatican_explorer.config import _DB_PATH
 from dc26_vatican_explorer.vatican_scraper.argparser import get_scraper_args
-from dc26_vatican_explorer.vatican_scraper.step04_fetch_speech_texts import fetch_speeches_to_feather
-from dc26_vatican_explorer.vatican_scraper.step05_add_to_database import add_content_to_db
-
+from dc26_vatican_explorer.vatican_scraper.step04_fetch_speech_texts import (
+    fetch_speeches_to_feather,
+)
+from dc26_vatican_explorer.vatican_scraper.step05_add_to_database import (
+    add_content_to_db,
+)
 
 
 def main() -> None:

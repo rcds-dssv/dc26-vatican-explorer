@@ -14,57 +14,65 @@ The project covers the full data pipeline:
 4. **Search** — Finds biblical citations within speech texts using regex patterns.
 5. **Analysis** — Quantifies word-frequency themes (e.g., "love," "amore," "Jesus") per pope, compares speech volumes, and produces publication-ready visualizations.
 
-## Example Analyses
+## What the data shows
 
-Below are representative figures generated from the `plotting_tools` module. Each plot compares how different popes use specific words or phrases across their speeches.
+Four results from the current build, each regenerated from the database with a
+single command. The full write-up, with caveats, is on the
+[Findings](findings.md) page.
 
-### Speech Volume by Pope
+### The audiences stopped; the Angelus did not
 
-How many English speeches did each pope deliver?
+Between March and August 2020, Francis's speeches and homilies fell 89% (105 to
+12) while the Sunday Angelus went *up* by two. Audiences need a crowd; a window
+does not.
 
-![Speech count per pope](assets/speech_count_EN_per_pope.png)
+![Monthly output through the pandemic](assets/covid_rupture.png)
 
-### "Love" in English Speeches
+### Both popes preach almost entirely from the New Testament
 
-Total word count of "love" per pope (text content):
+Around 7,200 resolved scripture citations across 64 books. 84% are New
+Testament, and the four Gospels account for over half of everything. Leo XIV
+cites more densely; Francis reaches for Mark nearly twice as often.
 
-![Love text content per pope](assets/love_EN_text_content_per_pope.png)
+![Scripture citations per 100 documents](assets/scripture_heatmap.png)
 
-Rate of "love" usage (normalized by total speech length):
+### Francis says "Jesus" more than his predecessors
 
-![Love rate per pope](assets/love_EN_text_content_rate_per_pope.png)
+Across five pontificates back to Paul VI, Francis uses "Jesus" about 4.6 times
+per English document against 2.8 for both Benedict XVI and John Paul II. The
+English and Italian corpora, scraped independently, agree on the ordering.
 
-### "Amore" in Italian Speeches
+![Rate of "Jesus" per pope](assets/bar/Jesus_EN_text_content_rate_per_pope.png)
 
-Total word count of "amore" per pope in Italian-language texts:
+Full set, including the raw counts and an honest negative result on titles:
+[Word Frequency](analyses/word-frequency.md).
 
-![Amore text content per pope](assets/amore_IT_text_content_per_pope.png)
+### Also on the Findings page
 
-Rate of "amore" usage in Italian:
-
-![Amore rate per pope](assets/amore_IT_text_content_rate_per_pope.png)
-
-### "Jesus" in English Speeches
-
-Total word count of "Jesus" per pope in English texts:
-
-![Jesus text content per pope](assets/Jesus_EN_text_content_per_pope.png)
+- **[Leo XIV opened louder than Francis](findings.md#2-leo-xiv-opened-louder-than-francis)** — 370 English documents in the first twelve months against 258
+- **[A fixed form and a free one](findings.md#4-a-fixed-form-and-a-free-one)** — the Angelus never exceeds 1,641 words; an address ranges from 37 to 12,163
+- **[What the data could not say last week](findings.md#5-what-the-data-could-not-say-last-week)** — how a one-line scraper bug hid 30% of the corpus, Lent and Easter included
 
 ### Biblical Citation Analysis
 
-The toolkit can also search for specific biblical references across all speeches. For example, counting mentions of **1 John 4** by year and by pope reveals how different pontiffs engage with particular scriptural passages.
+The toolkit can also search for specific biblical references across all
+speeches. Counting mentions of **1 John 4** by year and by pope shows how
+different pontiffs engage with a particular passage.
+
+See the full notebook: [Analysis of 1 John 4](analyses/first_john_4.ipynb).
 
 ## Getting Started
 
 ```bash
-# Install dependencies
-uv sync
+# Install dependencies (scraping and dataframe support are opt-in groups)
+uv sync --group scrape --group data-manipulation
 
 # Run the full scraping pipeline
-uv run python -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline \
-    --popes Benedict_XVI,Francis \
-    --sections homilies,addresses,angelus \
-    --langs Italian,English
+uv run -m dc26_vatican_explorer.vatican_scraper.step06_run_scraping_pipeline \
+    --popes "Francis,Benedict XVI" \
+    --years "2013-2026" \
+    --section "angelus,homilies,speeches" \
+    --lang "EN,IT"
 
 # Clean and query speech metadata
 uv run python -c "
@@ -73,6 +81,9 @@ data = get_clean_speech_metadata()
 print(data)
 "
 ```
+
+See [The Pipeline](pipeline.md) for the full flag reference and a description
+of each stage.
 
 ## Project Structure
 
@@ -83,13 +94,16 @@ print(data)
 | `src/dc26_vatican_explorer/database_utils/` | SQLite helpers, schema checks, query utilities |
 | `src/dc26_vatican_explorer/search/` | Biblical citation search with regex patterns |
 | `src/dc26_vatican_explorer/pope_comparison/` | Speech quantification and pope profiling |
-| `analyses/` | Jupyter notebooks for exploratory analysis |
+| `docs/analyses/` | Jupyter notebooks for exploratory analysis, published on this site |
+| `data/` | Reference data (`bible_books.csv`) and the local, gitignored `vatican_texts.db` |
 | `tests/` | Unit and integration tests |
 
 ## Documentation
 
-- [Using Vatican Explorer](using-vatican-explorer.md) — How to set up and run the toolkit
-- [Core API Reference](core-api.md) — Full function and class documentation
+- [The Pipeline](pipeline.md) — How speeches get from vatican.va into the database
+- [The Data](data.md) — Schema, coverage, and how to query it
+- [Analyses](analyses/index.md) — Notebooks and findings
+- [API Reference](using-vatican-explorer.md) — Full function and class documentation
 
 ## Resources
 

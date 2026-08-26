@@ -119,3 +119,14 @@ Domain-specific plots built on the generic helpers above, querying the Vatican d
 ::: dc26_vatican_explorer.plotting_tools.create_example_plots.plot_word_count_per_pope
 ::: dc26_vatican_explorer.plotting_tools.create_example_plots.plot_word_rate_per_pope
 
+### Findings Figures
+
+The figures behind the [Findings](findings.md) page. Each answers one question
+and writes one PNG into `docs/assets`.
+
+::: dc26_vatican_explorer.plotting_tools.story_plots.plot_covid_rupture
+::: dc26_vatican_explorer.plotting_tools.story_plots.plot_first_year_comparison
+::: dc26_vatican_explorer.plotting_tools.story_plots.plot_scripture_heatmap
+::: dc26_vatican_explorer.plotting_tools.story_plots.plot_length_by_section
+::: dc26_vatican_explorer.plotting_tools.story_plots.load_bible_books
+
