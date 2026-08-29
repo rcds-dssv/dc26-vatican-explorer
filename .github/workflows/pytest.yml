@@ -1,0 +1,28 @@
+name: Run pytest
+
+on:
+  # Run on pull requests...
+  pull_request:
+    # ...but only when the PR's target (base) branch is main.
+    branches:
+      - main
+
+jobs:
+  # This job is named "test" — that's the name that will show up as a required
+  # status check when configuring branch protection.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the PR's code onto the runner so later steps can access it.
+      - uses: actions/checkout@v4
+      # Install uv (the Python package/dependency manager this project uses).
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      # Install all dependencies, including optional groups (scrape, data-manipulation, etc.)
+      # that the test suite needs but a plain "uv sync" would skip.
+      - run: uv sync --all-groups
+      # Run the test suite; if any test fails, this step (and the job) fails,
+      # which is what shows up as a red/failing status check on the PR.
+      - run: uv run pytest tests/

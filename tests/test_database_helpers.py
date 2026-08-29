@@ -424,7 +424,7 @@ def test_sanitize_table_name_replaces_double_quotes(raw: str, expected: str) -> 
 
 def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
     """Test that speech_url_exists_in_db returns True when the given URL
-    is present in the speeches table.
+    is present in the texts table.
     """
     test_db_path = tmp_path / "test_speeches.db"
     conn = sqlite3.connect(test_db_path)
@@ -447,7 +447,7 @@ def test_speech_url_exists_in_db_returns_true_when_url_exists(tmp_path):
 
 def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
     """Test that speech_url_exists_in_db returns False when the given URL
-    is not present in the speeches table.
+    is not present in the texts table.
     """
     test_db_path = tmp_path / "test_speeches.db"
     conn = sqlite3.connect(test_db_path)
@@ -468,7 +468,7 @@ def test_speech_url_exists_in_db_returns_false_when_url_missing(tmp_path):
         conn.close()
 
 def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_path):
-    """Test that speech_url_exists_in_db returns False when the speeches table
+    """Test that speech_url_exists_in_db returns False when the texts table
     does not exist (should be handled by the function's exception guard).
     """
     test_db_path = tmp_path / "test_missing_table.db"
@@ -476,7 +476,7 @@ def test_speech_url_exists_in_db_returns_false_when_speeches_table_missing(tmp_p
     cursor = conn.cursor()
 
     try:
-        # Deliberately do NOT create speeches table.
+        # Deliberately do NOT create texts table.
         cursor.execute("CREATE TABLE other_table (id INTEGER PRIMARY KEY, url TEXT);")
         conn.commit()
 
